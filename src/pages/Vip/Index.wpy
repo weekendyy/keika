@@ -1,0 +1,282 @@
+<template>
+  <view class="tab-wrapper">
+    <view class="tab-header">
+      <repeat for="{{TitleData}}" wx:for-item="item" key="index">
+        <view class="tab-item {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
+      </repeat>
+    </view>
+    <view class="tab-content">
+      <view class="left-content" wx:if="{{ currentTabsIndex == 0 }}">
+        <repeat for="{{VipType}}" wx:for-item="item" key:index="index">
+          <view class="item">
+            <view class="item-left">
+              <view class="first">{{item[0]}} <text>{{item[1]}}/张</text></view>
+              <text class="date">{{item[2]}}</text>
+            </view>
+            <text class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 2}}" @tap="vip({{index}})">购买</text>
+            <text class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 1}}" @tap="vip({{index}})">续费</text>
+          </view>
+        </repeat>
+      </view>
+      <view class="right-content" wx:if="{{ currentTabsIndex == 1 }}">
+        <view class="content">
+          <text class="title">激活码</text>
+          <input type="number" maxlength="15" @input="PasswordInput" placeholder="请输入激活码"/>
+        </view>
+        <text class="btn {{numOpenState == true? '': 'active'}}" @tap="Verification()">立即激活</text>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import VipModel from './Vip-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '开通黑卡会员',
+    }
+    data = {
+      currentTabsIndex: 0,
+      TitleData: [],
+      activate_num: '',
+      VipType: null,
+      open_status: null,
+      vipOpenState: true,
+      numOpenState: true,
+      card_id: '',
+    }
+    methods = {
+      onTabsItemTap(index){
+        this.currentTabsIndex = index
+      },
+      PasswordInput($event){
+        this.activate_num = $event.detail.value.trim()
+      },
+      Verification(){
+        if(Number(this.activate_num.length) === 0){
+          wx.showToast({
+            title: '请输入激活码',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false
+        }
+        if (isNaN(this.activate_num)){
+          wx.showToast({
+            title: '请输入纯数字',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false;
+        }
+        if(Number(this.activate_num.length) <= 14){
+          wx.showToast({
+            title: '激活码长度不足',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false
+        }
+        this.numOpenState  = false
+        VipModel.numOpen({activate_num: this.activate_num},(ResData)=>{
+          if(ResData == 1){
+            wx.showToast({
+              title: '开通会员成功',
+              icon: 'success',
+              duration: 2000
+            })
+            this.numOpenState = true
+            this.activate_num = ''
+            this.open_status = 1
+            this.$apply()
+            return false
+          }
+          if(ResData.code == 4){
+            wx.showToast({
+              title: '激活码错误',
+              icon: 'success',
+              duration: 2000
+            })
+            this.numOpenState = true
+            this.$apply()
+            return false
+          }
+          if(ResData.code == 5){
+            wx.showToast({
+              title: '激活码已经使用',
+              icon: 'success',
+              duration: 2000
+            })
+            this.numOpenState = true
+            this.$apply()
+            return false
+          }
+        })
+      },
+      vip(index){
+        this.vipOpenState  = false
+        let param = {
+          time_type: index,
+          card_id: this.card_id,
+        }
+        VipModel.VipExecPay(param, (ResData)=>{
+          if(ResData.code == 1) {
+            VipModel.wxPay(ResData.data, ResData=>{
+              // 支付成功以后, 跳转到状态页面 把防止重复提交的订单状态变量设置成 true
+              if(ResData == 2) {
+                wx.showToast({
+                  title: '恭喜你,成功了,',
+                  icon: 'success',
+                  duration: 1200
+                })
+                this.vipOpenState = true
+                this.$apply()
+              }
+              // 取消支付以后,也需要把支付状态变量设置成 true
+              if(ResData == 1) {
+                this.vipOpenState = true
+                this.$apply()
+              }
+            })
+          }
+        })
+      }
+    }
+    onShow(){
+      VipModel.getVipType((ResData)=>{
+        if(ResData.code == 1){
+          this.VipType = ResData.data.time_type
+          this.open_status = ResData.data.open_status
+          this.card_id =  ResData.data.card_id
+          this.TitleData = ResData.data.open_magic_card
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+<style lang="less">
+page{
+  background-color: #f6f5f5;
+}
+.tab-wrapper{
+  height: 100%;
+}
+.tab-header{
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-around;
+  .tab-item{
+    font-size:28rpx;
+    line-height: 74rpx;
+    color: #000000;
+    &.active{
+      color: #ebaf35;
+      border-bottom: 4rpx solid #ffa717;
+
+    }
+  }
+}
+  .tab-content{
+    .left-content{
+      background-color: #fff;
+      padding-top: 30rpx;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      .item{
+        width: 690rpx;
+        height: 131rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      ~ .item{
+        border-top: 1rpx solid #eeeeee;
+      }
+        .item-left{
+          font-size: 0;
+          display: flex;
+          flex-direction: column;
+          .first{
+            font-size:32rpx;
+            color: #000000;
+            text{
+              padding-left:14rpx;
+              font-size:28rpx;
+              color: #de6d6e;
+              letter-spacing: 4rpx;
+            }
+          }
+          .date{
+            margin-top:8rpx;
+            font-size:24rpx;
+            color: #000000;
+            letter-spacing: 2rpx;
+          }
+        }
+        .btn{
+          width: 159rpx;
+          line-height: 69rpx;
+          text-align: center;
+          border-radius: 50rpx;
+          background-color: #ffa715;
+          font-size: 32rpx;
+          color: #fff;
+          &.active{
+            pointer-events: none;
+          }
+        }
+      }
+    }
+    .right-content{
+      .content{
+        width: 100%;
+        padding-left: 31rpx;
+        box-sizing: border-box;
+        font-size:0;
+        background-color: #fff;
+        padding-bottom: 41rpx;
+        .title{
+          font-size: 24rpx;
+          color: #919191;
+          line-height:80rpx;
+          letter-spacing: 2rpx;
+        }
+        input{
+          width: 668rpx;
+          height: 65rpx;
+          line-height:65rpx;
+          padding-left: 21rpx;
+          box-sizing: border-box;
+          font-size: 24rpx;
+          border: 1rpx solid #efefef;
+          letter-spacing: 2rpx;
+          color: #7f7f7f;
+        }
+      }
+      .btn{
+        margin-top: 60rpx;
+        display: block;
+        width: 690rpx;
+        margin-left:auto;
+        margin-right:auto;
+        line-height:92rpx;
+        background-color: #ffba15;
+        border-radius: 11rpx;
+        border: solid 1px #c99c40;
+        text-align: center;
+        letter-spacing: 2rpx;
+        color: #fff;
+        &.active{
+          pointer-events: none;
+        }
+      }
+    }
+  }
+</style>

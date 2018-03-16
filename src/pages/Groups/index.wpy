@@ -1,0 +1,424 @@
+<template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <view class="indexBox">
+    <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
+      <block wx:for="{{bannerpics}}" wx:key="{{key}}">
+        <swiper-item class="swiperitembox">
+          <image src="{{item.banner_url}}" class="bannerpic" mode="scaleToFill"/>
+        </swiper-item>
+      </block>
+    </swiper>
+    <view class="mainBox">
+      <view class='itemtab'>
+        <view wx:for="{{tabitems}}" class="tabitem {{activeitem==index?'activeitem':''}}" @tap="itemTap({{index}})" wx:key="{{key}}">{{item}}</view>
+      </view>
+      <scroll-view scroll-y wx:if="{{activeitem==0}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
+        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="{{key}}"  @tap="gotoDetails({{index}})">
+          <image src="{{item.main_img}}" mode="scaleToFill" class="goodspic"></image>
+          <view class="rightbox">
+            <view class="itemtop">
+              <text class="itemtitle">{{item.goods_name}}</text>
+              <text class="itemtitle2">{{item.title_name}}</text>
+              <view class="huodong">
+              	<image wx:for="{{item.portrait_img}}" wx:key="{{key}}" src="{{item}}" mode="aspectFill" class="gouppic" wx:if="{{index<3}}"></image>
+                <text class="huodongtxt2">{{item.sale_count}}</text>
+              </view>
+            </view>
+            <view class="priceaandtake">
+              <view class="price">
+                <view class="pricenow"><text>¥</text>{{item.group_price}}</view>
+                <view class="priceori">¥ {{item.original_price}}</view>
+              </view>
+              <view class="takepartin {{activeitem==0?'':'takepartin_activedowm'}}">{{activeitem==0?'我要参与':(activeitem==1?'去看看':'')}}</view>
+            </view>
+          </view>
+          <text class="grouptips">{{item.group_person}}</text>
+        </view>
+        <view wx:if="{{isGoodsEmpty.NowIsGoodsEmpty}}">
+          <template is="emptyGoodsTips"></template>
+        </view>
+      </scroll-view>
+      <scroll-view scroll-y wx:if="{{activeitem==1}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
+        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="{{key}}"  @tap="gotoDetails({{index}})">
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodspic"></image>
+          <view class="rightbox">
+            <view class="itemtop">
+              <text class="itemtitle">{{item.goods_name}}</text>
+              <text class="itemtitle2">{{item.title_name}}</text>
+              <view class="huodong">
+                <image wx:for="{{item.portrait_img}}" wx:key="{{key}}" src="{{item}}" mode="aspectFill" class="gouppic" wx:if="{{index<3}}"></image>
+                <text class="huodongtxt2">{{item.sale_count}}</text>
+              </view>
+            </view>
+            <view class="priceaandtake">
+              <view class="price">
+                <view class="pricenow"><text>¥</text>{{item.group_price}}</view>
+                <view class="priceori">¥ {{item.original_price}}</view>
+              </view>
+              <view class="takepartin {{activeitem==0?'':'takepartin_activedowm'}}">{{activeitem==0?'我要参与':(activeitem==1?'去看看':'')}}</view>
+            </view>
+          </view>
+          <text class="grouptips">{{item.group_person}}</text>
+        </view>
+        <view wx:if="{{isGoodsEmpty.OldIsGoodsEmpty}}">
+          <template is="emptyGoodsTips"></template>
+        </view>
+      </scroll-view>
+
+     <!--  <view class="isLoadedAll" wx:if="{{(isLoadedAll.NowIsLoadedAll && activeitem==0)||(isLoadedAll.OldIsLoadedAll && activeitem==1)}}">
+        -------- 已经到底了 --------
+      </view> -->
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Groups from './Api/Groups.Api'
+  export default class group extends wepy.page {
+    config = {
+      navigationBarTitleText: '加载中...'
+    }
+    data = {
+      tabitems:['进行中','往期活动'],
+      activeitem:0,
+      pageNum:{
+        NowActivityPage: 1,
+        OldActivityPage: 1,
+      },
+      bannerpics:[],
+      NowActivityData:[],
+      OldActivityData:[],
+      isLoadedAll:{
+        NowIsLoadedAll: false,
+        OldIsLoadedAll: false,
+      },
+      isGoodsEmpty:{
+        NowIsGoodsEmpty:false,
+        OldIsGoodsEmpty:false
+      }
+    }
+    onLoad() {
+      Groups.getIndexNowActivity('1',(data)=>{
+          if (data.code == 1){
+            this.NowActivityData = data.goods_data
+            this.bannerpics = data.banner_list
+            //无商品的情况
+            if(data.goods_data.length==0){
+              this.isGoodsEmpty.NowIsGoodsEmpty=true
+            }
+            wx.setNavigationBarTitle({
+              title: data.header_title
+            })
+            //商品加载完的情况
+            if(data.goods_data.length<5 && data.goods_data.length>0){
+              this.isLoadedAll.NowIsLoadedAll=true
+            }
+          }
+          this.$apply()
+      })
+    }
+    methods = {
+      itemTap(index){
+        this.activeitem=index
+        this.$apply()
+        if(this.OldActivityData.length == 0 && index==1){
+          Groups.getIndexOldActivity(this.pageNum[this.activeitem],ResData=>{
+            if (ResData.code == 1){
+              this.OldActivityData = ResData.goods_data
+              //无商品的情况
+              if(ResData.goods_data.length==0){
+                this.isGoodsEmpty.OldIsGoodsEmpty=true
+              }
+              //商品加载完的情况
+              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
+                this.isLoadedAll.OldIsLoadedAll=true
+              }
+            }
+            this.$apply()
+          })
+        }else if(this.NowActivityData.length == 0 && index==0){
+          Groups.getIndexNowActivity(this.pageNum[this.activeitem],ResData=>{
+            if (ResData.code == 1){
+              this.NowActivityData = ResData.goods_data
+              //无商品的情况
+              if(ResData.goods_data.length==0){
+                this.isGoodsEmpty.NowIsGoodsEmpty=true
+              }
+              //商品加载完的情况
+              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
+                this.isLoadedAll.NowIsGoodsEmpty=true
+              }
+            }
+            this.$apply()
+          })
+        }
+      },
+      gotoDetails(index){
+        let id = null
+        if (this.activeitem == 0) {
+          id = this.NowActivityData[index].id
+        }
+        if(this.activeitem == 1){
+          id = this.OldActivityData[index].id
+        }
+        this.$navigate('../Groups/Groups-details',{id:id})
+      }
+    }
+    components = {
+
+    }
+    onReachBottom(){
+      switch(this.activeitem){
+        case 0:
+        if(!this.isLoadedAll.NowIsLoadedAll){
+          this.pageNum.NowActivityPage++
+          Groups.getIndexNowActivity(this.pageNum.NowActivityPage,ResData=>{
+            if (ResData.code == 1){
+              this.NowActivityData = [...this.NowActivityData,...ResData.goods_data]
+              if(ResData.goods_data.length==0){
+                this.isLoadedAll.NowIsLoadedAll=true
+                wx.showToast({
+                  title: '已经到底了',
+                  icon: 'loading',
+                  duration: 2000
+                })
+              }
+            }
+            this.$apply()
+          })
+        }
+        break;
+
+        case 1:
+        if(!this.isLoadedAll.OldIsLoadedAll){
+          this.pageNum.OldIsLoadedAll++
+          Groups.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
+            if (ResData.code == 1){
+              this.OldIsLoadedAll = [...this.OldIsLoadedAll,...ResData.goods_data]
+              if(ResData.goods_data.length==0){
+                this.isLoadedAll.OldIsLoadedAll=true
+                wx.showToast({
+                  title: '已经到底了',
+                  icon: 'loading',
+                  duration: 2000
+                })
+              }
+            }
+            this.$apply()
+          })
+        }
+        break;
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  Page{
+    width: 100%;
+    height: 100%;
+  }
+  .indexBox{
+    width: 100%;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    .swiperBox{
+      width: 750rpx;
+      height: 230rpx;
+      .swiperitembox{
+        width: 750rpx;
+        height: 230rpx;
+        .bannerpic{
+          width:750rpx;
+          height: 230rpx;
+        }
+      }
+    }
+    .mainBox{
+      width: 750rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .itemtab{
+        width: 100%;
+        height: 80rpx;
+        background-color: #fff;
+        display:flex;
+        align-items: center;
+        justify-content: space-around;
+        border-bottom: 2rpx solid #EFEFEF;
+        .tabitem{
+          color: #9B9B9B;
+          width: 166rpx;
+          text-align: center;
+          font-size: 30rpx;
+          line-height: 80rpx;
+          border-bottom:4rpx solid transparent;
+          height:80rpx;
+        }
+        .activeitem{
+          color:#FF7022;
+          border-bottom:4rpx solid #ff7022;
+          height:100%;
+        }
+      }
+      .goodslist{
+        width:750rpx;
+        background-color: #fff;
+        margin-bottom: 20rpx;
+        .goodsitem{
+          width:100%;
+          display: flex;
+          border-bottom:1rpx solid #B2B1B2;
+          padding:24rpx;
+          height:264rpx;
+          border-bottom: 2rpx solid #EFEFEF;
+          position: relative;
+          box-sizing: border-box;
+          &:last-child{
+            border-bottom:2rpx solid #fff;
+          }
+          &:last-child{
+            border-bottom:1px solid #fff;
+          }
+          .goodspic{
+            flex:0 0 220rpx;
+            height:220rpx;
+            border-radius: 8rpx;
+          }
+          .rightbox{
+            flex:1;
+            height:100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-left: 20rpx;
+            overflow: hidden;
+            .itemtop{
+              display: flex;
+              flex-direction: column;
+              .itemtitle{
+                font-size:28rpx;
+                color: #222222;
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+              .itemtitle2{
+                font-size:24rpx;
+                color: #666;
+                width: 80%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-top: 15rpx;
+              }
+              .huodong{
+                display: flex;
+                align-items: center;
+                margin:15rpx 0;
+                .gouppic{
+                  width:32rpx;
+                  height: 32rpx;
+                  border-radius: 100%;
+                  border:2rpx solid #fff;
+                  &:nth-child(2){
+                    margin-left:-10rpx;
+                  };
+                  &:nth-child(3){
+                    margin-left:-10rpx;
+                  }
+                }
+                .activedowm{
+                  background-color: #888888;
+                  border:none;
+                  color: #fff;
+                  padding:0 10rpx;
+                }
+                .huodongtxt2{
+                  font-size: 24rpx;
+                  color:#ff4422;
+                  margin-left: 15rpx;
+                }
+              }
+              .shengyu{
+                font-size: 24rpx;
+                color: #888;
+              }
+            }
+            .priceaandtake{
+              width:100%;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              .price{
+                display: flex;
+                align-items: baseline;
+                .pricenow{
+                  font-size: 46rpx;
+                  color:#ff5031;
+                  font-weight: 550;
+                  line-height:40rpx;
+                  margin-right: 10rpx;
+                  text{
+                    margin-right: 10rpx;
+                    font-size: 26rpx;
+                  }
+                }
+                .priceori{
+                  font-size: 22rpx;
+                  color:#848689;
+                  text-decoration:line-through;
+                  line-height:40rpx;
+                  text{
+                    margin-right: 10rpx;
+                    text-decoration:line-through;
+                  }
+                }
+              }
+              .takepartin{
+                height: 66rpx;
+                width:180rpx;
+                color:#fff;
+                border-radius: 5rpx;
+                font-size: 28rpx;
+                background:linear-gradient(to left,#FF4722,#FF7422);
+                text-align: center;
+                line-height: 66rpx;
+              }
+              .takepartin_activedowm{
+                line-height: 58rpx;
+                background: #fff;
+                color:#FF7422;
+                border:4rpx solid #FF7422;
+              }
+            }
+          }
+          .grouptips{
+            position: absolute;
+            top:24rpx;
+            left: 24rpx;
+            padding:5rpx 10rpx;
+            background:linear-gradient(to left,#FD6346,#FD9346);
+            font-size: 20rpx;
+            color: #fff;
+            border-radius: 7rpx 0;
+          }
+        }
+      }
+      .isLoadedAll{
+        width:100%;
+        height: 70rpx;
+        line-height: 70rpx;
+        font-size: 26rpx;
+        color:#666;
+        text-align: center;
+        background-color: #F2F2F0;
+        word-spacing: 10rpx;
+      }
+    }
+  }
+</style>

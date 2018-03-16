@@ -1,0 +1,54 @@
+<template>
+  <!--地址-->
+  <view class="container pay-result-container">
+    <view class="pay-result">
+      <block>
+        <image src="./img/pay@success.png"></image>
+        <view>支付成功</view>
+        <button type="primary" @tap="success">返回上一页</button>
+      </block>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '支付结果'
+    }
+    methods = {
+      success(){
+        wx.navigateBack({
+          delta: 2
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  .container {
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    background-color: #fff;
+  }
+
+  .pay-result{
+    padding: 60rpx 0;
+    text-align: center;
+  }
+  .pay-result image{
+    width: 200rpx;
+    height: 200rpx;
+  }
+  .pay-result view{
+    font-size: 40rpx;
+    color: #000;
+    margin-top: 20rpx;
+  }
+  .pay-result button{
+    margin: 100rpx 20rpx;
+  }
+</style>

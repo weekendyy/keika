@@ -1,0 +1,65 @@
+<template>
+  <view class="article-container">
+    <view class="article-header">
+      <text>Q:</text><text>{{DetailData.title}}</text>
+    </view>
+    <view class="article-content">
+      <text>A:{{DetailData.content}}</text>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import MyModel from './index-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '会员权益详情',
+    }
+    data = {
+      DetailData: null,
+    }
+    onLoad(options){
+      MyModel.getDetail({rule_id: options.id},ResData=>{
+        if(ResData.code == 1){
+          this.DetailData = ResData.data
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>
+<style lang="less">
+.article-header{
+  margin-top: 60rpx;
+  margin-left:45rpx;
+  text{
+    &:first-child{
+      padding-right: 22rpx;
+      font-size: 44rpx;
+      color: #000000;
+      font-weight: bold;
+    }
+    &:last-child{
+      font-size: 28rpx;
+    }
+  }
+}
+  .article-content{
+    margin-left:45rpx;
+    margin-top: 36rpx;
+    display: flex;
+    align-items: flex-start;
+    color: #000000;
+    text{
+      font-size: 30rpx;
+      line-height: 50rpx;
+      margin-right: 20rpx;
+      &:first-letter{
+        padding-right: 22rpx;
+        font-size: 44rpx;
+        font-weight: bold;
+      }
+    }
+  }
+</style>

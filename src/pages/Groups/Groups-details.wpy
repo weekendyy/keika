@@ -1,0 +1,1160 @@
+<template>
+  <import src="../../wxParse/wxParse.wxml"/>
+  <view class="Groups-details {{prohibitScroll == true ? 'container': ''}}" hidden="{{!loadingHidden}}">
+    <swiper autoplay="true" interval="3000" indicator-dots="true" indicator-color="#bbd5ef" indicator-active-color="#ff4422" class="swiper-wrapper">
+      <swiper-item class="swiper-item"  wx:for="{{DetailData.banner}}" wx:for-item="item" wx:key="index">
+        <image class="swiper-image" src="{{item}}"></image>
+      </swiper-item>
+    </swiper>
+    <view class="details-header">
+      <text class="new-Price">¥{{DetailData.group_price}}</text>
+      <view class="Price-warpper">
+        <text class="old-Price">¥{{DetailData.original_price}}</text>
+        <text class="Groups-num">拼团人数·{{DetailData.group_person}}人团</text>
+      </view>
+      <view class="time-wrapper">
+        <text class="time" wx:if="{{ clock =='已经截止'}}">活动已经截止</text>
+        <text class="time" wx:if="{{ clock!='已经截止'}}">距结束 {{clock}}</text>
+      </view>
+    </view>
+    <view class="details-introduce">
+      <view class="title-wrapper">
+        <text class="title">{{DetailData.goods_name}}</text>
+        <view class="share"  @tap="Share">
+          <image src="./images/icon-share.png"></image>
+          <text>分享</text>
+        </view>
+      </view>
+      <view class="detail">
+        <text>{{DetailData.describe}}</text>
+      </view>
+    </view>
+    <view class="join-wrapper">
+      <view class="rule-header">
+        <text class="rule-text">支付开团邀请{{DetailData.group_person}}人参团,人数不足自动退款</text>
+        <text class="rule-link">详细规则></text>
+      </view>
+      <view class="group-wrapper">
+        <view class="group-header" @tap="ShowOpen">
+          <text class="title">已开团成功{{item.sale_count}}单,快拉小伙伴去开团吧</text>
+          <text class="link">已开团成功的></text>
+        </view>
+        <view class="group-list">
+          <view class="group-item" wx:if="{{GroupMonadData.length != 0}}" wx:for="{{GroupMonadData}}" wx:for-item="item" wx:key="index" @tap="addGroups({{index}})">
+            <image class="pic" src="{{item.portrait_img}}"></image>
+            <text class="name">{{item.wechat_name}}</text>
+            <view class="group-time">
+              <text class="group-people">还差{{item.diff_person}}人成团</text>
+              <text class="time">{{item.monad_time}}结束</text>
+            </view>
+            <text class="state">拼团中</text>
+          </view>
+          <view class="group-item" wx:if="{{GroupMonadData.length == 0}}" @tap="buyGoods('2')">
+            <text class="noGroupMonadData">暂时还没有人开团哦~</text>
+            <text class="state">去开团</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="goods-details">
+      <view class="goods-details-header">
+        <repeat for="{{detailsTitleData}}" wx:for-item="item" key="index">
+          <view class="goods-details-title {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
+        </repeat>
+      </view>
+      <view class="details-main">
+        <view class="main-details" hidden="{{ currentTabsIndex != 0 }}">
+          <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+        </view>
+        <view class="main-details" hidden="{{ currentTabsIndex != 1 }}">
+          <repeat wx:if="{{EvaluateData.length != 0}}" for="{{EvaluateData}}" wx:for-item="item" key="index">
+            <view class="Evaluate-item">
+              <view class="Evaluate-head">
+                <image class="Avatar" src="{{item.portrait_img}}"></image>
+                <text class="name">{{item.wechat_name}}</text>
+                <text class="date">{{item.create_time}}</text>
+              </view>
+              <view class="content">
+                <text>{{item.content}}</text>
+              </view>
+              <view class="pic-list" wx:if="{{item.image.length > 0}}">
+                <repeat for="{{item.image}}" wx:for-item="item" key="index">
+                  <image src="{{item}}"></image>
+                </repeat>
+              </view>
+              <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent" data-index="{{index}}">
+                <image src="./images/Fabulous@selecd.png" wx:if="{{item.like}}"></image>
+                <image src="./images/Fabulous.png" wx:else></image>
+                <text class="Fabulous">{{item.like_count}}</text>
+              </view>
+            </view>
+          </repeat>
+          <view class="no-EvaluateData" wx:if="{{EvaluateData.length == 0}}">
+            <image class="no-EvaluateData-pic" src="./images/Evaluate.png"></image>
+            <text class="no-EvaluateData-text">暂时还没有评论哦~</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="like-wrapper">
+      <view class="like-header">
+        <image src="./images/like-left.png"></image>
+        <text>猜你喜欢</text>
+        <image src="./images/like-right.png"></image>
+      </view>
+      <view class="like-list">
+        <repeat for="{{likeData}}" wx:for-item="item" key="index">
+          <navigator class="like-item" url="/pages/Groups/Groups-details?id={{item.id}}">
+            <image src="{{item.main_img}}"></image>
+            <view class="content">
+              <text class="title">{{item.goods_name}}</text>
+              <view class="price-box">
+                <text class="new-Price">￥{{item.group_price}}</text>
+                <text class="old-Price">￥{{item.original_price}}</text>
+                <text class="num">已团{{item.sale_count}}件</text>
+                <text class="open-group">去开团</text>
+              </view>
+            </view>
+          </navigator>
+        </repeat>
+      </view>
+    </view>
+    <view class="more-group-wrapper" animation="{{animationData}}" @tap="hiddenOpen()">
+      <view class="more-group">
+        <view class="more-group-header">
+          <text>开团成功</text>
+          <image src="./images/close.png" class="close" @tap="hiddenOpen()"></image>
+        </view>
+        <scroll-view scroll-y>
+          <repeat for="{{GroupMonadDataSuccess}}" wx:for-item="item" key="index">
+            <view class="item">
+              <image class="pic" src="{{item.portrait_img}}"></image>
+              <text class="name">{{item.wechat_name}}</text>
+              <text class="date">{{item.monad_time}}</text>
+              <text class="state">已结束</text>
+            </view>
+          </repeat>
+        </scroll-view>
+        <view class="more-group-footer">
+          <text>仅显示10个已经开团成功结束的</text>
+        </view>
+      </view>
+    </view>
+    <view class="details-footer">
+      <navigator open-type="switchTab" url="/pages/Index/index" class="index">
+        <image class="index-icon" src="./images/icon-index.png"></image>
+        <text class="index-text">首页</text>
+      </navigator>
+      <view class="purchase {{payState == true ? '' : 'disabled'}}" @tap="buyGoods('1')">
+        <text class="purchase-Price">{{DetailData.discount_price}}</text>
+        <text class="purchase-text">单独购买</text>
+      </view>
+      <view class="buy-wrapper {{payState == true ? '' : 'disabled'}}" @tap="buyGoods('2')">
+        <text class="buy-Price">{{DetailData.group_price}}</text>
+        <text class="buy-text">{{DetailData.group_person}}人拼团</text>
+      </view>
+    </view>
+    <action-sheet hidden="{{actionSheetHidden}}" bindchange="actionSheetChange">
+      <block wx:for-items="{{actionSheetItems}}" wx:key="index">
+        <action-sheet-item class="item">
+          <button wx:if="{{index == 0}}" class="resetBtn" open-type="share" hover-stop-propagation="true" hover-class="none">{{item}}</button>
+          <button wx:if="{{index == 1}}" class="resetBtn" hover-class="none" hover-stop-propagation="true" bindgetuserinfo="getUserInfo" open-type="getUserInfo">{{item}}</button>
+        </action-sheet-item>
+      </block>
+      <action-sheet-cancel class="cancel">取消</action-sheet-cancel>
+    </action-sheet>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  let timer = null
+  function countdown(that) {
+    let total_micro_second = that.end_time;
+    that.clock = dateformat(total_micro_second)
+    if (total_micro_second <= 0) {
+      that.clock = "已经截止"
+      that.$apply()
+      return false
+    }
+    timer = setInterval(function() {
+      total_micro_second -= 1000;
+      that.end_time -= 1000
+      clearInterval(timer)
+      countdown(that)
+    }, 1000)
+    that.$apply()
+  }
+  // 时间格式化输出，如11:03 25:19 每1s都会调用一次
+  function dateformat(micro_second) {
+    // 总秒数
+    let second = Math.floor(micro_second / 1000);
+    // 天数
+    let day = Math.floor(second/3600/24);
+    // 小时
+    let hr = Math.floor(second/3600%24);
+    // 分钟
+    let min = Math.floor(second /60%60);
+    // 秒
+    let sec = Math.floor(second%60);
+    if(day== 0){
+      return hr + "小时" + min + "分钟" + sec+"秒";
+    } else {
+      return day + "天" + hr + "小时" + min + "分钟" + sec+"秒";
+    }
+  }
+  import Groups from './Api/Groups.Api'
+  import MyModel from '@/pages/My/index-model'
+  import wxParse from '../../wxParse/wxParse'
+  import wepy from 'wepy'
+  let animationShowHeight = 0;
+  export default class index extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#000000',
+      navigationBarTitleText: '活动详情',
+      navigationBarTextStyle: '#fff'
+    }
+    data = {
+      currentTabsIndex: 0,
+      DetailsData: '',
+      goodsId: '',
+      DetailData: null,
+      likeData: null,
+      EvaluateData: null,
+      GroupMonadData: null,
+      GroupMonadDataSuccess: [],
+      actionSheetHidden: true,
+      actionSheetItems: ['发送给朋友', '生成卡片保存分享'],
+      detailsTitleData : ['商品详情','客户评价'],
+      prohibitScroll: false,
+      animationData: '',
+      payState: true,
+      loadingHidden: false,
+      clock: '',
+      end_time: '',
+      userInfo: null,
+      GeographyData: null,
+    }
+    methods = {
+      onTabsItemTap(i){
+        let index = i
+        if(index === 1 && !this.EvaluateData){
+          Groups.getEvaluateData(this.goodsId, ResData=>{
+            if(ResData.code === 1) {
+              this.EvaluateData = ResData.data
+              this.$apply()
+            }
+          })
+        }
+        this.currentTabsIndex = index
+        this.$apply()
+      },
+      /* 点赞 */
+      FabulousEvent($event){
+        let i= Groups.getDataSet($event,'index')
+        let indexlike = this.EvaluateData[i].like
+        let indexId = this.EvaluateData[i].id
+        Groups.PostEvaluateLike(indexId, ResData=> {
+          if(ResData.code == 1){
+            wx.showToast({
+              title: '点赞成功',
+              icon: 'success',
+              duration: 1500
+            })
+            this.EvaluateData[i].like = 1
+            ++this.EvaluateData[i].like_count
+            this.$apply()
+          }
+        })
+      },
+      Share(){
+        this.actionSheetHidden =  !this.actionSheetHidden
+      },
+      /* 取消上拉反馈 */
+      actionSheetChange(){
+        this.actionSheetHidden =  !this.actionSheetHidden
+      },
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let param = {
+          promotionID: this.goodsId,
+        }
+        if(res.detail.userInfo){
+          let userInfo = res.detail.userInfo
+          Object.assign(param,{wechat_name: userInfo.nickName,wechat_portrait: userInfo.avatarUrl})
+        }else {
+          Object.assign(param,{wechat_name: '我的',wechat_portrait: Groups.defaultImg})
+        }
+        this.actionSheetHidden =  !this.actionSheetHidden
+        Groups.createPoster(param, ResData=>{
+          if(ResData.code === 1) {
+            wx.hideLoading()
+            wx.previewImage({
+              urls: [ResData.data]
+            })
+          }
+        })
+      },
+      ShowOpen(){
+        if(this.GroupMonadDataSuccess.length == 0){
+          let param = {
+            group_goods_id: this.goodsId,
+            time_status: '1',
+          }
+          Groups.getGroupMonad(param, ResData=>{
+            if(ResData.code === 1){
+              this.GroupMonadDataSuccess = ResData.data
+              this.$apply()
+            }
+          })
+        }
+        if( this.GroupMonadDataSuccess.length == 0){
+          wx.showToast({
+            title: '暂时没有哦!',
+            icon: 'success',
+            duration: 1200
+          })
+          return false
+        }
+        // 显示遮罩层
+        let animation = wx.createAnimation({
+          duration: 200,
+          timingFunction: "linear",
+          delay: 180
+        })
+        this.animation = animation
+        animation.translateY(0).step()
+        this.animationData = animation.export()
+        this.prohibitScroll = true
+      },
+      hiddenOpen(){
+        let animation = wx.createAnimation({
+          duration: 200,
+          timingFunction: "linear",
+          delay: 180
+        })
+        this.animation = animation
+        animation.translateY(animationShowHeight).step()
+        this.animationData = animation.export()
+        this.prohibitScroll = false
+      },
+      buyGoods(index){
+        this.payState = false
+        let type = index
+        let _param = {
+          group_goods_id: this.goodsId,
+          pay_type: type,
+        }
+        Groups.createGroupsPlace(_param, ResData=>{
+            if(ResData.code === 1){
+              this.$navigate('/pages/Groups/Groups-Confirm-order',{orderId: ResData
+                .order_id, pay_type: type,});
+              this.payState = true
+              return false
+            }
+            if(ResData.code != 1){
+              let message = ResData.message
+              wx.showToast({
+                title: message,
+                icon: 'success',
+                duration: 1200
+              })
+              return false
+            }
+        })
+      },
+      addGroups(type){
+        let index = type
+        let group_monad_id = this.GroupMonadData[index].monad_id
+        let queryData = {
+          group_goods_id: this.goodsId,
+          pay_type: 2,
+          group_monad_id: group_monad_id
+        }
+        Groups.createGroupsPlace(queryData, ResData=>{
+          if(ResData.code === 1){
+            this.$navigate('/pages/Groups/Groups-Confirm-order',{orderId: ResData
+              .order_id, pay_type: 2,});
+            this.payState = true
+            return false
+          }
+          if(ResData.code !== 1){
+            let Message = ResData.message
+            wx.showToast({
+              title: Message,
+              icon: 'success',
+              duration: 1200
+            })
+          }
+        })
+      },
+      onShareAppMessage(){
+        let desc = this.DetailData.goods_name
+        let shareObj = {
+          title: desc,
+          path: '/pages/Groups/Groups-details?id='+ this.goodsId
+        }
+        return shareObj
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this)
+    }
+    onLoad(options){
+      let that = this;
+      this.goodsId = options.id
+      let param = {
+        goodId: this.goodsId
+      }
+      Groups.getGroupsGoodsDetail(param,ResData=>{
+        if(ResData.code === 1){
+          this.DetailData = ResData.data
+          const article = this.DetailData.detail;
+          this.end_time = this.DetailData.reside_time * 1000;
+          countdown(this)
+          wxParse.wxParse('article', 'html', article, this, 0);
+          this.$apply()
+        }
+      })
+      Groups.getGroupMonad({
+        group_goods_id: this.goodsId,
+        time_status: '3',
+      }, ResData=>{
+        if(ResData.code === 1){
+          this.GroupMonadData = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        })
+      }
+    }
+    onReady(){
+      /**
+       * 获取可视区的高度
+       */
+      wx.getSystemInfo({
+        success: (res)=>{
+          animationShowHeight = res.windowHeight
+        }
+      })
+      Groups.getGroupsGoodsLike(ResData=>{
+        if(ResData.code === 1){
+          this.likeData = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onUnload(){
+      clearInterval(timer)
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color:#f3f5f5;
+    height: 100%;
+  }
+  @import "../../wxParse/wxParse.wxss";
+  action-sheet-item{
+    padding: 0;
+    ~ action-sheet-item{
+      border-top: 2rpx solid #e8e8e8;
+    }
+  }
+  .resetBtn{
+    background-color: #fff;
+    padding-top: 10rpx;
+    padding-bottom: 10rpx;
+    line-height: 80rpx;
+    &:after{
+      border: none;
+    }
+  }
+  button{
+    border-radius: 0;
+    padding-left: 0;
+    padding-right:0;
+    border: 0;
+    &::after{
+      border: 0;
+    }
+  }
+  .Groups-details{
+    &.container{
+      height: 100%;
+      overflow-y: hidden;
+    }
+  }
+  .swiper-wrapper{
+    width: 100%;
+    height: 522rpx;
+    image{
+      width: 100%;
+      height: 100%
+    }
+  }
+  .details-header{
+    width: 100%;
+    height: 84rpx;
+    display: flex;
+    align-items: center;
+    background-image: linear-gradient(90deg, #ff7622 0%, #ff4422 100%);
+    .new-Price{
+      margin-left: 30rpx;
+      font-size: 38rpx;
+      color: #fff;
+      &::first-letter{
+        font-size: 30rpx;
+        margin-right:6rpx;
+      }
+    }
+    .Price-warpper{
+      margin-left: 22rpx;
+      display: flex;
+      flex-direction: column;
+      .old-Price{
+        text-decoration: line-through;
+        font-size: 22rpx;
+        color: #fff;
+        line-height: 1;
+      }
+      .Groups-num{
+        margin-top: 6rpx;
+        line-height: 32rpx;
+        padding-left:8rpx;
+        padding-right:8rpx;
+        background-color: #b24618;
+        font-size:20rpx;
+        color: #ffffff;
+        letter-spacing: 2rpx;
+      }
+    }
+    .time-wrapper{
+      margin-left: auto;
+      margin-right: 23rpx;
+      border-radius: 50rpx;
+      background-image: linear-gradient(90deg, #ffe72f 0%, #ffd200 100%);
+      font-size: 0;
+      .time{
+        font-size: 20rpx;
+        line-height: 40rpx;
+        color: #333333;
+        padding-left: 12rpx;
+        padding-right: 12rpx;
+      }
+    }
+  }
+  .details-introduce{
+    padding: 32rpx;
+    background-color: #fff;
+    .title-wrapper{
+      display: flex;
+      align-items: center;
+      .title{
+        flex:1;
+        font-size: 32rpx;
+        line-height:1;
+        color: #333333;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-indent:10px;
+      }
+      .share{
+        margin-left: 50rpx;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        image{
+          width: 30rpx;
+          height: 30rpx;
+        }
+        text{
+          margin-top: 4rpx;
+          font-size: 20rpx;
+          color: #999999;
+        }
+      }
+    }
+    .detail{
+      width:100%;
+      background-color:#f6f6f6;
+      padding:5px 20rpx;
+      border-radius:5rpx;
+      box-sizing:border-box;
+      margin-top:20rpx;
+      text{
+        line-height: 40rpx;
+        font-size: 24rpx;
+        color: #363636;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+    }
+  }
+  .join-wrapper{
+    margin-top: 16rpx;
+    background-color: #fff;
+    .rule-header{
+      width: 718rpx;
+      height: 97rpx;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      border-bottom: 1px solid #efefef;
+      display: none;
+      .rule-text{
+        font-size: 24rpx;
+        color: #686868;
+      }
+      .rule-link{
+        margin-left:auto;
+        margin-right: 32rpx;
+        font-size: 24rpx;
+        color: #363636;
+      }
+    }
+    .group-wrapper{
+      width: 684rpx;
+      margin: 0 auto;
+      overflow: hidden;
+      .group-header{
+        width: 100%;
+        display: flex;
+        padding-top: 30rpx;
+        padding-bottom: 22rpx;
+        .title{
+          font-size: 24rpx;
+          color: #686868;
+        }
+        .link{
+          margin-left: auto;
+          font-size: 24rpx;
+          color: #ff4422;
+        }
+      }
+      .group-list{
+        overflow:auto;
+        .group-item{
+          width: 684rpx;
+          height: 100rpx;
+          background-color: #f6f6f6;
+          margin-bottom: 30rpx;
+          display: flex;
+          align-items: center;
+          border-radius: 50rpx;
+          .pic{
+            flex: 0 0 70rpx;
+            height: 70rpx;
+            margin-left: 20rpx;
+            border-radius: 50%;
+          }
+          .name{
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            margin-left:15rpx;
+            font-size: 28rpx;
+            color: #2a2a2a;
+            flex: 0 0 4em;
+          }
+          .group-time{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            padding: 0 20rpx;
+            .group-people{
+              font-size:22rpx;
+              color: #ff4a22;
+            }
+            .time{
+              margin-top:6rpx;
+              font-size: 24rpx;
+              color: #999999;
+              text-align: center;
+            }
+          }
+          .state{
+            margin-right: 16rpx;
+            line-height: 68rpx;
+            color: #ffffff;
+            font-size: 24rpx;
+            text-align: center;
+            background-image: linear-gradient(90deg, #ff7422 0%, #ff4722 100%);
+            border-radius: 50rpx;
+            flex: 0 0 168rpx;
+          }
+          .noGroupMonadData{
+            margin-left: 28rpx;
+            margin-right: auto;
+            font-size: 28rpx;
+            color: #888888;
+          }
+        }
+      }
+    }
+  }
+  .goods-details{
+    margin-top: 16rpx;
+    background-color: #fff;
+    .goods-details-header{
+      display: flex;
+      border-top:1rpx solid #e3e2e2;
+      border-bottom:1rpx solid #e3e2e2;
+      .goods-details-title{
+        width:50%;
+        height: 83rpx;
+        line-height:84rpx;
+        font-size:28rpx;
+        text-align: center;
+        color: #000000;
+        &.active{
+          color:#ed4f4f;
+          margin-bottom:-1rpx;
+          border-bottom:1rpx solid #ed4f4f;
+        }
+      }
+    }
+    .main-details {
+      &:last-child{
+        background-color: #f5f5f7;
+      }
+      .wxParse-p image{
+        width: 100%;
+      }
+    }
+    .Evaluate-item{
+      padding-top:20rpx;
+      padding-bottom: 18rpx;
+      background-color: #fff;
+      border-bottom: 1px solid #e2e2e2;
+      ~ .Evaluate-item{
+        margin-top: 10rpx;
+      }
+      .Evaluate-head{
+        margin-left:12rpx;
+        display: flex;
+        align-items: center;
+        .Avatar{
+          width:  72rpx;
+          height: 72rpx;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+        .name{
+          margin-left: 10rpx;
+          font-size: 26rpx;
+          color: #222226;
+        }
+        .date{
+          margin-left: auto;
+          margin-right: 25rpx;
+          font-size: 24rpx;
+          color: #dddddd;
+        }
+      }
+      .content{
+        margin-left: 97rpx;
+        margin-right: 30rpx;
+        text {
+          line-height: 40rpx;
+          font-size: 26rpx;
+          color: #5d5d5f;
+        }
+      }
+      .pic-list{
+        margin-left: 97rpx;
+        margin-right: 30rpx;
+        image{
+          width: 136rpx;
+          height: 136rpx;
+          margin-right: 12rpx;
+        }
+      }
+      .Fabulous-warpper{
+        margin-left: auto;
+        margin-right: 30rpx;
+        margin-top: 30rpx;
+        width: 108rpx;
+        height: 34rpx;
+        display: flex;
+        align-items: center;
+        border: 1rpx solid #ccc;
+        border-radius: 50rpx;
+        font-size: 0;
+        color: #b5b4b4;
+        &.active{
+          color: #ff4344;
+          border: 1rpx solid #ff4344;
+          pointer-events: none;
+        }
+        image{
+          width: 22rpx;
+          height: 20rpx;
+          padding-left: 22rpx;
+          padding-right:20rpx;
+        }
+        .Fabulous{
+          margin-right: 34rpx;
+          font-size: 18rpx;
+        }
+      }
+    }
+    .no-EvaluateData{
+      width: 100%;
+      height: 490rpx;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 90rpx;
+        height: 90rpx;
+      }
+      text{
+        font-size: 34rpx;
+        color: #888888;
+      }
+    }
+  }
+  .like-wrapper{
+    width: 100%;
+    margin-bottom: 98rpx;
+    .like-header{
+      width: 100%;
+      height: 112rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 72rpx;
+        height: 8rpx;
+      }
+      text{
+        font-size: 28rpx;
+        color: #666666;
+        margin-left: 16rpx;
+        margin-right: 16rpx;
+      }
+    }
+    .like-list{
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      padding-bottom: 90rpx;
+      .like-item{
+        width: 348rpx;
+        height: 500rpx;
+        margin-left: 20rpx;
+        margin-bottom: 18rpx;
+        background-color: #fff;
+        &:last-child{
+          margin-bottom: 38rpx;
+        }
+        image{
+          width: 348rpx;
+          height: 344rpx;
+        }
+        .content{
+          padding-left: 16rpx;
+          padding-right: 16rpx;
+          display: flex;
+          flex-direction: column;
+          font-size:0;
+          .title{
+            width: 100%;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            margin-top: 20rpx;
+            font-size: 28rpx;
+            color: #333333;
+            line-height: 36rpx;
+            min-height: 72rpx;
+          }
+          .price-box{
+            position: relative;
+            .new-Price{
+              font-size: 28rpx;
+              color: #ff4422;
+            }
+            .old-Price{
+              margin-left: 16rpx;
+              font-size: 18rpx;
+              color: #999999;
+            }
+            .num{
+              display: block;
+              font-size:22rpx;
+              color: #666666;
+            }
+            .open-group{
+              position: absolute;
+              right: 0;
+              top: 0;
+              font-size: 24rpx;
+              line-height: 58rpx;
+              width: 98rpx;
+              text-align: center;
+              color: #fff;
+              border-radius: 4rpx;
+              background-image: linear-gradient(90deg, #ff7322 1%,#ff4922 100%);
+            }
+          }
+        }
+      }
+    }
+  }
+  .more-group-wrapper{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.52);
+    bottom: 0;
+    transform:translateY(100%);
+    .more-group{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 652rpx;
+      border-radius: 20rpx;
+      background-color: #fff;
+      -webkit-transform: translateX(-50%) translateY(-50%);
+      .more-group-header{
+        border-bottom: 2rpx solid #f3f3f3;
+        text-align: center;
+        position: relative;
+        text{
+          font-size: 30rpx;
+          line-height: 102rpx;
+          color: #131315;
+        }
+        .close{
+          width: 60rpx;
+          height: 60rpx;
+          position: absolute;
+          right: -30rpx;
+          top: -30rpx;
+        }
+      }
+      scroll-view{
+        max-height: 650rpx;
+        overflow: auto;
+        .item{
+          width: 612rpx;
+          height: 118rpx;
+          margin-left: auto;
+          margin-right:auto;
+          display: flex;
+          align-items: center;
+          .pic{
+            width: 90rpx;
+            height: 90rpx;
+            border-radius: 50%;
+          }
+          .name{
+            max-width: 6em;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            font-size: 28rpx;
+            color: #2a2a2a;
+            margin-left: 16rpx;
+          }
+          .date{
+            font-size: 22rpx;
+            color: #999999;
+            margin-left:auto;
+            margin-right: 16rpx;
+          }
+          .state{
+            width: 168rpx;
+            line-height:66rpx;
+            text-align: center;
+            color: #fff;
+            font-size: 24rpx;
+            border-radius: 50rpx;
+            background-color: #d2d2d2;
+          }
+        }
+      }
+      .more-group-footer{
+        border-top: 2rpx solid #f3f3f3;
+        text-align: center;
+        text{
+          font-size:24rpx;
+          line-height: 72rpx;
+          color: #57595b;
+        }
+      }
+    }
+  }
+  .details-footer{
+    width: 100%;
+    height: 98rpx;
+    position: fixed;
+    bottom:0;
+    left:0;
+    display: flex;
+    background-color: #fff;
+    .index{
+      display: flex;
+      width: 116rpx;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      text{
+        margin-top: 6rpx;
+        font-size: 22rpx;
+        color: #6f6f6f;
+      }
+      image{
+        width: 28rpx;
+        height: 30rpx;
+      }
+    }
+    .Customer{
+      display: flex;
+      width: 116rpx;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 1px solid #e5e5e5;
+      border-right: 2px solid #e5e5e5;
+      background-color: #fff;
+      image{
+        width: 36rpx;
+        height: 30rpx;
+      }
+      text{
+        margin-top: 6rpx;
+        font-size: 22rpx;
+        color: #1aad19;
+        line-height:1;
+      }
+    }
+    .purchase{
+      width: 100%;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      background-color: #ffe7e3;
+      color: #ff4422;
+      &.disabled{
+        color: #fff;
+        background-image: linear-gradient(to right, #cbcbcb,#9a9a9a);
+        pointer-events: none;
+      }
+      text{
+        font-size: 24rpx;
+        &:first-child{
+          font-size: 32rpx;
+        }
+      }
+    }
+    .buy-wrapper{
+      width: 100%;
+      flex:1;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      background-color: #ff4422;
+      color: #fff;
+      &.disabled{
+        background-image: linear-gradient(to right, #cbcbcb,#9a9a9a);
+        pointer-events: none;
+      }
+      text{
+        &:first-child{
+          font-size: 32rpx;
+        }
+        font-size:24rpx;
+      }
+    }
+  }
+</style>

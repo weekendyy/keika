@@ -1,0 +1,123 @@
+<style lang="less">
+  page{
+    height: 100%;
+  }
+  text{
+    line-height:1;
+    font-family: 'PingFang SC';
+  }
+  image{
+    vertical-align: top;
+  }
+  @font-face {
+    font-family: 'hanyi';
+    src: url('https://api.czsjcrm.cn/font_style/HYx4gf.eot');
+    src: url('https://api.czsjcrm.cn/font_style/HYx4gf.eot?#iefix') format('embedded-opentype'),
+    url('https://api.czsjcrm.cn/font_style/HYx4gf.woff2') format('woff2'),
+    url('https://api.czsjcrm.cn/font_style/HYx4gf.woff') format('woff'),
+    url('https://api.czsjcrm.cn/font_style/HYx4gf.ttf') format('truetype'),
+    url('https://api.czsjcrm.cn/font_style/HYx4gf.svg#HYx4gf') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+</style>
+
+<script>
+import wepy from 'wepy'
+import TokenModel from './utils/token'
+export default class extends wepy.app {
+  config = {
+    pages: [
+      'pages/Index/index', // 黑卡首页
+      'pages/Goods/index',  // 抢购列表页面
+      'pages/Groups/index', // 拼团列表页面
+      'pages/Card/index',   // 集字 活动详情页面
+      'pages/Bargain/index',      // 砍价列表首页
+      'pages/Bargain/details',      // 砍价新详情页
+
+      'pages/Index/open', //  打开网页
+      'pages/Activity/index',  // 活动推荐列表页面
+      'pages/Card/details',   // 集字 活动详情页面
+      'pages/Groups/Groups-details', // 拼团详情页面
+      'pages/Card/order-details', //  集字订单详情
+      'pages/Bargain/Bargain-order-details',  // 砍价订单详情页
+      'pages/Bargain/Confirm-order', // 砍价立即购买页面
+      'pages/Bargain/Bargain-coupon', // 砍价核销页面
+      'pages/Card/coupon',  //  集字  订单核销页面
+      'pages/Vip/Index', // 开通黑卡VIP 首页
+      'pages/Shop/shopIndex', // 推荐店铺
+      'pages/Shop/welfareDetails', // 福利活动详情
+      'pages/Shop/shopDetails', // 店铺详情页面
+      'pages/Shop/map',  // 店铺地图页面
+      'pages/Goods/Confirm-order', // 秒杀订单支付页面(立即购买)
+      'pages/Goods/details',  // 秒杀活动商品详情页
+      'pages/Goods/pay-result', // 秒杀支付成功结果页面
+      'pages/My/index', // 个人中心首页
+      'pages/My/articleDetails', // 黑卡个人中心 下面的 文章 详情页面
+      'pages/My/coupon', // 个人中心 核销页面
+      'pages/My/welfare',  // 个人中心 订单列表页面
+      'pages/My/order/order-details', // 秒杀订单 详情页面
+      'pages/My/order/order',   // 秒杀 拼团 订单列表页面
+      'pages/My/order/evaluate-details', // 秒杀评价页面
+      'pages/My/order/coupon', // 秒杀核销页面
+      'pages/Groups/Groups-Confirm-order', //  拼团支付页面(立即购买)
+      'pages/Groups/pay-one', // 拼团支付结果页面
+      'pages/Groups/pay-result',  // 拼团支付成功以后的分享页面
+      'pages/Groups/Groups-evaluate-details', // 拼团评价页面
+      'pages/Groups/Groups-order-details', // 拼团订单详情页面
+      'pages/Groups/Groups-coupon', // 拼团 核销页面
+    ],
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#fff',
+      navigationBarTextStyle: 'black'
+    },
+    'tabBar': {
+      'borderStyle': 'black',
+      'list': [
+        {
+          'pagePath': 'pages/Index/index',
+          'iconPath': 'images/toolbar/index.png',
+          'selectedIconPath': 'images/toolbar/index@selected.png',
+          'text': '首页'
+        },
+        {
+          'pagePath': 'pages/Activity/index',
+          'iconPath': 'images/toolbar/liwu.png',
+          'selectedIconPath': 'images/toolbar/liwu@selected.png',
+          'text': '活动推荐'
+        },
+        {
+          'pagePath': 'pages/Shop/shopIndex',
+          'iconPath': 'images/toolbar/haodian.png',
+          'selectedIconPath': 'images/toolbar/haodian@selected.png',
+          'text': '好店推荐'
+        },
+        {
+          'pagePath': 'pages/My/index',
+          'iconPath': 'images/toolbar/my.png',
+          'selectedIconPath': 'images/toolbar/my@selected.png',
+          'text': '会员中心'
+        }
+      ],
+      'selectedColor': '#dcc28e',
+      'backgroundColor': '#ffffff'
+    }
+  }
+  globalData = {
+    userInfo: null,
+    name: null,
+    isGetInfo: null,
+    viptitle: null,
+  }
+  onLaunch () {
+    /*
+    *   先判断 token有没有存在 然后在去判断 token有没有过期
+    * */
+    TokenModel.verify()
+  }
+  constructor () {
+    super()
+  }
+}
+</script>

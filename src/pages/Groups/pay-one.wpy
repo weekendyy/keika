@@ -1,0 +1,462 @@
+<template>
+  <view class="pay" hidden="{{!loadingHidden}}">
+    <view class="pay-success">
+      <view class="goods-wrapper">
+        <view class="goods-pic">
+          <image class="pic" src="{{groupData.main_img}}"></image>
+        </view>
+        <view class="goods-info">
+          <view class="goods-title">
+           {{groupData.goods_name}}
+          </view>
+          <view class="goods-price">
+            <text class="new-price">¥{{groupData.group_price}}</text>
+            <text class="old-price">¥{{groupData.original_price}}</text>
+          </view>
+          <view class="Other">
+            <text class="num">{{groupData.group_person}}人团</text>
+            <text class="Discount">拼团立省{{groupData.diff_price}}元</text>
+          </view>
+          <image wx:if="{{groupData.join_status == 1 && groupData.diff_person == 0}}" class="success" src="./images/success.png"></image>
+        </view>
+      </view>
+      <view class="Result-wrapper">
+          <view class="Result-content" wx:if="{{groupData.diff_person != 0 }}">
+            <view class="share-text">还差<text class="num">{{groupData.diff_person}}</text>位新人,快喊小伙伴一起拼团吧</view>
+            <view class="share-time">仅剩 <text class="date">{{groupData.residue_time}}</text>失效</view>
+          </view>
+          <view class="Result-text"  wx:if="{{groupData.diff_person == 0 }}">
+            <text>已有{{groupData.group_person}}人参加,</text>
+            <text class="success">拼团成功</text>
+          </view>
+          <view class="groups">
+            <repeat for="{{monad_data}}" wx:for-item="item" key="index">
+              <image src="{{item.portrait_img}}"></image>
+            </repeat>
+          </view>
+      </view>
+      <view class="Result">
+        <navigator url="/pages/Groups/Groups-order-details?id={{orderID}}&type=2" hover-class="none" wx:if="{{groupData.join_status == 1 && groupData.diff_person == 0}}">查看订单详情</navigator>
+        <view wx:if="{{groupData.join_status == 0 && groupData.diff_person != 0}}" @tap="addGroup()">立即参团</view>
+        <navigator url="/pages/Groups/Groups-details?id{{groupData.goods_id}}" wx:if="{{groupData.join_status == 0 && groupData.diff_person == 0}}">拼团已经结束,查看商品,独立开团去</navigator>
+        <button hover-class="none" open-type="share" class="share" wx:if="{{ groupData.diff_person != 0}}">
+          <image src="./images/icon-wx-share.png"></image>
+          <text>分享给微信好友</text>
+        </button>
+      </view>
+    </view>
+    <view class="rule-wrapper">
+      <text class="rule-title">拼团规则</text>
+      <view class="rule-content">
+        <text>支付开团邀请3人参团，人数不足自动退款</text>
+        <text>详细规则</text>
+        <image src="./images/icon-go.png"></image>
+      </view>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  import Groups from './Api/Groups.Api'
+  import MyModel from '../My/index-model'
+  import wepy from 'wepy'
+  export default class index extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#000000',
+      navigationBarTitleText: '付款成功',
+      navigationBarTextStyle: '#fff',
+    }
+    data = {
+      orderID: null,
+      groupData: null,
+      monad_data: null,
+      loadingHidden: false,
+      userInfo: null,
+      GeographyData: null,
+    }
+    methods = {
+      onShareAppMessage(options){
+        let desc = "【仅剩"+ this.groupData.diff_person +"人】快来"+this.groupData.group_price+"元拼" +this.groupData.goods_name;
+        let shareObj = {
+          title: desc,
+          path: '/pages/Groups/pay-one?orderID='+ this.orderID
+        }
+        return shareObj
+      },
+      addGroup(){
+        let queryData = {
+          group_monad_id:this.groupData.group_monad_id,
+          pay_type: '2',
+          group_goods_id: this.groupData.goods_id,
+        }
+        Groups.createGroupsPlace(queryData,ResData=>{
+          if(ResData.code == 1){
+            let param = {
+              orderId: ResData.order_id,
+              pay_type: ResData.order_type
+            }
+            this.$navigate('/pages/Groups/Groups-Confirm-order', param)
+          }
+        })
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this)
+    }
+    onLoad(options){
+      this.orderID = options.orderID
+    }
+    onShow(){
+      let param = {
+        orderID: this.orderID
+      }
+      Groups.getGroupSuccessShare(param,ResData=>{
+        if(ResData.code == 1){
+          this.groupData = ResData.data
+          this.monad_data = ResData.monad_data
+          let num = this.groupData.diff_person
+          while(num != 0){
+            this.monad_data.push({'portrait_img': './images/defalit-share-pic.png'})
+            --num
+          }
+          this.$apply()
+        }
+      })
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+.pay-success{
+  width: 100%;
+  background-color: #fff6f4;
+  overflow: hidden;
+  > view{
+    width: 702rpx;
+    margin-left: auto;
+    margin-right: auto
+  }
+  .goods-wrapper{
+    height: 260rpx;
+    margin-top: 24rpx;
+    background-color: #fff;
+    display: flex;
+    .goods-pic{
+      position: relative;
+      overflow: hidden;
+      border-top-left-radius: 10rpx;
+      .pic{
+        width: 260rpx;
+        height: 260rpx;
+      }
+      .attr{
+        position: absolute;
+        top:0;
+        left:0;
+        font-size: 20rpx;
+        line-height: 34rpx;
+        padding-left: 10rpx;
+        padding-right: 10rpx;
+        border-bottom-right-radius: 10rpx;
+        color: #fff;
+        background-image: linear-gradient(270deg, #fd5636 0%, #fd8e36 100%);
+      }
+    }
+    .goods-info{
+      margin-left: 24rpx;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      .goods-title{
+        margin-top: 30rpx;
+        max-width: 13em;
+        line-height: 40rpx;
+        font-size: 30rpx;
+        color: #343434;
+      }
+      .goods-price{
+        margin-top:auto;
+        font-size:0;
+        .new-price{
+          display: inline-block;
+          font-size: 50rpx;
+          color: #ff451e;
+          font-weight: bold;
+          &::first-letter{
+            font-size: 26rpx;
+            margin-right: 10rpx;
+            font-weight:normal;
+          }
+        }
+        .old-price{
+          font-size: 22rpx;
+          color: #888888;
+          margin-left: 8rpx;
+          text-decoration: line-through;
+        }
+      }
+      .Other{
+        margin-top:16rpx;
+        margin-bottom: 24rpx;
+        font-size:0;
+        text{
+          font-size: 24rpx;
+          color: #ff451e;
+          line-height: 44rpx;
+          background-color: #fff0f2;
+          padding-left: 10rpx;
+          padding-right: 10rpx;
+          &:last-child{
+            margin-left: 10rpx;
+          }
+        }
+      }
+      .success{
+        width: 142rpx;
+        height: 142rpx;
+        position: absolute;
+        right: 20rpx;
+        bottom: 20rpx;
+        z-index:10;
+      }
+    }
+  }
+  .Result-wrapper{
+    margin-top: 26rpx;
+    padding-bottom: 40rpx;
+    border-radius: 8rpx;
+    background-color: #ffe8e4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    &:after{
+      position: absolute;
+      left: 49%;
+      top: -14rpx;
+      content: "";
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 16rpx 16rpx 16rpx;
+      border-color: transparent transparent #ffe8e4 transparent;
+    }
+    .Result-content{
+      text-align: center;
+      .share-text{
+        font-size: 32rpx;
+        color: #323234;
+        font-weight: bold;
+        letter-spacing: 2rpx;
+        .num{
+          padding-left: 10rpx;
+          padding-right: 10rpx;
+          font-size: 60rpx;
+          color: #fe4020;
+        }
+      }
+      .share-time{
+        font-size: 24rpx;
+        color: #6e6160;
+        .date{
+          padding-left: 12rpx;
+          padding-right: 12rpx;
+          color: #e44d2b;
+        }
+      }
+    }
+    .Result-text{
+      text{
+        font-size: 32rpx;
+        color: #323434;
+        font-weight: bold;
+        letter-spacing: 2rpx;
+      }
+      .success{
+        margin-left: 10rpx;
+        color: #51b247;
+        letter-spacing: 2rpx;
+      }
+    }
+    .groups{
+      width: 100%;
+      margin-top:30rpx;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      image{
+        width: 80rpx;
+        height: 80rpx;
+        margin: 10rpx;
+        border: 1rpx solid #fe4521;
+        border-radius: 50%;
+        margin-right:22rpx;
+        &:first-child{
+          position: relative;
+          &:after{
+            content: "团长";
+            position: absolute;
+            bottom: 0;
+            left: 15rpx;
+            width: 56rpx;
+            color: #fff;
+            z-index: 99;
+            line-height: 26rpx;
+            text-align: center;
+            background-color: #ff3e28;
+            border-radius: 20rpx;
+            font-size: 18rpx;
+          }
+        }
+      }
+/*      text{
+
+      }*/
+    }
+  }
+  .Result{
+    margin-top: 26rpx;
+    margin-bottom: 24rpx;
+    view,navigator{
+      width: 100%;
+      height:76rpx;
+      line-height: 76rpx;
+      background-color: #ff4320;
+      font-size: 32rpx;
+      color: #fff;
+      text-align: center;
+      border-radius: 10rpx;
+      letter-spacing: 2rpx;
+    }
+    .share{
+      width: 320rpx;
+      line-height: 74rpx;
+      margin-top: 20rpx;
+      border-radius: 50rpx;
+      background-color: #30cf27;
+      text{
+        font-size: 32rpx;
+        color: #fff;
+      }
+      image{
+        width: 32rpx;
+        height: 26rpx;
+        vertical-align: middle;
+        color: #fff;
+        margin-right: 2rpx;
+      }
+    }
+  }
+}
+  .rule-wrapper{
+    width: 100%;
+    padding-left:32rpx;
+    padding-right: 32rpx;
+    box-sizing: border-box;
+    background-color: #fff;
+    margin-top: 16rpx;
+    display: flex;
+    flex-direction: column;
+    display: none;
+    .rule-title{
+      margin-top:30rpx;
+      font-size: 26rpx;
+      margin-bottom: 40rpx;
+    }
+    .rule-content{
+      display: flex;
+      margin-bottom: 26rpx;
+      align-items: center;
+      text{
+        font-size: 24rpx;
+        color: #686868;
+        &:last-of-type{
+          margin-left: auto;
+          margin-right: 24rpx;
+        }
+      }
+      image{
+        margin-left:auto;
+        width: 12rpx;
+        height: 20rpx;
+        vertical-align: middle;
+      }
+    }
+  }
+</style>

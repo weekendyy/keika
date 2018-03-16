@@ -1,0 +1,130 @@
+<template>
+  <view class="writeOff-container">
+    <view class="writeOff-wrapper">
+      <view class="writeOff-top">
+        <image src="./images/demo2.png" class="shop-logo"></image>
+        <text class="shop-name">京都和食堂</text>
+        <text class="shop-title">迷你蟹柳包13.8元兑换券</text>
+        <view class="date-wrapper">
+          <text>有效期 : </text>
+          <text class="date">2018.01.01-2018.01.05</text>
+        </view>
+        <input class="writeOff" maxlength="20" type="text" placeholder="请输入核销码"/>
+        <text class="btn">立即使用</text>
+      </view>
+      <view class="writeOff-bottom">
+          <view class="item">
+            <text class="name">电话 : </text>
+            <text class="content">0592-8668888</text>
+            <image src="./images/icon-tel.png" class="icon-tel"></image>
+          </view>
+        <view class="item">
+          <text class="name">地址 : </text>
+          <text class="content">厦门市集美区软件园三期</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '核销',
+    }
+  }
+</script>
+<style lang="less">
+  .writeOff-container{
+    height: 100%;
+    background-color: #f0f2f5;
+    overflow: hidden;
+  }
+  .writeOff-wrapper{
+    width: 710rpx;
+    margin-top:76rpx;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+  }
+  .writeOff-top{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size:0;
+    .shop-logo{
+      width: 98rpx;
+      height: 98rpx;
+      margin-top: -49rpx;
+    }
+    .shop-name{
+      margin-top: 29rpx;
+      font-size: 24rpx;
+      color: #8d8d8d;
+    }
+    .shop-title{
+      margin-top: 42rpx;
+      font-size: 40rpx;
+      color: #000000;
+    }
+    .date-wrapper{
+      margin-top: 51rpx;
+      text{
+        font-size: 24rpx;
+        color: #555454;
+      }
+      .date{
+        padding-left: 18rpx;
+      }
+    }
+    .writeOff{
+      margin-top:12rpx;
+      width: 356rpx;
+      height: 72rpx;
+      font-size:30rpx;
+      color: #bbbbbb;
+      text-align: center;
+      background-color: #f4f4f4;
+      border-radius: 6rpx;
+    }
+    .btn{
+      margin-top: 17rpx;
+      width: 356rpx;
+      text-align: center;
+      height: 72rpx;
+      line-height: 72rpx;
+      font-size: 32rpx;
+      color: #fff;
+      background-color: #d8383a;
+      border-radius: 6rpx;
+    }
+  }
+  .writeOff-bottom{
+    width: 650rpx;
+    margin-top: 60rpx;
+    padding-bottom:80rpx;
+    border-top: 1rpx solid #dcdcdc;
+    margin-left:auto;
+    margin-right:auto;
+    .item{
+      width: 100%;
+      height: 86rpx;
+      display: flex;
+      align-items: center;
+      border-bottom: 1rpx solid #dcdcdc;
+      text{
+        font-size: 28rpx;
+        color: #353535;
+      }
+      .content{
+        padding-left: 22rpx;
+      }
+      .icon-tel{
+        margin-left: auto;
+        width: 38rpx;
+        height: 38rpx;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,870 @@
+<template>
+  <import src="../../wxParse/wxParse.wxml"/>
+  <view class="container" hidden="{{!loadingHidden}}">
+    <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
+  	<view class="mainBox">
+ 		<text class="title">{{DetailData.title}}</text>
+ 		<view class="starttime" wx:if="{{DetailData.status == 2}}">
+ 			<view class="starttimetxt">距开始</view>
+ 			<view class="timenumber">
+        <text>{{clock.day}}</text>:<text>{{clock.hour}}</text>:<text>{{clock.min}}</text>:<text>{{clock.second}}</text>
+ 			</view>
+ 		</view>
+      <view class="starttime" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 }}">
+        <view class="starttimetxt">距结束</view>
+        <view class="timenumber">
+          <text>{{clock.day}}</text>:<text>{{clock.hour}}</text>:<text>{{clock.min}}</text>:<text>{{clock.second}}</text>
+        </view>
+      </view>
+      <view class="starttime" wx:if="{{DetailData.last_num == 0}}">
+        <view class="starttimetxt">已售罄</view>
+      </view>
+      <view class="starttime" wx:if="{{DetailData.status == 3 && DetailData.last_num != 0}}">
+        <view class="starttimetxt">已结束</view>
+      </view>
+      <view class="starttime" wx:if="{{DetailData.status == 4 && DetailData.last_num != 0}}">
+        <view class="starttimetxt">已过期</view>
+      </view>
+ 		<view class="juzishuju" wx:if="{{bargain.launch}}">
+ 			<view class="juzishuju_left">
+ 				<image src="{{bargain.launch.headimgurl}}" mode="aspectFill" class="juziPic"></image>
+ 				<text>{{bargain.launch.nickname}}</text>
+ 			</view>
+ 			<view class="banjian">
+ 				<text>帮减人数：</text>
+ 				<text>{{bargain.launch.help_count}}</text>
+ 			</view>
+ 		</view>
+ 		<view class="priceBar">
+ 			<view class="pricepro" style="width:{{(DetailData.current_price/DetailData.price)* 100}}%;"></view>
+ 			<text class="pricenow">现价:{{DetailData.current_price}}元</text>
+ 		</view>
+ 		<view class="juzishuju">
+ 			<view class="banjian">
+ 				<text>底价：</text>
+ 				<text>{{DetailData.floor_price}}元</text>
+ 			</view>
+ 			<view class="banjian">
+ 				<text>原价：</text>
+ 				<text>{{DetailData.price}}元</text>
+ 			</view>
+ 		</view>
+      <block wx:if="{{bargain.is_own == 1}}">
+        <view class="menpiaobtn success" wx:if="{{isOne == 0 && DetailData.status != 4 && DetailData.status != 2}}" @tap="myadd()">
+          <view class="kanyidao">我也要参加</view>
+        </view>
+        <view class="menpiaobtn" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 && bargain.launch.is_minimum !=1 && isOne != 0}}">
+          <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
+          <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</button>
+          <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
+        </view>
+        <view class="menpiaobtn success" wx:if="{{DetailData.status == 3 && DetailData.last_num != 0 && bargain.launch.receive_status != 1}}">
+          <view class="kanyidao">已结束</view>
+        </view>
+        <view class="menpiaobtn success"  wx:if="{{DetailData.status == 2}}">
+          <view class="kanyidao">未开始</view>
+        </view>
+        <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
+          <view class="kanyidao">减价成功,立即购买</view>
+        </view>
+        <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
+          <view class="kanyidao">减价成功,立即兑换</view>
+        </view>
+        <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && DetailData.status != 4 && bargain.launch.use_status == 0}}">
+          <view class="kanyidao">去使用</view>
+        </view>
+        <view class="menpiaobtn success" wx:if="{{DetailData.status == 4 && bargain.launch.use_status == 0}}">
+          <view class="kanyidao">已过期</view>
+        </view>
+        <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1}}">
+          <view class="kanyidao">已使用</view>
+        </view>
+      </block>
+      <block wx:if="{{bargain.is_own == 0}}">
+        <view class="menpiaobtn success">
+          <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">我也要参加</view>
+        </view>
+      </block>
+  	</view>
+  	<view class="jpdescbox">
+  		<view class="jpdescbox_title">
+  			<text class="jpdescbox_txt">奖品描述</text>
+  		</view>
+  		<view class="giftnumber">
+  			<view class="gifttxt">本期奖品<text>{{DetailData.num}}</text>份</view>
+  			<view class="gifttxt">剩余<text>{{DetailData.last_num}}</text>份</view>
+  		</view>
+      <view class="rulesbox">
+        <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
+      </view>
+  	</view>
+    <view class="giftintroducebox">
+      <view class="jpdescbox_title">
+        <text class="jpdescbox_txt">奖品介绍</text>
+      </view>
+      <view class="desc-wrapper">
+        <template is="wxParse" data="{{wxParseData:article2.nodes}}"/>
+      </view>
+    </view>
+    <view class="giftintroducebox">
+      <view class="jpdescbox_title">
+        <text class="jpdescbox_txt">帮砍名单</text>
+      </view>
+      <view class="helpbargain">
+        <view class="titleitem">
+          <text class="titleitemname">排名</text>
+          <text class="titleitemname">姓名</text>
+          <text class="titleitemname">当前价格</text>
+        </view>
+        <repeat for="{{RankingData}}" wx:for-item="item" key:index="index" wx:if="{{RankingData.length}}">
+          <view class="titleitem people">
+              <view class="titleitemname peopleitem">{{index+1}}</view>
+              <view class="titleitemname peopleitem">{{item.nickname}}</view>
+              <view class="titleitemname peopleitem">
+                <text class="peopleitemtxt1">{{item.msg}}</text>
+                <text class="peopleitemtxt2" wx:if="{{item.is_minimum==1}}">{{item.minimum_time}}</text>
+              </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+
+<script>
+  let timer = null
+  function countdown(that) {
+    let total_micro_second = that.end_time;
+    that.clock = dateformat(total_micro_second)
+    if (total_micro_second <= 0) {
+      clearInterval(timer)
+      if(that.DetailData.status == 2){
+        BargainModel.getLuckyDetail(that.param,(ResData)=>{
+          that.DetailData = ResData.activity_attr
+          that.bargain = ResData.bargain
+          that.end_time = that.DetailData.residue_time * 1000
+          countdown(that)
+          wxParse.wxParse('article1', 'html', that.DetailData.details, that, 5);
+          wxParse.wxParse('article2', 'html', that.DetailData.prize_details, that, 5);
+        })
+        that.$apply()
+        return false
+      }
+      if(that.DetailData.status == 1){
+        clearInterval(timer)
+        that.DetailData.status = 3
+        that.$apply()
+        return false
+      }
+    }
+    timer = setInterval(function() {
+      total_micro_second -= 1000;
+      that.end_time -= 1000
+      clearInterval(timer)
+      countdown(that)
+    }, 1000)
+    that.$apply()
+  }
+  // 时间格式化输出，如11:03 25:19 每1s都会调用一次
+  function dateformat(micro_second) {
+    // 总秒数
+    let second = Math.floor(micro_second / 1000);
+    // 天数
+    let day = Math.floor(second/3600/24);
+    // 小时
+    let hr = Math.floor(second/3600%24);
+    // 分钟
+    let min = Math.floor(second /60%60);
+    // 秒
+    let sec = Math.floor(second%60);
+    return {
+      day: day,
+      hour: hr,
+      min: min,
+      second: sec
+    }
+  }
+  import wepy from 'wepy'
+  import BargainModel from './Bargain-model'
+  import MyModel from '@/pages/My/index-model'
+  import indexModel from '@/pages/Index/index-model'
+  import wxParse from '../../wxParse/wxParse'
+  export default class jika extends wepy.page {
+    config = {
+      navigationBarTitleText: '活动详情'
+    }
+    data = {
+      param: {},
+      SupportData:null,
+      GeographyData: null,
+      loadingHidden: false,
+      userInfo: null,
+      DetailData: null,
+      bargain: null,
+      end_time: null,
+      clock: '',
+      RankingData: null,
+      isOne: 0,
+      LaunchState: true,
+      exchangeState: true,
+      shareState: true,
+    }
+    onLoad(options){
+      if(options.launch_id){
+        this.param = {
+          launch_id: options.launch_id,
+        }
+      }
+      this.param.activity_id = options.id || 24
+      BargainModel.getBargainLoad({activity_id: this.param.activity_id},(ResData)=>{
+        // 砍价排行榜
+        this.RankingData = ResData
+        this.$apply()
+      })
+      indexModel.getActivity((ResData)=>{
+        if(ResData.code == 1){
+          wepy.$instance.globalData.name = ResData.data.magic_top_title
+          this.$apply()
+        }
+      })
+    }
+    methods = {
+      onShareAppMessage(){
+        let that = this;
+        let shareTitle = null;
+        let path = null;
+        that.userInfo = wx.getStorageSync('user')
+        if(that.DetailData){
+          path = 'pages/Bargain/details?launch_id='+that.bargain.launch.id+"&"+'id='+that.DetailData.id
+          if(that.userInfo){
+            shareTitle = that.userInfo.userInfo.nickName + that.DetailData.title
+          }
+          if(!that.userInfo){
+            shareTitle = that.DetailData.title
+          }
+        }
+        if(!that.DetailData){
+          path = 'pages/Bargain/details?launch_id='+that.param.launch_id+"&"+'activity_id='+that.param.activity_id
+          shareTitle = wepy.$instance.globalData.name
+        }
+        let shareObj = {
+          title: shareTitle,
+          path: path
+        }
+        return shareObj
+      },
+      gotoBuy(){
+        this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
+      },
+      gotoMy(){
+        this.$switch('/pages/My/index');
+      },
+      gotoIndex(){
+        this.$switch('/pages/Index/index');
+      },
+      myadd(){
+        this.isOne = 1
+        this.$apply()
+      },
+      exchange(){
+//        砍到底价,去核销
+        this.exchangeState = false
+        let param = {
+          launch_id:this.bargain.launch.id,
+        }
+        BargainModel.exchange_goods(param,(ResData)=>{
+          if(ResData.code == 1){
+            wx.showToast({
+              title: '兑换成功',
+              icon: 'success',
+              duration: 2000
+            })
+            --this.DetailData.last_num
+            this.bargain.launch.receive_status = 1
+            this.exchangeState = true
+            this.$apply()
+          }
+        })
+      },
+      gotoBuy(){
+        this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
+      },
+      openLaunch(){
+//        自己手动砍价
+        let param = {
+          launch_id: this.bargain.launch.id,
+          activity_id: this.DetailData.id
+        }
+        this.LaunchState = false
+        BargainModel.bargainDetail(param, (ResData)=>{
+          let bargain_price = ResData.bargain.bargain_price
+          if(ResData.bargain.code == 1){
+            if(ResData.bargain.launch.is_minimum == 1){
+              wx.showToast({
+                title: '已经到底价了',
+                icon: 'success',
+                duration: 2000
+              })
+              this.bargain.launch.is_minimum = 1
+              this.DetailData.current_price = ResData.bargain.launch.now_price
+              --this.bargain.launch.frequency
+              this.LaunchState = true
+              this.$apply()
+              return false
+            }
+            wx.showToast({
+              title: '成功砍了'+bargain_price,
+              icon: 'success',
+              duration: 2000
+            })
+            this.DetailData.current_price = ResData.bargain.launch.now_price
+            --this.bargain.launch.frequency
+            this.LaunchState = true
+            this.$apply()
+          }
+        })
+      },
+      add(){
+        // 转发以后 参加活动
+        this.shareState = false
+        let param = {
+          activity_id: this.DetailData.id,
+        }
+        BargainModel.bargainLaunch(param,(ResData)=>{
+          this.bargain = ResData
+          this.DetailData.current_price = ResData.launch.now_price
+          wx.setStorage({
+            key:"launch_id",
+            data: this.bargain.launch.id
+          })
+          this.shareState = true
+          this.$apply()
+
+        })
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this),
+    }
+    onShow(){
+      let that = this
+      if(wx.getStorageSync('launch_id')){
+        this.param.launch_id = wx.getStorageSync('launch_id')
+      }
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let param = {
+          la: this.GeographyData.latitude,
+          lng: this.GeographyData.longitude,
+        }
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          BargainModel.getLuckyDetail(this.param,(ResData)=>{
+            this.DetailData = ResData.activity_attr
+            this.bargain = ResData.bargain
+            this.isOne = ResData.bargain.launch.help_count
+            if(wx.getStorageSync('launch_id')){
+              wx.removeStorage({
+                key: 'launch_id'
+              })
+            }
+            if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
+              that.end_time = ResData.activity_attr.residue_time * 1000
+              countdown(that)
+            }
+            if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
+              // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
+              if(ResData.bargain.launch.is_minimum == 1){
+                wx.showToast({
+                  title: '已经是底价了',
+                  icon: 'success',
+                  duration: 2000
+                })
+                this.$apply()
+                return false
+              }
+              if(ResData.bargain.launch.is_minimum == 0){
+                wx.showToast({
+                  title: '帮忙砍价成功了',
+                  icon: 'success',
+                  duration: 2000
+                })
+                this.$apply()
+                return false
+              }
+            }
+            wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
+            wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+            this.$apply()
+          })
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            BargainModel.getLuckyDetail(this.param,(ResData)=>{
+              this.DetailData = ResData.activity_attr
+              this.bargain = ResData.bargain
+              if(wx.getStorageSync('launch_id')){
+                wx.removeStorage({
+                  key: 'launch_id'
+                })
+              }
+              if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
+                that.end_time = ResData.activity_attr.residue_time * 1000
+                 countdown(that)
+              }
+              if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
+                // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
+                if(ResData.bargain.launch.is_minimum == 1){
+                  wx.showToast({
+                    title: '已经是底价了',
+                    icon: 'success',
+                    duration: 2000
+                  })
+                  this.$apply()
+                  return false
+                }
+                if(ResData.bargain.launch.is_minimum == 0){
+                  wx.showToast({
+                    title: '帮忙砍价成功了',
+                    icon: 'success',
+                    duration: 2000
+                  })
+                  this.$apply()
+                  return false
+                }
+              }
+              wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
+              wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+              this.$apply()
+            })
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        BargainModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+            wepy.$instance.globalData.isGetInfo = true
+            BargainModel.getLuckyDetail(this.param,(ResData)=>{
+              this.DetailData = ResData.activity_attr
+              this.bargain = ResData.bargain
+              if(wx.getStorageSync('launch_id')){
+                wx.removeStorage({
+                  key: 'launch_id'
+                })
+              }
+              if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
+                that.end_time = ResData.activity_attr.residue_time * 1000
+                 countdown(that)
+              }
+              if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
+                // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
+                if(ResData.bargain.launch.is_minimum == 1){
+                  wx.showToast({
+                    title: '已经是底价了',
+                    icon: 'success',
+                    duration: 2000
+                  })
+                  this.$apply()
+                  return false
+                }
+                if(ResData.bargain.launch.is_minimum == 0){
+                  wx.showToast({
+                    title: '帮忙砍价成功了',
+                    icon: 'success',
+                    duration: 2000
+                  })
+                  this.$apply()
+                  return false
+                }
+              }
+              wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
+              wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+              this.$apply()
+            })
+            this.$apply()
+          }
+          if(!this.userInfo){
+            that.methods._loadData((data)=>{
+              that.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:that.userInfo
+              })
+              let postdata = {
+                wechat_name: that.userInfo.userInfo.nickName,
+                area: that.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: that.userInfo.userInfo.avatarUrl,
+                encryptedData:that.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              wepy.$instance.globalData.isGetInfo = true
+              that.loadingHidden = true
+              // 从转发进来的时候,判断需要提示砍价
+              BargainModel.getLuckyDetail(this.param,(ResData)=>{
+                this.DetailData = ResData.activity_attr
+                this.bargain = ResData.bargain
+                if(wx.getStorageSync('launch_id')){
+                  wx.removeStorage({
+                    key: 'launch_id'
+                  })
+                }
+                if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
+                  that.end_time = ResData.activity_attr.residue_time * 1000
+                  countdown(that)
+                }
+                if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
+                  // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
+                  if(ResData.bargain.launch.is_minimum == 1){
+                    wx.showToast({
+                      title: '已经是底价了',
+                      icon: 'success',
+                      duration: 2000
+                    })
+                    this.$apply()
+                    return false
+                  }
+                  if(ResData.bargain.launch.is_minimum == 0){
+                    wx.showToast({
+                      title: '帮忙砍价成功了',
+                      icon: 'success',
+                      duration: 2000
+                    })
+                    this.$apply()
+                    return false
+                  }
+                }
+                wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
+                wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+                this.$apply()
+              })
+            })
+          }
+        },()=>{
+          BargainModel.twoGetCityName((res)=>{
+            console.log(res)
+          })
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  Page{
+    width: 100%;
+    background-color: #F7F9F9;
+  }
+  .bannerpic{
+    width:750rpx;
+    height: 424rpx;
+  }
+  .container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    .mainBox{
+      width: 690rpx;
+      margin: 0 auto;
+      height:459rpx;
+      background-color: #ffffff;
+      box-shadow: 0rpx 0rpx 24rpx 0rpx rgba(0, 0, 0, 0.1);
+      border-radius: 8rpx;
+      margin-top:-60rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      padding:30rpx 0;
+      z-index: 99999;
+      .title{
+        font-size: 35rpx;
+        color:#0e0e0e;
+      }
+      .starttime{
+        display: flex;
+        align-items: center;
+        .starttimetxt{
+          font-size: 25rpx;
+          color:#474747;
+          margin-right: 10rpx;
+        }
+        .timenumber{
+          font-size: 25rpx;
+          text{
+            display: inline-block;
+            width: 34rpx;
+            height: 34rpx;
+            line-height:34rpx;
+            text-align: center;
+            background-color: #fbce88;
+            color: #fff;
+            border-radius: 6rpx;
+            margin:0 6rpx;
+          }
+        }
+      }
+      .juzishuju{
+        width:570rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .juzishuju_left{
+          display: flex;
+          align-items: center;
+          font-size: 26rpx;
+          color: #000;
+          .juziPic{
+            width: 57rpx;
+            height: 57rpx;
+            border-radius: 100%;
+            border:4rpx solid #E7C373;
+            margin-right:18rpx;
+            box-sizing: border-box;
+          }
+        }
+        .banjian{
+          font-size: 26rpx;
+          color: #000;
+        }
+      }
+      .priceBar{
+        width:570rpx;
+        background-color: #E8E8E8;
+        border-radius: 30rpx;
+        height: 32rpx;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        .pricepro{
+          position: absolute;
+          left: 0;
+          top:0;
+          height: 100%;
+          border-radius:40rpx 0 0 40rpx;
+          background:linear-gradient(to top,#EC2916,#FC8175);
+        }
+        .pricenow{
+          color: #585858;
+          font-size: 22rpx;
+          z-index: 1000;
+          line-height: 32rpx;
+        }
+      }
+      .menpiaobtn{
+        width: 570rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        &.success{
+          justify-content: center;
+          .kanyidao{
+            width: 562px;
+            margin: 0 auto;
+          }
+        }
+        &.payState {
+          pointer-events: none;
+        }
+        .kanyidao{
+          width: 345rpx;
+          height: 70rpx;
+          border-radius: 40rpx;
+          color: #fff;
+          font-size: 26rpx;
+          line-height: 70rpx;
+          text-align: center;
+          background-color: #ef494d;
+          &.No{
+            pointer-events: none;
+          }
+        }
+        .qiuzu{
+          width: 210rpx;
+          height: 70rpx;
+          border-radius: 40rpx;
+          color: #fff;
+          font-size: 26rpx;
+          line-height: 70rpx;
+          text-align: center;
+          background-color: #ef494d;
+        }
+      }
+    }
+    .jpdescbox{
+      width: 691rpx;
+      margin-top:30rpx;
+      padding-bottom:30rpx;
+      background-color: #ffffff;
+      box-shadow: 0rpx 0rpx 24rpx 0rpx
+      rgba(0, 0, 0, 0.1);
+      border-radius: 8rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      .jpdescbox_title{
+        width:315rpx;
+        margin-top:73rpx;
+        height: 1rpx;
+        border-top: 1rpx solid #a0a0a0;
+        text-align: center;
+        .jpdescbox_txt{
+          position: relative;
+          font-size: 36rpx;
+          top: -14px;
+          background-color: #fff;
+          color: #2d1311;
+          padding: 0 20px;
+          letter-spacing: 2rpx;
+        }
+      }
+      .giftnumber{
+        display: flex;
+        align-items: center;
+        margin-top: 57rpx;
+        .gifttxt{
+          font-size: 34rpx;
+          color: #353535;
+          margin-right: 20rpx;
+          text{
+            color: #FF7903;
+            margin:0 10rpx;
+          }
+        }
+      }
+      .giftpic{
+        margin-top: 28rpx;
+        width: 100%;
+        height:460rpx;
+      }
+      .rulesbox{
+        margin-top: 22rpx;
+        width: 634rpx;
+        display: flex;
+        flex-direction: column;
+        .wxParse-p view,.wxParse-p image{
+          width: 100%;
+        }
+      }
+    }
+    .giftintroducebox{
+      margin-top: 30rpx;
+      width: 691rpx;
+      padding-bottom:30rpx;
+      background-color: #ffffff;
+      box-shadow: 0rpx 0rpx 24rpx 0rpx rgba(0, 0, 0, 0.1);
+      border-radius: 8rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      &:last-child{
+        margin-bottom:100rpx;
+      }
+      .desc-wrapper{
+        width: 634rpx;
+        .wxParse-p view,.wxParse-p image{
+          width: 100%;
+        }
+      }
+      .jpdescbox_title{
+        margin-top:72rpx;
+        margin-bottom: 60rpx;
+        width:314rpx;
+        height: 1rpx;
+        border-top: 1rpx solid #a0a0a0;
+        text-align: center;
+        .jpdescbox_txt{
+          position: relative;
+          font-size: 36rpx;
+          top: -14px;
+          background-color: #fff;
+          color: #2d1311;
+          padding: 0 20px;
+          letter-spacing: 2rpx;
+        }
+      }
+      .introducepic{
+        width:100%;
+        height: 390rpx;
+        margin-bottom: 28rpx;
+      }
+      .helpbargain{
+        width: 525rpx;
+        margin: 0 auto;
+        .titleitem{
+          width:100%;
+          display: flex;
+          .titleitemname{
+            flex:1;
+            display: flex;
+            justify-content: center;
+            color: #ff7903;
+            font-size: 30rpx;
+          }
+        }
+        .people{
+          margin-top: 28rpx;
+          .peopleitem{
+            font-size: 21rpx;
+            color: rgb(1,1,1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            .peopleitemtxt1{
+              font-size: 22rpx;
+              line-height: 30rpx;
+            }
+            .peopleitemtxt2{
+              line-height: 20rpx;
+              font-size: 14rpx;
+            }
+          }
+        }
+      }
+    }
+  }
+</style>

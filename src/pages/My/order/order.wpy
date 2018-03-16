@@ -1,0 +1,584 @@
+<template>
+  <view class="My-order">
+    <view class="order-header">
+      <repeat for="{{tabHeaderTitles}}" key="index">
+        <view class="order-header-item {{currentTabsIndex == index ? 'active':''}}" @tap="onTabsItemTap({{index}})">
+          {{item}}
+        </view>
+      </repeat>
+    </view>
+    <view class="order-main">
+      <view class="order-all" wx:if="{{orderAllData.length}}">
+        <repeat for="{{orderAllData}}" wx:for-item="item" key:index="index" >
+          <view class="order-item" @tap="orderDetails({{index}})">
+            <view class="order-item-header">
+              <text class="shop-name">{{item.shop_name}}</text>
+              <view wx:if="{{item.goods_order_type == 2}}">
+                <view wx:if="{{item.check_pay_type == 1}}">
+                  <!--下单以后,未付款-->
+                  <text wx:if="{{item.status == 0}}">订单关闭</text>
+                  <text wx:if="{{item.status == 1}}">等待付款</text>
+                  <text wx:if="{{item.status == 2}}">等待使用</text>
+                  <!--使用以后,等待评价-->
+                  <text wx:if="{{item.status == 3}}">交易完成</text>
+                  <!--评价成功以后-->
+                  <text wx:if="{{item.status == 4}}">交易成功</text>
+                </view>
+                <view wx:if="{{item.check_pay_type == 2}}">
+                  <!--拼团未付款-->
+                  <text wx:if="{{item.status == 0 }}">未付款,开团失败</text>
+                  <!--付款以后,等待使用-->
+
+                  <text wx:if="{{item.group_monad_status == null && item.status == 1 }}">拼团订单,等待付款</text>
+                  <text wx:if="{{item.status == 2}}">
+                    <text wx:if="{{item.group_monad_status == 2}}">拼团失败</text>
+                    <text wx:if="{{item.group_monad_status == 1}}">拼团成功,去使用</text>
+                    <text wx:if="{{item.group_monad_status == 3}}">拼团中,去分享</text>
+                  </text>
+                  <!--<text wx:if="{{item.status == 2}}">拼团成功,等待使用</text>-->
+                  <text wx:if="{{item.status == 3}}">拼团成功,等待评价</text>
+                  <!--<text wx:if="{{item.group_monad_status == 3}}">付款成功,拼团进行中</text>-->
+                  <text wx:if="{{item.status == 4}}">交易成功</text>
+                  <text wx:if="{{item.status == 8}}">未成团,退款成功</text>
+                </view>
+              </view>
+              <view wx:if="{{item.goods_order_type == 1}}">
+                <!--下单以后,未付款-->
+                <text wx:if="{{item.status == 0}}">订单关闭</text>
+                <text wx:if="{{item.status == 1}}">等待付款</text>
+                <text wx:if="{{item.status == 2}}">等待使用</text>
+                <!--使用以后,等待评价-->
+                <text wx:if="{{item.status == 3}}">交易完成</text>
+                <!--评价成功以后-->
+              </view>
+              <view wx:if="{{item.goods_type == 4}}">
+                <!--下单以后,未付款-->
+                <text wx:if="{{item.status == 1 && item.receive_status == 0}}">等待付款</text>
+                <text wx:if="{{item.status == 2 && item.receive_status == 1 && item.use_status ==0}}">等待使用</text>
+                <text wx:if="{{item.receive_status == 1 && item.status == 0  && item.use_status ==0}}">等待使用</text>
+                <!--使用以后,等待评价-->
+                <text wx:if="{{item.use_status == 1}}">交易成功</text>
+              </view>
+              <view wx:if="{{item.goods_type == 5}}">
+                <text wx:if="{{item.status == 1}}">等待使用</text>
+                <text wx:if="{{item.status == 2}}">使用成功</text>
+                <text wx:if="{{item.status == 3}}">已经过期</text>
+              </view>
+            </view>
+            <view class="order-item-main">
+              <view class="goods-pic">
+                <image src="{{item.main_img}}"></image>
+                <text wx:if="{{item.goods_order_type == 2}}">拼团</text>
+                <text wx:if="{{item.goods_order_type == 1}}">秒杀</text>
+                <text wx:if="{{item.goods_type == 4}}">砍价</text>
+                <text wx:if="{{item.goods_type == 5}}">集字</text>
+              </view>
+              <view class="goods-name">
+                <text>{{item.name}}</text>
+              </view>
+              <view class="goods-Price">
+                  <text class="old">{{item.original_price}}</text>
+                  <text class="new">{{item.pay_price}}</text>
+                  <text class="num">x1</text>
+              </view>
+            </view>
+            <view class="payment-info" wx:if="{{item.goods_type != 5}}">
+              <!-- 等待付款||交易关闭，未在时间之内，付款，自己取消掉订单付款 -->
+              <view class="Payment" wx:if="{{item.status == 1 || item.status == 0}}">
+                <text>共1件商品 需付款：</text>
+                <text>¥{{item.pay_price}}</text>
+              </view>
+              <!--等待使用-->
+              <view class="use" wx:if="{{item.status == 2 && item.goods_order_type == 1}}">
+                <text>至 {{item.deadline}} 有效</text>
+              </view>
+              <view class="use" wx:if="{{item.status == 2 && item.goods_order_type == 2}}">
+                <text>已付款 ¥{{item.pay_price}}</text>
+              </view>
+              <!--付款成功-->
+              <view class="success" wx:if="{{item.status == 3 || item.status == 4 ||item.status == 8}}">
+                <text>合计</text>
+                <text>¥{{item.pay_price}}</text>
+              </view>
+            </view>
+            <view class="payment-info" wx:if="{{item.goods_type == 5}}">
+              <view class="use" wx:if="{{item.status == 1}}">
+                <text>至 {{item.deadline}} 有效</text>
+              </view>
+              <view class="use" wx:if="{{item.status == 2}}">
+              <text>感谢你的参与,宝贝已经使用了</text>
+            </view>
+              <view class="use" wx:if="{{item.status == 3}}">
+                <text>已过期了</text>
+              </view>
+            </view>
+            <view class="payment-btn" wx:if="{{item.goods_order_type == 1}}">
+              <!--交易关闭-->
+              <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
+              <!--秒杀未付款-->
+              <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
+              <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
+              <!--交易完成-->
+              <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
+              <!--交易成功-->
+              <view wx:if="{{item.status == 4}}" class="success">
+                <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                <text @tap.stop="orderDetails({{index}})">查看订单</text>
+              </view>
+            </view>
+            <view class="payment-btn" wx:if="{{item.goods_order_type == 2 && item.check_pay_type == 1}}">
+              <!--交易关闭-->
+              <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
+                <!--秒杀未付款-->
+                <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
+                <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
+                <!--交易完成-->
+                <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
+                <!--交易成功-->
+                <view wx:if="{{item.status == 4}}" class="success">
+                  <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                  <text @tap.stop="orderDetails({{index}})">查看订单</text>
+                </view>
+            </view>
+            <view class="payment-btn" wx:if="{{item.goods_order_type == 2 && item.check_pay_type == 2}}">
+              <!--交易关闭-->
+              <text class="del" wx:if="{{item.status == 0 || item.status == 8}}" @tap.stop="delOrder({{index}})">删除订单</text>
+
+              <!--拼团未付款-->
+              <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
+              <!-- 拼团未分享 -->
+              <text wx:if="{{ item.status == 2 && item.group_monad_status == 3}}" @tap.stop="gotoShare({{index}})">去分享</text>
+              <text wx:if="{{item.group_monad_status == 1 && item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
+              <!--交易完成-->
+              <text wx:if="{{ item.status == 3}}" @tap.stop="orderEvaluate({{index}})">去评价</text>
+              <!--交易成功-->
+              <view wx:if="{{item.status == 4}}" class="success">
+                <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                <text @tap.stop="orderDetails({{index}})">查看订单</text>
+              </view>
+            </view>
+            <view class="payment-btn" wx:if="{{item.goods_type == 5}}">
+              <text wx:if="{{item.status == 1}}" @tap.stop="orderUse({{index}})">去使用</text>
+              <text wx:if="{{item.status == 2}}" @tap.stop="orderDetails({{index}})">已使用</text>
+              <text wx:if="{{item.status == 3}}" @tap.stop="orderDetails({{index}})">删除订单</text>
+              <!--交易成功-->
+            </view>
+            <view class="payment-btn" wx:if="{{item.goods_type == 4}}">
+              <!--交易关闭-->
+              <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
+              <!--秒杀未付款-->
+              <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
+              <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
+              <!--交易完成-->
+              <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
+              <!--交易成功-->
+              <view wx:if="{{item.status == 4}}" class="success">
+                <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                <text @tap.stop="orderDetails({{index}})">查看订单</text>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import OrderModel from './order-model'
+  import BargainModel from '@/pages/Bargain/Bargain-model'
+  import Groups from '../../Groups/Api/Groups.Api'
+  /* 订单类型 4 全部  1 未付款  2 未使用 */
+  const orderType = [
+    {"type": 4},
+    {"type": 6},
+    {"type": 1},
+    {"type": 2},
+    {"type": 3},
+  ]
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#faf9f9",
+      navigationBarTitleText: '我的订单',
+    }
+    data = {
+      currentTabsIndex: 0,
+      tabHeaderTitles: ['全部','拼团中','待付款','待使用','待评价'],
+      orderAllData: [],
+    }
+    methods={
+      onTabsItemTap(index){
+        // 切换 Tabitem
+        this.currentTabsIndex = index
+          let param = {
+            type: orderType[this.currentTabsIndex].type
+          }
+
+          OrderModel.getOrderList(param, ResData=> {
+            if(Number(ResData.code) === 1) {
+              this.orderAllData.length = 0;
+              this.orderAllData = ResData.data
+              this.$apply()
+            }
+          })
+      },
+      orderDetails(index){
+//        跳转至详情页
+        let orderIndex = index
+        let orderID = this.orderAllData[orderIndex].id
+        let goods_order_type = this.orderAllData[orderIndex].goods_order_type
+        let goods_type = this.orderAllData[orderIndex].goods_type
+        let param = {
+          id: orderID,
+        }
+        if(goods_order_type == 2){
+          Object.assign(param,{type: goods_order_type})
+          this.$navigate('/pages/Groups/Groups-order-details', param)
+          return false
+        }
+        if(goods_type == 4){
+          let bargain_launch_id = this.orderAllData[orderIndex].bargain_launch_id
+          let param = {
+            launch_id:bargain_launch_id
+          }
+          this.$navigate('/pages/Bargain/Bargain-order-details', param)
+          return false
+        }
+        if(goods_type == 5){
+          let lucky_id = this.orderAllData[orderIndex].lucky_id
+          let param = {
+            id:lucky_id
+          }
+          this.$navigate('/pages/Card/order-details', param)
+          return false
+        }
+        this.$navigate('/pages/My/order/order-details', param)
+      },
+      /*   删除订单 */
+      delOrder(index){
+        let orderIndex = index
+        let orderID = this.orderAllData[orderIndex].id
+        let goods_order_type = this.orderAllData[orderIndex].goods_order_type
+        let goods_type = this.orderAllData[orderIndex].goods_type
+        if(goods_order_type == 2){
+          let queryData = {
+            orderID: orderID
+          }
+          Groups.delGroupsOrder(queryData, ResData=>{
+            if (Number(ResData.code) == 1){
+              this.orderAllData.splice(orderIndex,1)
+              this.$apply()
+              wx.showToast({
+                title: "删除成功",
+                icon:'loading',
+                duration: 500,
+                mask: true,
+              })
+            }
+          })
+          return false
+        }
+        if(goods_type == 4){
+          let bargain_launch_id = this.orderAllData[orderIndex].bargain_launch_id
+          let param = {
+            launch_id:bargain_launch_id
+          }
+          BargainModel.delOrder(param, ResData=>{
+            if (Number(ResData.code) == 1){
+              this.orderAllData.splice(orderIndex,1)
+              this.$apply()
+              wx.showToast({
+                title: "删除成功",
+                icon:'loading',
+                duration: 500,
+                mask: true,
+              })
+            }
+          })
+          return false
+        }
+        OrderModel.del_order(orderID, ResData=>{
+          if (Number(ResData.code) === 1){
+            this.orderAllData.splice(orderIndex,1)
+            this.$apply()
+            wx.showToast({
+              title: "删除成功",
+              icon:'loading',
+              duration:500,
+              mask: true,
+            })
+          }
+        })
+      },
+      /*   从全部订单中去使用订单 */
+      orderUse(index){
+        let orderIndex = index
+        let orderID = this.orderAllData[orderIndex].id
+        let goods_order_type = this.orderAllData[orderIndex].goods_order_type
+        let goods_type = this.orderAllData[orderIndex].goods_type
+        if(goods_order_type == 2){
+          this.$navigate('/pages/Groups/Groups-coupon', {id: orderID})
+          return false
+        }
+        if(goods_type == 4){
+          let bargain_launch_id = this.orderAllData[orderIndex].bargain_launch_id
+          let param = {
+            id:bargain_launch_id
+          }
+          this.$navigate('/pages/Bargain/Bargain-coupon', param)
+          return false
+        }
+        if(goods_type == 5){
+          let lucky_id = this.orderAllData[orderIndex].lucky_id
+          let param = {
+            id:lucky_id
+          }
+          this.$navigate('/pages/Card/coupon', param)
+          return false
+        }
+        this.$navigate('/pages/My/order/coupon',{id: orderID})
+      },
+     /* 支付订单 */
+      orderPayment(index){
+        let orderIndex = index
+        let orderID = this.orderAllData[orderIndex].id
+        let goods_order_type = this.orderAllData[orderIndex].goods_order_type
+        let goods_type = this.orderAllData[orderIndex].goods_type
+        let param = {
+          orderId: orderID
+        }
+        if(goods_order_type == 2){
+          let type = this.orderAllData[orderIndex].pay_type
+          Object.assign(param,{pay_type: type})
+          this.$navigate('/pages/Groups/Groups-Confirm-order', param)
+          return false
+        }
+        if(goods_type == 4){
+          let bargain_launch_id = this.orderAllData[orderIndex].bargain_launch_id
+          let param = {
+            launch_id:bargain_launch_id
+          }
+          this.$navigate('/pages/Bargain/Confirm-order', param)
+          return false
+        }
+        this.$navigate('/pages/Goods/Confirm-order',param)
+      },
+     /* 去评价 */
+      orderEvaluate(index){
+        let orderIndex = index
+        let orderID = this.orderAllData[orderIndex].id
+        let goods_order_type = this.orderAllData[orderIndex].goods_order_type
+        if(goods_order_type == 2){
+          this.$navigate('/pages/Groups/Groups-evaluate-details', {orderId: orderID})
+          return false
+        }
+        this.$navigate('/pages/My/order/evaluate-details',{orderId: orderID})
+      },
+      gotoShare(index){
+        let orderIndex = index
+        let orderID = this.orderAllData[orderIndex].id
+        this.$navigate('/pages/Groups/pay-one', {orderID: orderID})
+      }
+    }
+    onLoad(options) {
+      this.currentTabsIndex = options.id;
+    }
+    onShow(){
+      let param = {
+        type: orderType[this.currentTabsIndex].type
+      }
+      OrderModel.getOrderList(param, ResData=> {
+        if(ResData.code == 1) {
+          this.orderAllData.length = 0;
+          this.orderAllData = ResData.data
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color:#f3f5f5;
+    height:100%;
+  }
+  @stateColor:#ff6a3c;
+  .order-header{
+    width:100%;
+    height:84rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    border-bottom:1px solid #d8d8d8;
+    background-color: #fff;
+    .order-header-item{
+      height: 80rpx;
+      line-height:80rpx;
+      font-size:28rpx;
+      color:#686868;
+      text-align: center;
+      &.active{
+        color:@stateColor;
+        border-bottom:4rpx solid @stateColor;
+        pointer-events: none;
+      }
+    }
+  }
+  /* 待付款 */
+    .order-item{
+      background-color: #fff;
+      margin-bottom: 20rpx;
+      > view {
+        box-sizing: border-box;
+        padding-left:28rpx;
+        padding-right:28rpx;
+      }
+      .order-item-header{
+        width:100%;
+        height:78rpx;
+        display: flex;
+        align-items: center;
+        justify-content:space-between;
+        text {
+          font-size:28rpx;
+          color:#212121;
+          &:last-child{
+            color:@stateColor;
+          }
+        }
+      }
+      .order-item-main{
+        display: flex;
+        background-color: #f9f9f8;
+        height:180rpx;
+        padding-top:30rpx;
+        padding-bottom:30rpx;
+        .goods-pic{
+          position: relative;
+          image{
+            width:118rpx;
+            height:118rpx;
+            border:1px solid #eaeaea;
+          }
+          text{
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 24rpx;
+            color: #fff;
+            padding-left: 10rpx;
+            padding-right: 10rpx;
+            line-height: 30rpx;
+            background-image: linear-gradient(270deg, rgba(253, 86, 54, 0.92) 0%, rgba(253, 142, 54, 0.92) 100%),
+          }
+        }
+        .goods-name{
+          margin-left:32rpx;
+          font-size:0;
+          text{
+            font-size:28rpx;
+            color:#272727;
+          }
+        }
+        .goods-Price{
+          margin-left: auto;
+          display: flex;
+          flex-direction: column;
+          text-align: right;
+          text {
+            margin-top:6rpx;
+          }
+          .old{
+            margin-top:6rpx;
+            text-decoration: line-through;
+            font-size:28rpx;
+          }
+          .new {
+            margin-top:4rpx;
+            font-size:28rpx;
+            color:#686868;
+          }
+          .num {
+            margin-top:6rpx;
+            text-align: right;
+            font-size:28rpx;
+            &:first-letter{
+              font-size:20rpx;
+            }
+          }
+        }
+      }
+      .payment-info{
+        .use {
+          width: 100%;
+          height:80rpx;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          text {
+            font-size: 26rpx;
+            color: #353535;
+          }
+        }
+        .Payment{
+          width: 100%;
+          height:80rpx;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          font-size:26rpx;
+          text {
+            &:last-child{
+              font-size:32rpx;
+            }
+          }
+        }
+        .success {
+          width: 100%;
+          height:80rpx;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          color: #272727;
+          text{
+            &:first-child{
+              font-size: 26rpx;
+            }
+            &:last-child{
+              margin-left: 10rpx;
+              font-size: 30rpx;
+              font-weight: bold;
+            }
+          }
+        }
+      }
+      .payment-btn{
+        height:80rpx;
+        border-top:1px solid #e5e5e8;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        text{
+          width:148rpx;
+          height:54rpx;
+          line-height:54rpx;
+          text-align: center;
+          color:@stateColor;
+          border:1px solid @stateColor;
+          font-size:26rpx;
+          border-radius: 4rpx;
+        }
+        .success {
+          height:80rpx;
+          display:flex;
+          justify-content:flex-end;
+          align-items:center;
+          .del {
+            color: #353535;
+            border-color: #353535;
+            margin-right: 20rpx;
+          }
+        }
+      }
+    }
+</style>

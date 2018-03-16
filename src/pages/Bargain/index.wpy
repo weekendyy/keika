@@ -1,0 +1,395 @@
+<template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <view class="indexBox">
+    <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
+      <block wx:for="{{bannerpics}}" wx:key="bannerpics">
+        <swiper-item class="swiperitembox">
+          <image src="{{item.banner_url}}" class="bannerpic" mode="scaleToFill"/>
+        </swiper-item>
+      </block>
+    </swiper>
+    <view class="mainBox">
+      <view class='itemtab'>
+        <view wx:for="{{tabitems}}" wx:key="tabitems" class="tabitem {{currentTabsIndex==index?'activeitem':''}}" @tap="itemTap({{index}})">{{item}}</view>
+      </view>
+      <scroll-view scroll-y wx:if="{{currentTabsIndex==0}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
+        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="scareBuyingList" @tap="gotoDetails({{index}})">
+          <image src="{{item.main_img}}" mode="scaleToFill" class="goodspic"></image>
+          <view class="rightbox">
+            <view class="itemtop">
+              <text class="itemtitle">{{item.title}}</text>
+              <view class="huodong">
+                <text class="huodongtxt1 {{currentTabsIndex==0?'':'activedowm'}}">剩余：{{item.last_num}}份</text>
+                <text class="huodongtxt2">{{item.title_name}}</text>
+              </view>
+            </view>
+            <view class="priceaandtake">
+              <view class="price">
+                <view class="pricenow {{currentTabsIndex==0?'':'price_activedowm'}}"><text>底价:</text>¥{{item.floor_price}}</view>
+                <view class="priceori">原价 ¥{{item.price}}</view>
+              </view>
+              <view class="takepartin {{currentTabsIndex==0?'':'takepartin_activedowm'}}">{{currentTabsIndex==0?'我要参与':(currentTabsIndex==1?'已结束':'')}}</view>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{isGoodsEmpty.NowIsGoodsEmpty}}">
+          <template is="emptyGoodsTips"></template>
+        </view>
+      </scroll-view>
+      <scroll-view scroll-y wx:if="{{currentTabsIndex==1}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
+        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="scareBuyingList" @tap="gotoDetails({{index}})">
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodspic"></image>
+          <view class="rightbox">
+            <view class="itemtop">
+              <text class="itemtitle">{{item.title}}</text>
+              <view class="huodong">
+                <text class="huodongtxt1 {{currentTabsIndex==0?'':'activedowm'}}">剩余：{{item.last_num}}份</text>
+                <text class="huodongtxt2">{{item.title_name}}</text>
+              </view>
+            </view>
+            <view class="priceaandtake">
+              <view class="price">
+                <view class="pricenow {{currentTabsIndex==0?'':'price_activedowm'}}"><text>底价</text>¥{{item.floor_price}}</view>
+                <view class="priceori">原价 ¥{{item.price}}</view>
+              </view>
+              <view class="takepartin {{currentTabsIndex==0?'':'takepartin_activedowm'}}">{{currentTabsIndex==0?'我要参与':(currentTabsIndex==1?'已结束':'')}}</view>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{isGoodsEmpty.OldIsGoodsEmpty}}">
+          <template is="emptyGoodsTips"></template>
+        </view>
+      </scroll-view>
+
+      <!-- <view class="isLoadedAll" wx:if="{{(isLoadedAll.NowIsLoadedAll && currentTabsIndex==0)||(isLoadedAll.OldIsLoadedAll && currentTabsIndex==1)}}">
+        -------- 已经到底了 --------
+      </view> -->
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import BargainModel from './Bargain-model'
+  export default class collectword extends wepy.page {
+    config = {
+      navigationBarTitleText: '加载中...'
+    }
+    data = {
+      tabitems:['进行中','往期活动'],
+      currentTabsIndex:0,
+      pageNum:{
+        NowActivityPage: 1,
+        OldActivityPage: 1,
+      },
+      bannerpics:[],
+      NowActivityData:[],
+      OldActivityData:[],
+      isLoadedAll:{
+        NowIsLoadedAll: false,
+        OldIsLoadedAll: false,
+      },
+      isGoodsEmpty:{
+        NowIsGoodsEmpty:false,
+        OldIsGoodsEmpty:false
+      }
+    }
+    onLoad() {
+      BargainModel.getIndexNowActivity('1',(data)=>{
+          if (data.code == 1){
+            this.NowActivityData = data.goods_data
+            this.bannerpics = data.banner_list
+            //无商品的情况
+            if(data.goods_data.length==0){
+              this.isGoodsEmpty.NowIsGoodsEmpty=true
+            }
+            wx.setNavigationBarTitle({
+              title: data.header_title
+            })
+            //商品加载完的情况
+            if(data.goods_data.length<5 && data.goods_data.length>0){
+              this.isLoadedAll.NowIsLoadedAll=true
+            }
+          }
+          this.$apply()
+      })
+    }
+    methods = {
+      itemTap(index){
+        this.currentTabsIndex=index
+        this.$apply()
+        if(this.OldActivityData.length == 0 && index==1){
+          BargainModel.getIndexOldActivity(this.pageNum[this.currentTabsIndex],ResData=>{
+            if (ResData.code == 1){
+              this.OldActivityData = ResData.goods_data
+              //无商品的情况
+              if(ResData.goods_data.length==0){
+                this.isGoodsEmpty.OldIsGoodsEmpty=true
+              }
+              //商品加载完的情况
+              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
+                this.isLoadedAll.OldIsLoadedAll=true
+              }
+            }
+            this.$apply()
+          })
+        }else if(this.NowActivityData.length == 0 && index==0){
+          BargainModel.getIndexNowActivity(this.pageNum[this.currentTabsIndex],ResData=>{
+            if (ResData.code == 1){
+              this.NowActivityData = ResData.goods_data
+              //无商品的情况
+              if(ResData.goods_data.length==0){
+                this.isGoodsEmpty.NowIsGoodsEmpty=true
+              }
+              //商品加载完的情况
+              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
+                this.isLoadedAll.NowIsGoodsEmpty=true
+              }
+            }
+            this.$apply()
+          })
+        }
+      },
+      gotoDetails(index){
+        let id = null
+        if (this.currentTabsIndex == 0) {
+          id = this.NowActivityData[index].id
+        }
+        if(this.currentTabsIndex == 1){
+          id = this.OldActivityData[index].id
+        }
+        this.$navigate('../Bargain/details',{id:id})
+      }
+    }
+    components = {
+
+    }
+    onReachBottom(){
+      switch(this.currentTabsIndex){
+        case 0:
+        if(!this.isLoadedAll.NowIsLoadedAll){
+          this.pageNum.NowActivityPage++
+          BargainModel.getIndexNowActivity(this.pageNum.NowActivityPage,ResData=>{
+            if (ResData.code == 1){
+              this.NowActivityData = [...this.NowActivityData,...ResData.goods_data]
+              if(ResData.goods_data.length==0){
+                this.isLoadedAll.NowIsLoadedAll=true
+                wx.showToast({
+                  title: '已经到底了',
+                  icon: 'loading',
+                  duration: 2000
+                })
+              }
+            }
+            this.$apply()
+          })
+        }
+        break;
+
+        case 1:
+        if(!this.isLoadedAll.OldIsLoadedAll){
+          this.pageNum.OldIsLoadedAll++
+          BargainModel.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
+            if (ResData.code == 1){
+              this.OldIsLoadedAll = [...this.OldIsLoadedAll,...ResData.goods_data]
+              if(ResData.goods_data.length==0){
+                this.isLoadedAll.OldIsLoadedAll=true
+                wx.showToast({
+                  title: '已经到底了',
+                  icon: 'loading',
+                  duration: 2000
+                })
+              }
+            }
+            this.$apply()
+          })
+        }
+        break;
+      }
+    }
+  }
+</script>
+<style lang="less">
+ @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  Page{
+    width: 100%;
+  }
+  .indexBox{
+    width: 100%;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    .swiperBox{
+      width: 750rpx;
+      height: 230rpx;
+      .swiperitembox{
+        width: 750rpx;
+        height: 230rpx;
+        .bannerpic{
+          width:750rpx;
+          height: 230rpx;
+        }
+      }
+    }
+    .mainBox{
+      width: 750rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .itemtab{
+        width: 100%;
+        height: 80rpx;
+        background-color: #fff;
+        display:flex;
+        align-items: center;
+        justify-content: space-around;
+        border-bottom: 2rpx solid #EFEFEF;
+        box-sizing: border-box;
+        .tabitem{
+          width: 166rpx;
+          color: #9B9B9B;
+          font-size: 30rpx;
+          line-height: 80rpx;
+          height:80rpx;
+          text-align: center;
+          border-bottom:4rpx solid transparent;
+        }
+        .activeitem{
+          color:#FF7022;
+          border-bottom:4rpx solid #ff7022;
+          height:100%;
+        }
+      }
+      .goodslist{
+        width:750rpx;
+        background-color: #fff;
+        margin-bottom: 20rpx;
+        .goodsitem{
+          width:100%;
+          display: flex;
+          padding:24rpx;
+          height:264rpx;
+          border-bottom: 2rpx solid #EFEFEF;
+          box-sizing: border-box;
+          &:last-child{
+            border-bottom:2rpx solid #fff;
+          }
+          &:last-child{
+            border-bottom:1px solid #fff;
+          }
+          .goodspic{
+            flex:0 0 220rpx;
+            height:220rpx;
+            border-radius: 8rpx;
+          }
+          .rightbox{
+            flex:1;
+            height:100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-left: 20rpx;
+            overflow: hidden;
+            .itemtop{
+              display: flex;
+              flex-direction: column;
+              .itemtitle{
+                margin-top:5rpx;
+                font-size:36rpx;
+                color: #222222;
+                width: 100%;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+              }
+              .huodong{
+                display: flex;
+                align-items: center;
+                margin:16rpx 0 10rpx;
+                .huodongtxt1{
+                  font-size: 20rpx;
+                  color:#ff5031;
+                  padding: 0 6rpx;
+                  border:1rpx solid #ff5031;
+                  border-radius: 6rpx;
+                  line-height: 30rpx;
+                }
+                .activedowm{
+                  background-color: #888888;
+                  border:none;
+                  color: #fff;
+                  padding:0 10rpx;
+                }
+                .huodongtxt2{
+                  font-size: 28rpx;
+                  color:#888;
+                  margin-left: 15rpx;
+                  flex:1;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+              }
+            }
+            .priceaandtake{
+              width:100%;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              .price{
+                display: flex;
+                flex-direction: column;
+                align-items: baseline;
+                .pricenow{
+                  font-size: 32rpx;
+                  color:#f02b2b;
+                  line-height:40rpx;
+                  margin-right: 10rpx;
+                  text{
+                    font-size: 22rpx;
+                    margin-right: 10rpx;
+                  }
+                }
+                .price_activedowm{
+                  color: #888;
+                }
+                .priceori{
+                  font-size: 22rpx;
+                  color:#848689;
+                  text-decoration:line-through;
+                  margin-top:2rpx;
+                }
+              }
+              .takepartin{
+                height: 66rpx;
+                width:180rpx;
+                color:#fff;
+                border-radius: 5rpx;
+                font-size: 28rpx;
+                background:linear-gradient(to left,#FF4722,#FF7422);
+                text-align: center;
+                line-height: 66rpx;
+              }
+              .takepartin_activedowm{
+                line-height: 58rpx;
+                background: #fff;
+                color:#888;
+                border:4rpx solid #888;
+              }
+            }
+          }
+        }
+      }
+      .isLoadedAll{
+        width:100%;
+        height: 70rpx;
+        line-height: 70rpx;
+        font-size: 26rpx;
+        color:#666;
+        text-align: center;
+        background-color: #F2F2F0;
+        word-spacing: 10rpx;
+      }
+    }
+  }
+</style>

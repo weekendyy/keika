@@ -1,0 +1,462 @@
+<template>
+  <view class="My-container" hidden="{{!loadingHidden}}">
+    <view class="open-vip">
+      <view class="open-wrapper" @tap="gotoVip()">
+        <image src="{{vipInfo.card_img}}" class="logo"></image>
+        <view class="user-info">
+          <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
+          <view class="user-wrapper">
+            <text class="name">{{userInfo.userInfo.nickName}}</text>
+            <text class="date" wx:if="{{vipInfo.open_status == 1}}">{{vipInfo.end_time}}</text>
+          </view>
+          <text class="btn" wx:if="{{vipInfo.open_status == 2}}">{{magic_auth_str[1]}}</text>
+          <text class="btn" wx:if="{{vipInfo.open_status == 1}}">{{magic_auth_str[2]}}</text>
+        </view>
+      </view>
+      <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
+    </view>
+    <view class="nav-wrapper">
+      <view class="nav">
+        <button open-type="contact">
+          <image src="./images/icon-kefu.png"></image>
+          <text>{{center_index_str[0]}}</text>
+        </button>
+      </view>
+      <view class="nav" @tap="gotowelfare($event)">
+        <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
+        <image src="./images/icon-fuli.png"></image>
+        <text>{{center_index_str[1]}}</text>
+      </view>
+      <view class="nav" @tap="gotoOrder()">
+        <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text>
+        <image src="./images/icon-all.png"></image>
+        <text>{{center_index_str[2]}}</text>
+      </view>
+    </view>
+    <view class="desc-wrapper">
+      <view class="title-wrapper">
+        <view class="h11"></view>
+        <view class="h16 left"></view>
+        <text>{{vipInfo.privilege.title}}</text>
+        <view class="h16 right"></view>
+        <view class="h11"></view>
+      </view>
+      <view class="privilege-wrapper">
+        <repeat for="{{vipInfo.privilege.content}}" wx:for-item="item" key:index="index">
+          <text>{{item}}</text>
+        </repeat>
+      </view>
+      <view class="title-wrapper">
+        <view class="h11"></view>
+        <view class="h16 left"></view>
+        <text>{{vipInfo.business}}</text>
+        <view class="h16 right"></view>
+        <view class="h11"></view>
+      </view>
+      <view class="Business-wrapper">
+        <text>{{vipInfo.supplier_data.wechat_num}}</text>
+      </view>
+      <view class="title-wrapper">
+        <view class="h11"></view>
+        <view class="h16 left"></view>
+        <text>{{vipInfo.supplier_person}}</text>
+        <view class="h16 right"></view>
+        <view class="h11"></view>
+      </view>
+      <view class="provider-wrapper">
+        <view class="provider-left">
+          <view class="about">
+            <image class="logo" src="{{vipInfo.supplier_data.wechat_portrait}}"></image>
+            <text class="name">{{vipInfo.supplier_data.wechat_name}}</text>
+          </view>
+          <view class="desc">{{vipInfo.supplier_data.wechat_detail}}</view>
+        </view>
+        <view class="provider-right">
+          <image src="{{vipInfo.supplier_data.provide_qr_code}}"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  import wepy from 'wepy'
+  import MyModel from './index-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '会员中心',
+    }
+    data = {
+      orderNum: null,
+      welfareNum:null,
+      vipInfo: null,
+      GeographyData: null,
+      userInfo: null,
+      loadingHidden: false,
+      center_index_str: null,
+      magic_auth_str: null,
+    }
+    methods = {
+      gotowelfare($event){
+       this.$navigate('/pages/My/welfare')
+      },
+      gotoOrder(){
+        this.$navigate('./order/order',{id:0})
+      },
+      gotoVip(){
+        this.$navigate('../Vip/Index')
+      },
+      gotoDetail(index){
+        this.$navigate('./articleDetails',{id:index})
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this)
+    }
+    onShow(){
+      MyModel.getUserSpecialData(ResData=>{
+        if(Number(ResData.code) === 1) {
+          this.center_index_str = ResData.data.center_index_str
+          this.orderNum = ResData.data.no_pay_num
+          this.welfareNum = ResData.data.no_use_num
+          this.$apply()
+        }
+      })
+      MyModel.IS_VIP((ResData)=>{
+        if(ResData.code == 1){
+          this.vipInfo = ResData.data
+          this.magic_auth_str = ResData.data.magic_auth_str
+          this.$apply()
+        }
+      })
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        },()=>{
+          MyModel.twoGetCityName((res)=>{
+            console.log(res)
+          })
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color: #faf9f9;
+  }
+  button{
+    margin: 0;
+    padding: 0;
+    position: static;
+    border-radius:0;
+    line-height:0;
+    background-color: transparent;
+    &:hover{
+      background-color: none;
+    }
+    &::after{
+      position: static;
+      top: none;
+      bottom: none;
+      border: none;
+    }
+  }
+  .button-hover{
+    background-color: #fff;
+  }
+  .My-container{
+    overflow: hidden;
+  }
+  .open-vip{
+    padding-top: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #faf9f9;
+    .open-wrapper{
+      width: 670rpx;
+      height: 408rpx;
+      background-color: #000000;
+      border-radius: 15rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .logo{
+        width: 351rpx;
+        height: 125rpx;
+        margin-top: 94rpx;
+      }
+      .user-info{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-top: 42rpx;
+        .pic{
+          width: 71rpx;
+          height: 71rpx;
+          border: 4rpx solid #e6c17a;
+          border-radius: 50%;
+          margin-left: 30rpx;
+          overflow: hidden;
+        }
+        .user-wrapper{
+          flex:1;
+          display: flex;
+          flex-direction: column;
+          .name{
+            margin-left: 23rpx;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            font-size: 28rpx;
+            color: #e7c375;
+          }
+          .date{
+            margin-top:14rpx;
+            margin-left: 23rpx;
+            font-size:18rpx;
+            color: #e7c375;
+          }
+        }
+        .btn{
+          width: 194rpx;
+          margin-right: 40rpx;
+          text-align: center;
+          font-size: 28rpx;
+          color: #e7c375;
+          line-height: 70rpx;
+          border: 1rpx solid #e3c289;
+          border-radius: 10rpx;
+          background-color: #412d2e;
+        }
+      }
+    }
+    .open-bg{
+      width: 100%;
+      height: 59rpx;
+      margin-bottom:-20rpx;
+      position: relative;
+      z-index: 1;
+    }
+  }
+  .nav-wrapper{
+    width: 100%;
+    height: 126rpx;
+    background-color: #fff;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-around;
+    .nav{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-left:30rpx;
+      padding-right:30rpx;
+      position: relative;
+      button{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      image{
+        width: 48rpx;
+        height: 48rpx;
+      }
+      text{
+        padding-top: 20rpx;
+        font-size:22rpx;
+        color: #101010;
+      }
+      .num {
+        position: absolute;
+        width: 34rpx;
+        height: 34rpx;
+        line-height: 34rpx;
+        text-align: center;
+        border: 1px solid #ff6a3b;
+        border-radius: 50%;
+        font-size: 24rpx;
+        color: #ff6a3b;
+        top:4rpx;
+        left:54%;
+        background:#fff;
+        padding-top: 0;
+      }
+    }
+  }
+  .desc-wrapper{
+    width: 670rpx;
+    margin: 45rpx auto;
+    padding-bottom: 52rpx;
+    background-color: #ffffff;
+    box-shadow: 0rpx 0rpx 16rpx 0rpx rgba(0, 0, 0, 0.15);
+    border-radius: 15rpx;
+    .title-wrapper{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin:0 auto;
+      padding-top: 36rpx;
+      padding-bottom: 36rpx;
+      .h11{
+        width: 4rpx;
+        height: 11rpx;
+        background-color: #eac27c;
+      }
+      .h16{
+        width: 4rpx;
+        height: 16rpx;
+        background-color: #eac27c;
+        &.left{
+          margin-left: 3rpx;
+        }
+        &.right{
+          margin-right: 3rpx;
+        }
+      }
+      text{
+        font-family: PingFangSC;
+        font-size: 31rpx;
+        letter-spacing: 1px;
+        color: #eac27c;
+        margin-left:8rpx;
+        margin-right:8rpx;
+      }
+    }
+    .privilege-wrapper{
+      width:  600rpx;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      text{
+        font-size: 25rpx;
+        line-height: 45rpx;
+        letter-spacing: 1rpx;
+        color: #424242;
+      }
+    }
+    .Business-wrapper{
+      width:  600rpx;
+      margin: 0 auto;
+      text{
+        font-size: 25rpx;
+        line-height: 45rpx;
+        letter-spacing: 1rpx;
+        color: #424242;
+      }
+    }
+    .provider-wrapper{
+      width:  600rpx;
+      margin: 0 auto;
+      display: flex;
+      .provider-left{
+        flex:1;
+        margin-right: 20rpx;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        .about{
+          .logo{
+            width: 59rpx;
+            height: 59rpx;
+            margin-right:14rpx;
+          }
+          .name{
+            font-size: 30rpx;
+            color: #000000;
+          }
+        }
+        .desc{
+          margin-top: 20rpx;
+          font-size: 25rpx;
+          line-height: 36rpx;
+          color: #cccccc;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        }
+      }
+      .provider-right{
+        image{
+          width:166rpx;
+          height:166rpx;
+        }
+      }
+    }
+  }
+</style>

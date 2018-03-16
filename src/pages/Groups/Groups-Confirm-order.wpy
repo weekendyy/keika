@@ -1,0 +1,486 @@
+<template>
+  <view class="Confirm_order">
+    <view class="evaluate" wx:if="{{groupsData.status == 2}}">
+      <image src="./images/icon_evaluate.png"></image>
+      <text>购买成功</text>
+    </view>
+    <view class="Confirm_header {{groupsData.status == 1 ? 'active': ''}}" wx:if="{{groupsData.status == 1}}">
+      <view class="no-address" wx:if="{{!AddressInfo.shipping_name}}" @tap="getAddress">
+        <image src="./images/icon_address.png"></image>
+        <text>选择添加收货地址</text>
+      </view>
+      <view class="address-wrapper" wx:if="{{AddressInfo.shipping_name}}" @tap="getAddress">
+        <view class="user-info">
+          <image src="./images/icon_address.png"></image>
+          <text>{{AddressInfo.shipping_name}}</text>
+          <text>{{AddressInfo.shipping_tel}}</text>
+        </view>
+        <view class="address">
+          <text class="address-text">地址：</text>
+          <view class="address-content">{{AddressInfo.shipping_province}}{{AddressInfo.shipping_city}}{{AddressInfo.shipping_area}}{{AddressInfo.shipping_street}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="tel-wrapper" wx:if="{{groupsData.status == 1 }}">
+      <text>手机号(必填)</text>
+      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11"  placeholder="请填写手机号,方便商家验证"/>
+    </view>
+    <view class="Confirm_main">
+      <view class="main_header">
+        <text>购物清单</text>
+      </view>
+      <view class="goods">
+        <view class="goods_pic">
+          <image src="{{groupsData.main_img}}"></image>
+        </view>
+        <view class="goods_name">
+          <text>{{groupsData.goods_name}}</text>
+        </view>
+        <view class="goods_Price">
+          <text>¥{{groupsData.original_price}}</text>
+          <text>¥{{groupsData.discount_price}}</text>
+          <text>x{{groupsData.goods_num}}</text>
+        </view>
+      </view>
+      <view class="discount">
+        <view class="total">
+          <text>商品总价</text>
+          <text>￥{{groupsData.original_price}}</text>
+        </view>
+        <view class="Member">
+          <text>优惠折扣</text>
+          <text>-￥{{((groupsData.original_price * 100) - (groupsData.pay_price *  100))/100}}</text>
+        </view>
+        <view class="Actual">
+          <text>订单总价</text>
+          <text>￥{{groupsData.pay_price}}</text>
+        </view>
+      </view>
+      <view class="payment">
+        <text>实付款</text>
+        <text>￥{{groupsData.pay_price}}</text>
+      </view>
+    </view>
+    <view class="Code-wrapper">
+      <view>
+        <text>订单编号: </text>
+        <text>{{groupsData.order_num}}</text>
+      </view>
+      <view>
+        <text>下单时间：</text>
+        <text>{{groupsData.create_time}}</text>
+      </view>
+    </view>
+    <view class="footer">
+      <text class="pay-text">实付:</text>
+      <text class="pay-money">￥{{groupsData.pay_price}}</text>
+      <text wx:if="{{groupsData.status == 1}}" class="pay-btn {{payState == true ? '' : 'disabled'}}" @tap="buy">立即付款</text>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import AddressModel from '../../utils/address'
+  import Groups from './Api/Groups.Api'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '确定订单',
+      navigationBarBackgroundColor: '#faf9f9'
+    }
+    data = {
+      AddressInfo: {},
+      orderId: '',
+      goods_info: '',
+      requirePhone: '',
+      payState: true,
+      groupsData: null,
+      groupsPay_type: null,
+      real_tel:''
+    }
+    methods = {
+      getAddress(){
+        if(this.groupsData.status != 1){
+          return false
+        }
+        let that = this;
+        wx.chooseAddress({
+          success: function (res) {
+            that.AddressInfo.shipping_name = res.userName
+            that.AddressInfo.shipping_postcode = res.postalCode
+            that.AddressInfo.shipping_province = res.provinceName
+            that.AddressInfo.shipping_city = res.cityName
+            that.AddressInfo.shipping_area = res.countyName
+            that.AddressInfo.shipping_street = res.detailInfo
+            that.AddressInfo.shipping_tel = res.telNumber
+            if(!that.payState){
+              that.payState = true
+            }
+            that.$apply()
+          }
+        })
+      },
+      phoneInput($event){
+         this.requirePhone = $event.detail.value.trim()
+      },
+      buy(){
+        if(Number(this.requirePhone.length) === 0){
+          wx.showToast({
+            title: '请输入手机号码',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false
+        }
+        if(Number(this.requirePhone.length) <= 10){
+          wx.showToast({
+            title: '手机长度不足',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false
+        }
+        if(!(/^1[34578]\d{9}$/.test(this.requirePhone))){
+          wx.showToast({
+            title: '手机格式错误',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false;
+        }
+        let param = {
+          orderID: this.orderId,
+          shipping_phone: this.requirePhone
+        }
+        if(this.groupsData.address_options == 1 && JSON.stringify(this.AddressInfo) == '{}'){
+          wx.showToast({
+            title: '请填写收货地址',
+            icon: 'success',
+            duration: 1200
+          })
+          return false
+        }
+        if(this.AddressInfo) {
+          Object.assign(param,this.AddressInfo)
+        }
+        this.payState = false
+        this.$apply()
+        Object.assign(param,{link_tel:this.requirePhone,pay_type:this.groupsPay_type})
+        Groups.groupExecPay(param, ResData=>{
+          if(ResData.code == 1) {
+            Groups.wxPay(ResData.data, ResData=>{
+              // 支付成功以后, 跳转到状态页面 把防止重复提交的订单状态变量设置成 true
+              if(ResData == 2) {
+                this.payState = true
+                this.$apply()
+                if(this.groupsPay_type == 1){
+                  this.$navigate('/pages/Goods/pay-result',);
+                  return false
+                }
+                if(this.groupsPay_type == 2){
+                  this.$navigate('/pages/Groups/pay-result',{orderId: this.orderId});
+                  return false
+                }
+              }
+              // 取消支付以后,也需要把支付状态变量设置成 true
+              if(ResData == 1) {
+                this.payState = true
+                this.$apply()
+              }
+            })
+          }
+        })
+      },
+    }
+    onLoad(options){
+      this.orderId = options.orderId
+      this.groupsPay_type = options.pay_type
+      let _param = {
+        orderID: this.orderId,
+        pay_type: this.groupsPay_type,
+      }
+      Groups.getGropusOrderDetail(_param,ResData=>{
+        if(ResData.code === 1){
+          this.groupsData = ResData.data
+          this.AddressInfo.shipping_name = this.groupsData.shipping_name
+          this.AddressInfo.shipping_province = this.groupsData.shipping_province
+          this.AddressInfo.shipping_city = this.groupsData.shipping_city
+          this.AddressInfo.shipping_area = this.groupsData.shipping_area
+          this.AddressInfo.shipping_street = this.groupsData.shipping_street
+          this.AddressInfo.shipping_tel = this.groupsData.shipping_phone
+          this.real_tel = this.groupsData.real_tel
+          this.requirePhone = this.groupsData.real_tel
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+  page{
+    background-color:#f3f5f5;
+    height: 100%;
+  }
+.Confirm_order{
+  > view {
+    background-color: #fff;
+    margin-bottom:20rpx;
+    &:last-child {
+      margin-bottom:0;
+      display: flex;
+    }
+  }
+  .Confirm_header, .tel-wrapper, .Confirm_main > view,.Code-wrapper {
+    display: flex;
+    padding-left:28rpx;
+    padding-right:28rpx;
+    width:auto;
+  }
+}
+.evaluate{ // 待使用
+  background-image: linear-gradient( -90deg, rgb(255,104,58) 0%, rgb(255,155,100) 100%);
+  height:140rpx;
+  display:flex;
+  align-items:center;
+  color:#fff;
+  image{
+    width:28rpx;
+    height:40rpx;
+    margin-left: 26rpx;
+    margin-right:26rpx;
+  }
+  text{
+    font-size:28rpx;
+  }
+}
+.Confirm_header{
+  flex-direction: column;
+  height: 164rpx;
+  &.active{
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAu4AAAAECAMAAADmg0o1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NTc3MiwgMjAxNC8wMS8xMy0xOTo0NDowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTQgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjVBNjI3RDU5QjU1RTExRTc5MzM2QTNBMUFEMkM5QjI1IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjVBNjI3RDVBQjU1RTExRTc5MzM2QTNBMUFEMkM5QjI1Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NUE2MjdENTdCNTVFMTFFNzkzMzZBM0ExQUQyQzlCMjUiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NUE2MjdENThCNTVFMTFFNzkzMzZBM0ExQUQyQzlCMjUiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz6yTqsmAAAACVBMVEUXrNv/PI0AAACAwvOpAAAAA3RSTlP//wDXyg1BAAAAOElEQVR42uzRwQ0AMAzCQKf7D50B+iFv7AHQSTBBL45j+fIc06z5D3/Q3GPGHzT3mPEHzT3mFWAACPoN+SG9xgYAAAAASUVORK5CYII="), url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAaCAMAAABfE/ZQAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NTc3MiwgMjAxNC8wMS8xMy0xOTo0NDowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTQgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkREOTYxMzlDQjU2MDExRTc4ODBCQzQzMEIzODRCNkE2IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkREOTYxMzlEQjU2MDExRTc4ODBCQzQzMEIzODRCNkE2Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6REQ5NjEzOUFCNTYwMTFFNzg4MEJDNDMwQjM4NEI2QTYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6REQ5NjEzOUJCNTYwMTFFNzg4MEJDNDMwQjM4NEI2QTYiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5T6bK7AAAABlBMVEVpaXIAAADfiJp2AAAAAnRSTlP/AOW3MEoAAABMSURBVHjabJFBDsBACITg/59u0pNM6xE3irMonkK4gLemfwAWYAEWYAEWYAEWULMr/1Ftf97PvNk3PuM798y9k8fk9Zdn8u9/PAIMAN85ARInr2aHAAAAAElFTkSuQmCC");
+    background-repeat:no-repeat, no-repeat;
+    background-position: bottom center,96% center;
+    background-size: 100% 4rpx,16rpx 26rpx;
+  }
+
+  text {
+    font-size:32rpx;
+    color: #2f2f2f;
+  }
+  > view{
+    width:100%;
+    height: 100%;
+    display: flex;
+  }
+  .address-wrapper{
+    justify-content: center;
+    flex-direction: column;
+    .user-info{
+      width:100%;
+      image{
+        width:22rpx;
+        height:30rpx;
+        vertical-align: middle;
+      }
+      text:nth-child(2){
+        margin-left:40rpx;
+        margin-right:68rpx;
+      }
+    }
+    .address{
+      display: flex;
+      margin-left:66rpx;
+      .address-content{
+        flex: 1;
+        margin-left: 20rpx;
+        margin-right: 20rpx;
+        font-size:32rpx;
+        color:#2f2f2f;
+      }
+    }
+  }
+  .no-address{
+    align-items: center;
+    image{
+      width: 30rpx;
+      height: 40rpx;
+      margin-left: 30rpx;
+    }
+    text {
+      margin-left: 22rpx;
+    }
+  }
+}
+.tel-wrapper{
+  height: 124rpx;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 30rpx;
+  text {
+    color: #e7573d;
+    position: relative;
+    &::after{
+      content:'*';
+      position: absolute;
+      right: -20rpx;
+      color: #e7573d;
+    }
+  }
+  input {
+    width: 400rpx;
+    text-align: right;
+    padding-top: 30rpx;
+    padding-bottom: 30rpx;
+  }
+  .telPlaceholder{
+    color: #e7573d;
+  }
+}
+.Confirm_main{
+     > view {
+       border-bottom:1px solid #e5e5e8;
+       &:last-child {
+         border-bottom:none;
+       }
+    }
+    .main_header{
+      height:74rpx;
+      align-items: center;
+      text{
+        font-size:28rpx;
+        color:#212121;
+      }
+    }
+    .goods{
+      padding-top:30rpx;
+      padding-bottom:30rpx;
+      .goods_pic{
+        margin-right:32rpx;
+        image{
+          width: 118rpx;
+          height:118rpx;
+          border: 1px solid #eaeaea;
+          vertical-align: top;
+        }
+      }
+      .goods_name{
+        font-size:0;
+        text{
+          font-size:28rpx;
+          color:#272727;
+        }
+      }
+      .goods_Price{
+        display: flex;
+        flex-direction: column;
+        color:#9b9b9b;
+        margin-left:auto;
+        text-align: right;
+        text{
+          font-size:28rpx;
+          &:first-child{
+            text-decoration: line-through;
+          }
+          &:last-child{
+            &:first-letter{
+              font-size:24rpx;
+            }
+          }
+        }
+      }
+    }
+    .discount{
+      align-self:center;
+      flex-direction: column;
+      justify-content: center;
+      box-sizing: border-box;
+       view {
+        display: flex;
+        justify-content: space-between;
+         margin-top: 16rpx;
+         margin-bottom: 16rpx;
+       ~ view {
+         margin-top:10rpx;
+       }
+         text{
+           font-size:24rpx;
+           color:#9a9a9a;
+         }
+         &:last-child{
+           text {
+             font-size:28rpx;
+           }
+         }
+      }
+    }
+    .payment{
+      height: 90rpx;
+      align-items: center;
+      text {
+        &:first-child{
+          font-size: 28rpx;
+          color:#414141;
+          margin-right: 10rpx;
+        }
+        &:last-child{
+          font-size:32rpx;
+          color: #ff683a;
+        }
+      }
+    }
+  }
+  .Code-wrapper{
+    height:124rpx;
+    flex-direction: column;
+    justify-content: center;
+    >view {
+      font-size:0;
+      &:first-child{
+        margin-bottom:20rpx;
+      }
+      text {
+        font-size:24rpx;
+        color: #666;
+        &:first-child{
+          margin-right:18rpx;
+        }
+      }
+    }
+  }
+.footer{
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  height:100rpx;
+  align-items: center;
+  .pay-text{
+    font-size:32rpx;
+    margin-left:45rpx;
+    color: #000;
+  }
+  .pay-money{
+    font-size:32rpx;
+    margin-left:40rpx;
+    color: #ff683a;
+  }
+  .pay-btn{
+    display: inline-block;
+    margin-left:auto;
+    width: 240rpx;
+    height: 100rpx;
+    background-image: linear-gradient( 0deg, rgb(251,123,3) 0%, rgb(255,73,19) 100%);
+    text-align: center;
+    line-height:100rpx;
+    font-size: 34rpx;
+    color: #fff;
+    &.disabled{
+      background: rgba(171,149,109,0.6);
+      pointer-events: none;
+    }
+  }
+}
+</style>

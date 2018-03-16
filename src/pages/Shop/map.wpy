@@ -1,0 +1,28 @@
+<template>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '来店路线'
+    }
+    onLoad(option){
+      wx.getLocation({
+        type: 'gcj02',
+        success: function(res){
+          wx.openLocation({
+            latitude: Number(option.latitude),
+            longitude: Number(option.longitude),
+            scale: 18,
+            name: option.shopName,
+            address:option.shopAddress,
+          })
+        }
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+</style>

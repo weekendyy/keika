@@ -1,0 +1,892 @@
+<template>
+  <view class="index-container" hidden="{{!loadingHidden}}">
+    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <view class="nav-wrapper" wx:if="{{navData.length}}">
+      <view class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" @tap="navClick({{index}})">
+        <image src="{{item.classify_img}}"></image>
+        <text>{{item.classify_name}}</text>
+      </view>
+    </view>
+    <!-- <view class="league">
+      <image src="http://p24lfn08v.bkt.clouddn.com/haodiansss.png" mode="widthFix" class="leagueImg"></image>
+      <swiper indicator-dots="{{false}}" class="league-swiper"
+        autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}">
+        <block wx:for="{{5}}">
+          <swiper-item>
+            <text>我已经成功入驻</text>
+          </swiper-item>
+        </block>
+      </swiper>
+      <view class="leaguebtn" @tap="openLeagueBox">我要入驻</view>
+    </view> -->
+    <!-- 入驻弹窗 -->
+    <!-- <view class="leagueWindow" wx:if="{{showLeagueWindow}}">
+      <view class="leagueBox {{showLeagueWindow?'showLeagueBox':''}}">
+        <image src="http://p24lfn08v.bkt.clouddn.com/%E5%A5%BD%E5%BA%97%E6%8E%A8%E8%8D%90-%E6%81%A2%E5%A4%8D%E7%9A%84_03.png" mode="widthFix" class="leagueBoxImg"></image>
+        <view class="leagueBox-title">
+          <text class="leagueBox-title-txt">留下您的联系方式</text>
+          <view class="leagueBox-title-desc">
+            <view class="league-cut"></view>
+            <text>Reservation consultatio</text>
+            <view class="league-cut"></view>
+          </view>
+        </view>
+        <form style="flex: 1">
+          <view class="formBox">
+            <input type="text" placeholder="请输入店铺名称" />
+            <input type="number" placeholder="请输入联系电话" />
+            <button>提交信息</button>
+          </view>
+        </form>
+      </view>`
+    </view> -->
+    <view class="index-list" wx:if="{{activityData.length}}">
+      <view class="index-header">
+        <image src="./images/liwu.png"></image>
+        <text class="name">{{listtitle[0]}}</text>
+      </view>
+      <repeat for="{{activityData}}" wx:for-item="item" key:index="index">
+        <view class="index-item" @tap="gotoDetails({{index}})">
+          <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
+            <!--<image src="../../images/icon-qianggou.png"></image>-->
+            <view class="merge_goods_typeBox">
+              <view class="merge_goods_type_txt">{{home_goods_classify_str.promotion_goods_str}}</view>
+            </view>
+          </view>
+          <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
+            <!--<image src="../../images/icon-pintuan.png"></image>-->
+            <view class="merge_goods_typeBox">
+              <view class="merge_goods_type_txt">{{home_goods_classify_str.group_goods_str}}</view>
+            </view>
+          </view>
+          <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
+            <!--<image src="../../images/icon-kanjia.png"></image>-->
+            <view class="merge_goods_typeBox">
+              <view class="merge_goods_type_txt">{{home_goods_classify_str.bargain_goods_str}}</view>
+            </view>
+          </view>
+          <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
+            <!--<image src="../../images/icon-jifu.png"></image>-->
+            <view class="merge_goods_typeBox">
+              <view class="merge_goods_type_txt">{{home_goods_classify_str.lucky_goods_str}}</view>
+            </view>
+          </view>
+          <view class="status-img" wx:if="{{item.residue_num!=0}}">
+            <image src="./images/qiang.png"></image>
+          </view>
+          <view class="status-img" wx:if="{{item.residue_num == 0}}">
+            <image src="./images/end.png"></image>
+          </view>
+          <image class="item-pic" src="{{item.banner}}"></image>
+          <view class="item-data">
+            <view class="left">
+              <view class="brand">
+                <text>品牌 : </text>
+                <text>{{item.brand_name}}</text>
+              </view>
+              <view class="title">{{item.name}}</view>
+              <view class="date-wrapper">
+                <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
+              </view>
+            </view>
+            <view class="right">
+              <text class="btn">立刻抢购</text>
+              <view class="num-wrapper">
+                剩余: <text class="num">{{item.residue_num}} </text>份
+              </view>
+            </view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <view class="vip-list"  wx:if="{{welfareData.length}}">
+      <view class="index-header">
+        <image src="./images/fuli.png"></image>
+        <text class="name">{{listtitle[1]}}</text>
+      </view>
+      <scroll-view  scroll-y="true" bindscrolltolower="onReachBottom">
+        <repeat for="{{welfareData}}" wx:for-item="item" key:index="index">
+          <view class="index-item" @tap="gotoWelfareDetails({{index}})" >
+            <view class="status-img" wx:if="{{item.residue_num!=0}}">
+              <image src="./images/qiang.png"></image>
+            </view>
+            <view class="status-img" wx:if="{{item.residue_num == 0}}">
+              <image src="./images/end.png"></image>
+            </view>
+            <view class="vip-wrapper">
+              <text>会员免费</text>
+            </view>
+            <image class="item-pic" src="{{item.banner_img}}"></image>
+            <view class="item-data">
+              <view class="brand">
+                <text>品牌 : </text>
+                <text>{{item.magic_goods_classify}}</text>
+              </view>
+              <view class="vip-box">
+                <text class="stitle">{{item.magic_goods_title}}</text>
+              </view>
+              <view class="date-wrapper">
+                <text class="date">时间: {{item.from_time}}-{{item.end_time}}</text>
+                <view class="num-wrapper">
+                  剩余: <text class="num">{{item.repertory_num}}</text> 份
+                </view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </scroll-view>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  import wepy from 'wepy'
+  import cheader from '@/components/cheader'
+  import cheaderModel from '@/components/cheader-model'
+  import indexModel from './index-model'
+  import MyModel from '@/pages/My/index-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '正在加载中...',
+      enablePullDownRefresh: true,
+      backgroundTextStyle: 'dark'
+    }
+    data = {
+      headerinfo: null,
+      welfareData:null,
+      preventRepeatReuqest: true,
+      pageNum :1,
+      activityData: '',
+      loadingHidden: false,
+      GeographyData: null,
+      userInfo: null,
+      listtitle: null,
+      navData: null,
+      home_goods_classify_str:null,
+      showLeagueWindow:false
+    }
+    methods = {
+      onShareAppMessage(){
+        return {
+          title: wepy.$instance.globalData.name,
+          path: 'pages/Index/index',
+        }
+      },
+      gotoDetails(index){
+        const i = this.activityData[index]
+        if(i.merge_goods_type == 2){
+          this.$navigate('../Groups/Groups-details',{id:i.group_id})
+          return false
+        }
+        if(i.merge_goods_type == 1){
+          this.$navigate('../Goods/details',{id:i.promotion_id})
+          return false
+        }
+        if(i.merge_goods_type == 4){
+          this.$navigate('../Bargain/details',{id:i.bargain_id})
+          return false
+        }
+        if(i.merge_goods_type == 3){
+          this.$navigate('../Card/details',{id:i.lucky_id})
+          return false
+        }
+      },
+      gotoWelfareDetails(index){
+        let i = this.welfareData[index].id
+        this.$navigate('../Shop/welfareDetails',{id:i})
+      },
+      onReachBottom(){
+        if (!this.preventRepeatReuqest) {
+          return false
+        }
+        ++this.pageNum
+        indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
+          if(this.welfareData.length >= ResData.total_num){
+            wx.showLoading({
+              title: '已经到底了',
+            })
+            let timer = setTimeout(()=>{
+              wx.hideLoading()
+              this.preventRepeatReuqest = false
+              clearTimeout(timer)
+              this.$apply()
+            },1500)
+            return false
+          }
+          if(ResData.code == 1){
+            this.welfareData = [...this.welfareData, ...ResData.data]
+            this.$apply()
+          }
+        })
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this),
+      navClick(index){
+        let IndexData = this.navData[index]
+        if (IndexData.choose_link == 1){
+          wx.navigateTo({
+            url: IndexData.http_url,
+          })
+          return false
+        }
+        if (IndexData.choose_link == 3){
+          wx.switchTab({
+            url: IndexData.http_url,
+          })
+          return false
+        }
+        if(IndexData.choose_link == 2){
+          wx.navigateToMiniProgram({
+            appId: IndexData.http_url
+          })
+          return false
+        }
+        if(IndexData.choose_link == 4){
+          wx.navigateTo({
+            url: './open?url='+IndexData.http_url,
+          })
+          return false
+        }
+      },
+      openLeagueBox(){
+        this.showLeagueWindow = true
+        this.$apply()
+        console.log("adasd")
+      }
+    }
+    onLoad(){
+      indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
+        if(ResData.code == 1){
+          this.welfareData = ResData.data
+          this.$apply()
+        }
+      })
+      indexModel.getActivity((ResData)=>{
+        if(ResData.code == 1){
+          this.activityData = [...this.activityData, ...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
+          this.listtitle = ResData.data.char_str
+          this.home_goods_classify_str=ResData.data.home_goods_classify_str
+          if(ResData.data.magic_top_title){
+            wepy.$instance.globalData.name = ResData.data.magic_top_title
+            wx.setNavigationBarTitle({
+              title: ResData.data.magic_top_title
+            })
+          }
+          this.$apply()
+        }
+      })
+      indexModel.getNaData((ResData)=>{
+        this.navData = ResData.data
+        this.$apply()
+      })
+    }
+    onShow(){
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        },()=>{
+          MyModel.twoGetCityName((res)=>{
+            console.log(res)
+          })
+        })
+      }
+      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        if(ResData.code == 1){
+          this.headerinfo = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onPullDownRefresh(){
+      this.pageNum=1;
+      let isConnectNet = false
+      indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
+        if(ResData.code == 1){
+          this.welfareData = ResData.data
+          this.$apply()
+          wx.stopPullDownRefresh()
+          isConnectNet = true
+        }
+      })
+      indexModel.getActivity((ResData)=>{
+        if(ResData.code == 1){
+          this.activityData = [...this.activityData, ...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
+          this.listtitle = ResData.data.char_str
+          this.home_goods_classify_str=ResData.data.home_goods_classify_str
+          this.$apply()
+          wx.stopPullDownRefresh()
+          isConnectNet = true
+        }
+      })
+      indexModel.getNaData((ResData)=>{
+        this.navData = ResData.data
+        this.$apply()
+        wx.stopPullDownRefresh()
+        isConnectNet = true
+      })
+      setTimeout(()=>{
+        wx.stopPullDownRefresh()
+        if(!isConnectNet){
+          wx.showToast({
+            title: '请检查您的网络',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      },5000)
+    }
+    components = {
+      cheader: cheader
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color: #faf9f9;
+  }
+  .nav-wrapper{
+    position: relative;
+    z-index:2;
+    width: 100%;
+    display: flex;
+    background-color: #fff;
+    flex-wrap:wrap;
+    .nav{
+      width: 25%;
+      height:164rpx;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      image{
+        width: 50rpx;
+        height: 50rpx;
+      }
+      text{
+        margin-top: 20rpx;
+        font-size: 26rpx;
+        color: #0a0a0a;
+      }
+    }
+  }
+  .league{
+    width: 100%;
+    height: 88rpx;
+    border-top: 2rpx solid #DCDCDC;
+    box-sizing: border-box;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    .leagueImg{
+      width: 96rpx;
+      height:53rpx;
+      margin-left: 33rpx;
+    }
+    .league-swiper{
+      flex: 1;
+      height: 100%;
+      text{
+        color: #A1A1A1;
+        font-size: 27rpx;
+        line-height: 86rpx;
+        margin-left: 17rpx;
+      }
+    }
+    .leaguebtn{
+      color: #fff;
+      font-size: 25rpx;
+      line-height: 50rpx;
+      background-color: #FF2400;
+      border-radius: 8rpx;
+      padding: 0 20rpx;
+      margin-right: 20rpx;
+    }
+  }
+  .leagueWindow{
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0,0,0,.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    .leagueBox{
+      border-radius: 25rpx;
+      width: 585rpx;
+      height: 788rpx;
+      background-color: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: .3s;
+      opacity: 0;
+      transform: scale(.9);
+      pointer-events: none;
+      .leagueBoxImg{
+        width: 100%;
+        flex: 0 0 261rpx;
+      }
+      .leagueBox-title{
+        flex: 0 0 170rpx;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        .leagueBox-title-txt{
+          color: #000;
+          font-size: 27rpx;
+          font-weight: bold;
+          line-height: 1;
+          margin-bottom: 22rpx;
+        }
+        .leagueBox-title-desc{
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          width: 100%;
+          .league-cut{
+            flex: 1;
+            height: 1px;
+            background-color: #F6F5F5;
+          }
+          text{
+            color: #CFC6CF;
+            font-size: 14rpx;
+            margin: 0 10rpx;
+          }
+        }
+      }
+      .formBox{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 545rpx;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        input{
+          background-color: #F6F5F5;
+          font-size: 24rpx;
+          padding: 25rpx 22rpx;
+          width: 100%;
+          height: 73rpx;
+          box-sizing: border-box;
+          margin-bottom: 30rpx; 
+        }
+        button{
+          background-color: #FF6633;
+          color: #fff;
+          font-size: 24rpx;
+          border-radius: 0;
+          width: 335rpx;
+          height: 59rpx;
+          line-height: 59rpx;
+          margin-top: 30rpx;
+          &:after{
+            content:none;
+          }
+        }
+      }
+    }
+    .showLeagueBox{
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .index-list{
+    border-top: 20rpx solid #ececef;
+    .index-header{
+      width: 100%;
+      height: 116rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 36rpx;
+        height: 32rpx;
+        margin-right:34rpx;
+      }
+      .name{
+        font-size: 34rpx;
+        color: #353535;
+        letter-spacing: 4rpx;
+      }
+    }
+    .index-item{
+      width: 690rpx;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+      background-color: #ffffff;
+      box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
+      margin-bottom: 30rpx;
+      overflow: hidden;
+      transition: .5s;
+      .sign{
+        position: absolute;
+        left:0;
+        top: 0;
+        image{
+          width: 148rpx;
+          height: 148rpx;
+        }
+        .merge_goods_typeBox{
+          width:200rpx;
+          height: 200rpx;
+          transform: rotateZ(-45deg);
+          .merge_goods_type_txt{
+            height: 60rpx;
+            background-color: #cf2824;
+            width:200rpx;
+            color: #fff;
+            font-size: 25rpx;
+
+            text-align: center;
+            line-height: 60rpx;
+          }
+        }
+      }
+      .status-img{
+        position: absolute;
+        right: 20rpx;
+        top: 20rpx;
+        image{
+          width: 108rpx;
+          height: 108rpx;
+        }
+      }
+
+      .item-pic{
+        width: 100%;
+        height: 360rpx;
+      }
+      .item-data{
+        width: 100%;
+        background-color: #fff;
+        display: flex;
+        .left{
+          overflow: hidden;
+          margin-top: 22rpx;
+          margin-bottom: 20rpx;
+          .brand{
+            height: 50rpx;
+            background-color: #e8c180;
+            font-size: 0;
+            padding-left:31rpx;
+            padding-right: 31rpx;
+            display: inline-block;
+            overflow: hidden;
+            text{
+              font-size: 26rpx;
+              line-height: 50rpx;
+              color: #f6f6f6;
+              letter-spacing: 2rpx;
+              &:last-child{
+                padding-left: 18rpx;
+              }
+            }
+          }
+          .title{
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            padding-top: 16rpx;
+            padding-left: 31rpx;
+            padding-bottom: 13rpx;
+            font-size: 28rpx;
+            color: #323232;
+            letter-spacing: 2rpx;
+          }
+          .stitle{
+            flex: 1;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            padding-top: 16rpx;
+            padding-left: 31rpx;
+            padding-bottom: 13rpx;
+            font-size: 28rpx;
+            color: #323232;
+            letter-spacing: 2rpx;
+          }
+
+
+          .date-wrapper{
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            .date{
+              padding-left: 31rpx;
+              font-size: 24rpx;
+              color: #888888;
+              letter-spacing: 2rpx;
+            }
+            .num-wrapper{
+              margin-right: 14rpx;
+              font-size: 24rpx;
+              color: #888888;
+              .num{
+                color: #ffc14c;
+              }
+            }
+          }
+        }
+        .right{
+          margin-left: auto;
+          margin-right: 14rpx;
+          display: flex;
+          flex-direction: column;
+          margin-top: 43rpx;
+          .btn{
+            width: 140rpx;
+            line-height: 60rpx;
+            text-align: center;
+            font-size: 28rpx;
+            background-color: #e8c180;
+            color: #fff;
+            box-shadow: 0 0 20rpx rgba(121,80,10,.2);
+          }
+          .num-wrapper{
+            margin-top: 16rpx;
+            font-size: 24rpx;
+            color: #888888;
+            .num{
+              color: #ffc14c;
+            }
+          }
+        }
+      }
+    }
+  }
+  .vip-list{
+    border-top: 20rpx solid #ececef;
+    .index-header{
+      width: 100%;
+      height: 112rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 36rpx;
+        height: 32rpx;
+        margin-right:34rpx;
+      }
+      .name{
+        font-size: 34rpx;
+        color: #353535;
+        letter-spacing: 4rpx;
+      }
+    }
+    .index-item{
+      width: 690rpx;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #ffffff;
+      box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
+      transition: .5s;
+      + .index-item{
+        margin-top: 30rpx;
+      }
+      &:last-child{
+        margin-bottom: 57rpx;
+      }
+      .status-img{
+        position: absolute;
+        right: 20rpx;
+        top: 20rpx;
+        image{
+          width: 108rpx;
+          height: 108rpx;
+        }
+      }
+      .vip-wrapper{
+        position: absolute;
+        top: 40rpx;
+        left: -10rpx;
+        width: 106rpx;
+        height: 30rpx;
+        text-align: center;
+        background-image: linear-gradient(-12deg, #fec635 50%, #fed95a 100%),
+        linear-gradient(#636363, #636363);
+        border-radius: 0rpx 4rpx 4rpx 0rpx;
+        font-size:0;
+        text{
+          line-height: 30rpx;
+          font-size: 22rpx;
+          color: #4d4632;
+        }
+      }
+      .item-pic{
+        width: 100%;
+        height: 360rpx;
+      }
+      .item-data{
+        background-color: #fff;
+        font-size:0;
+        overflow: hidden;
+          .brand{
+            height: 50rpx;
+            background-color: #e8c180;
+            font-size: 0;
+            padding-left:31rpx;
+            padding-right: 31rpx;
+            margin-top: 23rpx;
+            display: inline-block;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            text{
+              font-size: 26rpx;
+              line-height: 50rpx;
+              color: #f6f6f6;
+              letter-spacing: 2rpx;
+              &:last-child{
+                overflow: hidden;
+                text-overflow:ellipsis;
+                white-space: nowrap;
+                padding-left: 18rpx;
+              }
+            }
+          }
+          .title{
+            flex: 1;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            padding-top: 16rpx;
+            padding-left: 31rpx;
+            padding-bottom: 13rpx;
+            font-size: 28rpx;
+            color: #323232;
+            letter-spacing: 2rpx;
+          }
+        .vip-box{
+          display: flex;
+          align-items: center;
+          width: 100%;
+          overflow: hidden;
+          .stitle{
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            margin-top: 16rpx;
+            margin-bottom: 13rpx;
+            font-size: 28rpx;
+            line-height:30rpx;
+            color: #323232;
+            letter-spacing: 2rpx;
+            margin-left: 31rpx;
+          }
+        }
+
+          .date-wrapper{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20rpx;
+            .date{
+              padding-left: 31rpx;
+              font-size: 24rpx;
+              color: #888888;
+              letter-spacing: 2rpx;
+            }
+            .num-wrapper{
+              margin-right: 14rpx;
+              font-size: 24rpx;
+              color: #888888;
+              .num{
+                color: #ffc14c;
+              }
+            }
+          }
+      }
+    }
+  }
+</style>

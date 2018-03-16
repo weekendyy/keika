@@ -1,0 +1,485 @@
+<template>
+  <view class="activity-wrapper" hidden="{{!loadingHidden}}">
+    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <view class="activity-content">
+      <view class="activity-tab">
+        <repeat for="{{TitleData}}" wx:for-item="item" key="index">
+          <view class="tab-item {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
+        </repeat>
+      </view>
+      <view class="activity-tab-box">
+          <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0}}">
+            <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoNowDetails({{index}})">
+              <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
+                <image src="../../images/icon-qianggou.png"></image>
+              </view>
+              <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
+                <image src="../../images/icon-pintuan.png"></image>
+              </view>
+              <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
+                <image src="../../images/icon-kanjia.png"></image>
+              </view>
+              <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
+                <image src="../../images/icon-jifu.png"></image>
+              </view>
+              <image class="item-pic" src="{{item.banner}}"></image>
+              <view class="item-data">
+                <view class="brand">
+                  <text>品牌 : </text>
+                  <text>{{item.brand_name}}</text>
+                </view>
+                <text class="stitle">{{item.name}}</text>
+                <view class="date-wrapper">
+                  <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
+                  <view class="num-wrapper">
+                    剩余: <text class="num">{{item.residue_num}}</text> 份
+                  </view>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+          <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1}}">
+            <view class="index-item" wx:for="{{OldActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoOldDetails({{index}})">
+              <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
+                <image src="../../images/icon-qianggou.png"></image>
+              </view>
+              <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
+                <image src="../../images/icon-pintuan.png"></image>
+              </view>
+              <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
+                <image src="../../images/icon-kanjia.png"></image>
+              </view>
+              <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
+                <image src="../../images/icon-jifu.png"></image>
+              </view>
+              <image class="item-pic" src="{{item.banner}}"></image>
+              <view class="item-data">
+                <view class="brand">
+                  <text>品牌 : </text>
+                  <text>{{item.brand_name}}</text>
+                </view>
+                <text class="stitle">{{item.name}}</text>
+                <view class="date-wrapper">
+                  <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
+                  <view class="num-wrapper">
+                    剩余: <text class="num">{{item.residue_num}}</text> 份
+                  </view>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+      </view>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  import wepy from 'wepy'
+  import cheader from '@/components/cheader'
+  import cheaderModel from '@/components/cheader-model'
+  import ActivityModel from './Activity-model'
+  import MyModel from '@/pages/My/index-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#faf9f9",
+      navigationBarTitleText: '活动推荐',
+    }
+    data = {
+      loadingHidden: false,
+      GeographyData: null,
+      userInfo: null,
+      currentTabsIndex: 0,
+      TitleData: [],
+      headerinfo: null,
+      NowActivityData: '',
+      OldActivityData: '',
+      NowpreventRepeatReuqest: true,
+      OldpreventRepeatReuqest: true,
+      pageNum:{
+        NowActivityPage: 1,
+        OldActivityPage: 1,
+      }
+    }
+    methods = {
+      onShareAppMessage(){
+        return {
+          title: "活动推荐",
+          path: 'pages/Activity/index',
+        }
+      },
+      onTabsItemTap(index){
+        this.currentTabsIndex = index
+        if(this.currentTabsIndex == 1 && this.OldActivityData.length == 0){
+          ActivityModel.getPast(this.pageNum.OldActivityPage,Resdata=>{
+            if(Resdata.code == 1){
+              this.OldActivityData = [...this.OldActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
+              this.$apply()
+            }
+          })
+        }
+      },
+      gotoNowDetails(index){
+        const i = this.NowActivityData[index]
+        if(i.merge_goods_type == 2){
+          this.$navigate('../Groups/Groups-details',{id:i.group_id})
+          return false
+        }
+        if(i.merge_goods_type == 1){
+          this.$navigate('../Goods/details',{id:i.promotion_id})
+          return false
+        }
+        if(i.merge_goods_type == 4){
+          this.$navigate('../Bargain/details',{id:i.bargain_id})
+          return false
+        }
+        if(i.merge_goods_type == 3){
+          this.$navigate('../Card/details',{id:i.lucky_id})
+          return false
+        }
+      },
+      gotoOldDetails(index){
+        const i = this.OldActivityData[index]
+        if(i.merge_goods_type == 2){
+          this.$navigate('../Groups/Groups-details',{id:i.group_id})
+          return false
+        }
+        if(i.merge_goods_type == 1){
+          this.$navigate('../Goods/details',{id:i.promotion_id})
+          return false
+        }
+        if(i.merge_goods_type == 4){
+          this.$navigate('../Bargain/details',{id:i.bargain_id})
+          return false
+        }
+        if(i.merge_goods_type == 3){
+          this.$navigate('../Card/details',{id:i.lucky_id})
+          return false
+        }
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this),
+      onReachBottom(){
+        if (this.currentTabsIndex == 0){
+          if (!this.NowpreventRepeatReuqest) {
+            return false
+          }
+          ++this.pageNum.NowActivityPage
+          ActivityModel.getConduct(this.pageNum.NowActivityPage,(Resdata)=>{
+            if(Resdata.code == 1){
+              if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0){
+                wx.showLoading({
+                  title: '已经到底了',
+                })
+                let timer = setTimeout(()=>{
+                  wx.hideLoading()
+                  this.NowpreventRepeatReuqest = false
+                  clearTimeout(timer)
+                  this.$apply()
+                },2000)
+                this.$apply()
+                return false
+              }
+              this.NowActivityData = [...this.NowActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
+              this.$apply()
+            }
+          })
+        }
+        if (this.currentTabsIndex == 1){
+          if (!this.OldpreventRepeatReuqest) {
+            return false
+          }
+          ++this.pageNum.OldActivityPage
+          ActivityModel.getPast(this.pageNum.OldActivityPage,(Resdata)=>{
+            if(Resdata.code == 1){
+              if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0){
+                wx.showLoading({
+                  title: '已经到底了',
+                })
+                let timer = setTimeout(()=>{
+                  wx.hideLoading()
+                  this.OldpreventRepeatReuqest = false
+                  clearTimeout(timer)
+                  this.$apply()
+                },2000)
+                this.$apply()
+                return false
+              }
+              this.OldActivityData = [...this.OldActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
+              this.$apply()
+            }
+          })
+        }
+      }
+    }
+    onLoad(){
+      ActivityModel.getConduct(this.pageNum.NowActivityPage,(Resdata)=>{
+        if(Resdata.code == 1){
+          this.NowActivityData = [...this.NowActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
+          this.TitleData = Resdata.data.activity_recommend_str
+          this.$apply()
+        }
+      })
+      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        if(ResData.code == 1){
+          this.headerinfo = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        },()=>{
+          MyModel.twoGetCityName((res)=>{
+            console.log(res)
+          })
+        })
+      }
+    }
+    components = {
+      cheader: cheader
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color: #faf9f9;
+  }
+  .activity-content{
+    position: relative;
+    z-index:2;
+      .activity-tab{
+        width: 100%;
+        display: flex;
+        background-color: #fff;
+        border-bottom: 1rpx solid #eeeeee;
+        justify-content: center;
+        .tab-item{
+          width: 166rpx;
+          line-height: 94rpx;
+          text-align: center;
+          font-size: 30rpx;
+          color: #9b9b9b;
+          &.active{
+            color: #ff1818;
+            border-bottom: 4rpx solid #ff1818;
+          }
+          &:last-child{
+            position: relative;
+            &::before{
+              content: " ";
+              position: absolute;
+              left: 0;
+              top: 50%;
+              margin-top: -18rpx;
+              width: 2rpx;
+              height: 37rpx;
+              background-color: #d4d4d4;
+            }
+          }
+        }
+      }
+  }
+  .activity-tab-box{
+    margin-top: 31rpx;
+    .index-list{
+      &:first-child{
+        padding-top:31rpx;
+        padding-bottom:20rpx;
+      }
+    }
+  }
+  .vip-list{
+    .index-header{
+      width: 100%;
+      height: 112rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 36rpx;
+        height: 32rpx;
+        margin-right:34rpx;
+      }
+      .name{
+        font-size: 34rpx;
+        color: #353535;
+        letter-spacing: 4rpx;
+      }
+    }
+    .index-item{
+      width: 690rpx;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #ffffff;
+      box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
+      + .index-item{
+        margin-top: 30rpx;
+      }
+      &:last-child{
+        margin-bottom: 50rpx;
+      }
+      .sign{
+        position: absolute;
+        left:0;
+        top: 0;
+        image{
+          width: 148rpx;
+          height: 148rpx;
+        }
+      }
+      .item-pic{
+        width: 100%;
+        height: 360rpx;
+      }
+      .item-data{
+        background-color: #fff;
+        font-size:0;
+        overflow: hidden;
+        .brand{
+          height: 50rpx;
+          background-color: #e8c180;
+          font-size: 0;
+          padding-left:31rpx;
+          padding-right: 31rpx;
+          margin-top: 23rpx;
+          display: inline-block;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          text{
+            font-size: 26rpx;
+            line-height: 50rpx;
+            color: #f6f6f6;
+            letter-spacing: 2rpx;
+            &:last-child{
+              overflow: hidden;
+              text-overflow:ellipsis;
+              white-space: nowrap;
+              padding-left: 18rpx;
+            }
+          }
+        }
+        .title{
+          flex: 1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          padding-top: 16rpx;
+          padding-left: 31rpx;
+          padding-bottom: 13rpx;
+          font-size: 28rpx;
+          color: #323232;
+          letter-spacing: 2rpx;
+        }
+        .stitle{
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+          margin-top: 16rpx;
+          padding-left: 31rpx;
+          margin-bottom: 13rpx;
+          font-size: 28rpx;
+          line-height:30rpx;
+          color: #323232;
+          letter-spacing: 2rpx;
+        }
+        .date-wrapper{
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20rpx;
+          .date{
+            padding-left: 31rpx;
+            font-size: 24rpx;
+            color: #888888;
+            letter-spacing: 2rpx;
+          }
+          .num-wrapper{
+            margin-right: 14rpx;
+            font-size: 24rpx;
+            color: #888888;
+            .num{
+              color: #ffc14c;
+            }
+          }
+        }
+      }
+    }
+  }
+</style>

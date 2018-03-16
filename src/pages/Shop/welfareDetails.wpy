@@ -1,0 +1,303 @@
+<template>
+  <import src="../../wxParse/wxParse.wxml"/>
+  <view class="Index-container">
+    <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
+      <swiper-item class="banner-item">
+        <image src="{{WelfareData.banner_img}}" mode="aspectFill"></image>
+      </swiper-item>
+    </swiper>
+    <view class="item-wrapper">
+      <view class="item">
+        <view class="shop-info-header">
+          <text class="shop-title">{{WelfareData.magic_shop_name}}</text>
+        </view>
+        <text class="time">营业时间: {{WelfareData.business_time}}</text>
+      </view>
+      <view class="item h120">
+        <image src="../Shop/images/icon-address.png" class="icon-address"></image>
+        <text class="address" @tap="openMap('{{WelfareData.longitude}}')">{{WelfareData.address}}</text>
+        <image src="../Shop/images/icon-tel.png" class="icon-tel" @tap="tel('{{WelfareData.link_tel}}')"></image>
+      </view>
+    </view>
+    <view class="ActivityDetails-wrapper">
+      <view class="ActivityDetails-header">
+        <image src="../Shop/images/about.png"></image>
+        <text>福利详情</text>
+      </view>
+      <view class="shopDetails-content">
+        <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
+      </view>
+    </view>
+<!--    <view class="shopDetails-wrapper">
+      <view class="shopDetails-header">
+        <image src="../Shop/images/about.png"></image>
+        <text>店铺详情</text>
+      </view>
+      <view class="shopDetails-content">
+      </view>
+    </view>-->
+    <view class="open-vip" wx:if="{{card_status == 2}}" @tap="openVip()">
+      <text>开通会员即可获赠</text>
+    </view>
+    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2}}" @tap="addWelfare()">
+      <text>马上领取</text>
+    </view>
+    <view class="open-vip end" wx:if="{{card_status == 1 && check_get_log ==1}}">
+      <text>已领取</text>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import ShopModel from './shop-model'
+  import wxParse from '../../wxParse/wxParse'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '福利详情',
+    }
+    data = {
+      id: null,
+      WelfareData: null,
+      card_status: null,
+      check_get_log: null
+    }
+    methods = {
+      onShareAppMessage(){
+        return {
+          title: this.WelfareData.magic_shop_name,
+          path: 'pages/Shop/welfareDetails?id='+ this.id,
+        }
+      },
+      openMap(data){
+        let latitude = data.split(",")[0]
+        let longitude = data.split(",")[1]
+        this.$navigate('./map',{latitude:latitude,longitude:longitude,shopName:this.WelfareData.magic_shop_name,shopAddress:this.WelfareData.address})
+      },
+      tel(data){
+        wx.makePhoneCall({
+          phoneNumber: data
+        })
+      },
+      openVip(){
+        this.$navigate('../Vip/Index')
+      },
+      addWelfare(){
+        let param = {
+          goods_id: this.id
+        }
+        ShopModel.addWelfare(param, (ResData)=>{
+          if(ResData.code == 1){
+            wx.showLoading({
+              title: '领取成功',
+              icon: 'success',
+              duration: 1500
+            })
+            this.check_get_log = 1
+            this.$apply()
+
+          }
+        })
+      }
+    }
+    onLoad(options){
+      this.id = options.id
+    }
+    onShow(){
+      ShopModel.getWelfareData({id:this.id}, (ResData)=>{
+        if(ResData.code == 1){
+          this.card_status = ResData.card_status
+          this.check_get_log = ResData.check_get_log
+          this.WelfareData = ResData.data
+          wxParse.wxParse('article1', 'html', this.WelfareData.magic_goods_detail, this, 5);
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+<style lang="less">
+  .h120{
+    height: 120rpx;
+  }
+  .h80{
+    height:80rpx;
+  }
+  .swiper{
+    height: 400rpx;
+    width: 100%;
+    .banner-item{
+      height: 100%;
+      width: 100%;
+    }
+    image{
+      height: 100%;
+      width: 100%;
+    }
+  }
+  .item-wrapper {
+    display: flex;
+    border-bottom: 1rpx solid #dddddd;
+    flex-direction: column;
+    background-color: #fff;
+    .item {
+      margin-left:30rpx;
+      padding-right:30rpx;
+    }
+    .item + .item{
+      border-top: 1rpx solid #dddddd;
+    }
+    .shop-info-header{
+      width:  100%;
+      margin-top:38rpx;
+      margin-bottom:24rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .shop-title {
+        flex: 1;
+        font-size:36rpx;
+        color:#323232;
+        font-weight: 500;
+      }
+      .time{
+        display: block;
+        font-size:28rpx;
+        color:#747474;
+        margin-bottom:34rpx;
+      }
+    }
+    .time{
+      display: block;
+      font-size:28rpx;
+      color:#747474;
+      margin-bottom:34rpx;
+    }
+    .h120, .h80{
+      display: flex;
+      align-items: center;
+      .address{
+        flex:1;
+        font-size:30rpx;
+        color:#323332;
+        margin-left:26rpx;
+      }
+      .icon-address{
+        width: 24rpx;
+        height: 32rpx;
+      }
+      .icon-tel{
+        width: 40rpx;
+        height: 40rpx;
+        padding: 25rpx;
+      }
+      .vip-title{
+        font-size: 34rpx;
+        margin-left:26rpx;
+        margin-right:auto;
+      }
+      .icon-vip{
+        width: 24rpx;
+        height:20rpx;
+      }
+      .vip-condition{
+        font-size:20rpx;
+        color:#888888;
+        margin-left:26rpx;
+        margin-right:auto;
+        + text {
+          font-size:20rpx;
+          color:#888888;
+        }
+      }
+    }
+  }
+  .shopDetails-wrapper{
+    border-top: 20rpx solid #f6f5f5;
+    padding-bottom: 110rpx;
+    .shopDetails-header{
+      margin-top:55rpx;
+      margin-bottom: 34rpx;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 29rpx;
+        height: 40rpx;
+        margin-right:20rpx;
+      }
+      text{
+        font-size: 32rpx;
+        color: #111111;
+      }
+    }
+    .shopDetails-content{
+      width: 100%;
+      display: flex;
+      box-sizing: border-box;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30rpx;
+      padding-left: 30rpx;
+      padding-right: 30rpx;
+    }
+  }
+  .ActivityDetails-wrapper{
+    border-top: 20rpx solid #f6f5f5;
+    width: 100%;
+    background-color: #fff;
+    margin-bottom: 100rpx;
+    .ActivityDetails-header{
+      margin-top:60rpx;
+      margin-bottom: 34rpx;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 29rpx;
+        height: 40rpx;
+        margin-right:20rpx;
+      }
+      text{
+        font-size: 32rpx;
+        color: #111111;
+      }
+    }
+    .shopDetails-content{
+      width: 100%;
+      display: flex;
+      box-sizing: border-box;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30rpx;
+      padding-bottom: 80rpx;
+      .wxParse-p{
+        width: 100%;
+      }
+      .wxParse-p image{
+        width: 100%;
+      }
+    }
+  }
+  .open-vip{
+    width: 100%;
+    height: 110rpx;
+    background-image: linear-gradient(0deg, #caad70 0%, #fee194 100%);
+    position: fixed;
+    text-align: center;
+    left: 0;
+    bottom: 0;
+    &.end{
+      pointer-events: none;
+    }
+    text{
+      line-height: 110rpx;
+      font-size: 38rpx;
+      color: #fefefe;
+    }
+  }
+</style>

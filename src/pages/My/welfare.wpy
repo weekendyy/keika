@@ -1,0 +1,204 @@
+<template>
+  <view class="welfare-container">
+    <view class="welfare-nav">
+      <repeat for="{{TitleData}}" wx:for-item="item" key="index">
+        <text class="{{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</text>
+      </repeat>
+    </view>
+    <view class="welfare-list">
+      <view class="welfare-item" wx:for="{{orderData}}" wx:for-item="item" wx:key="index">
+        <view class="welfare-header" wx:if="{{item.status == 1}}">
+          <text>未使用</text>
+          <text>{{item.create_time}}</text>
+        </view>
+        <view class="welfare-header" wx:if="{{item.status == 2}}">
+          <text>已使用</text>
+          <text>{{item.create_time}}</text>
+        </view>
+        <view class="welfare-header" wx:if="{{item.status == 3}}">
+          <text>已过期</text>
+          <text>{{item.create_time}}</text>
+        </view>
+        <view class="welfare-box">
+          <image class="left" src="{{item.main_img}}"></image>
+          <view class="right">
+            <text class="title">{{item.magic_goods_title}}</text>
+            <view class="wrapper">
+              <text class="name">店铺名称:</text>
+              <text class="content">{{item.brand}}</text>
+            </view>
+            <view class="wrapper date-wrapper">
+              <text class="name">时间:</text>
+              <text class="content">请在{{item.end_time}} 前使用</text>
+            </view>
+            <view class="options">
+              <!--<text class="giveUp">放弃福利</text>-->
+              <text class="giveUp" wx:if="{{item.status == 2}}">已使用</text>
+              <text class="giveUp" wx:if="{{item.status == 3}}">已过期</text>
+              <text class="WriteOff" wx:if="{{item.status == 1}}" @tap="gotoCoupon({{item.order_id}})">到店核销</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import MyModel from './index-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '我的福利',
+    }
+    data = {
+      currentTabsIndex: 0,
+      orderData: null,
+      TitleData: ['全部','未使用','已使用','已过期'],
+    }
+    methods = {
+      onTabsItemTap(index){
+        this.currentTabsIndex = index
+        if(this.currentTabsIndex == 0){
+          MyModel.getOrderDataList({order_status:'4'}, (ResData)=>{
+            if(ResData.code == 1){
+              this.orderData = ResData.data
+              this.$apply()
+              return false
+            }
+          })
+        }
+        MyModel.getOrderDataList({order_status:this.currentTabsIndex }, (ResData)=>{
+          if(ResData.code == 1){
+            this.orderData = ResData.data
+            this.$apply()
+            return false
+          }
+        })
+      },
+      gotoCoupon(index){
+        this.$navigate("./coupon",{id:index})
+      },
+    }
+    onShow(){
+      MyModel.getOrderDataList({order_status:'4'}, (ResData)=>{
+        if(ResData.code == 1){
+          this.orderData = ResData.data
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+<style lang="less">
+.welfare-container{
+  height: 100%;
+  background-color: #f6f5f5;
+}
+  .welfare-nav{
+    width: 100%;
+    display: flex;
+    background-color: #fff;
+    border-bottom: 1rpx solid #d1d0d0;
+    justify-content: space-around;
+    text{
+      width: 84rpx;
+      line-height: 80rpx;
+      text-align: center;
+      font-size:28rpx;
+      color: #686868;
+      &.active{
+        color: #ff6a3c;
+        border-bottom:4rpx solid #ff6a3c;
+      }
+    }
+  }
+  .welfare-list{
+    .welfare-item{
+      width: 100%;
+      background-color: #fff;
+      margin-top: 30rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .welfare-header{
+        width: 690rpx;
+        height: 70rpx;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom:1rpx solid #efefef;
+        text{
+          font-size: 30rpx;
+          color: #949494;
+        }
+      }
+      .welfare-box{
+        width: 690rpx;
+        padding-top: 30rpx;
+        padding-bottom: 30rpx;
+        overflow: hidden;
+        display: flex;
+        .left{
+          width:  175rpx;
+          height: 180rpx;
+          border-radius: 2rpx;
+          margin-right: 28rpx;
+          overflow: hidden;
+        }
+        .right{
+          flex:1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          font-size:0;
+          .title{
+            margin-top:4rpx;
+            font-size: 28rpx;
+            color: #000000;
+            font-weight: bold;
+          }
+          .wrapper{
+            font-size:0;
+            &:first-of-type{
+              margin-top: 14rpx;
+            }
+            text{
+              font-size: 24rpx;
+              color: #000000;
+              letter-spacing: 1rpx;
+            }
+            .name{
+              padding-right:18rpx;
+            }
+          }
+          .date-wrapper{
+            margin-top: 11rpx;
+          }
+          .options{
+            width:  100%;
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 26rpx;
+            text{
+              width: 173rpx;
+              height: 58rpx;
+              line-height: 58rpx;
+              text-align: center;
+              border-radius: 10rpx;
+              color: #fff;
+              font-size:26rpx;
+              margin-left: 21rpx;
+            }
+            .giveUp{
+              background-color: #999999;
+            }
+            .WriteOff{
+              background-color: #ffa715;
+            }
+          }
+        }
+      }
+    }
+  }
+</style>

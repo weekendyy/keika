@@ -1,0 +1,558 @@
+<template>
+  <view class="index-container" hidden="{{!loadingHidden}}">
+    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <view class="tab-box">
+      <view class="tab-list">
+        <repeat for="{{TitleData}}" wx:for-item="item" key="index">
+          <view class="teb-item {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
+        </repeat>
+      </view>
+      <view class="tab-content">
+        <scroll-view class="shop-data" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0 }}" bindscrolltolower="onReachBottom">
+          <view class="shop-data-item" wx:for="{{shopData}}" wx:for-item="item" wx:key="index" @tap="gotoShop({{index}})">
+            <view class="top">
+              <view class="pic-wrapper">
+                <image class="pic" src="{{item.main_img}}"></image>
+              </view>
+              <view class="top-content">
+                <text class="shop-name">{{item.magic_shop_name}}</text>
+                <view class="type-wrapper">
+                  <view>{{item.classify_magic_goods}}</view>
+                  <view>{{item.per_consume}}</view>
+                </view>
+                <view class="type-wrapper">
+                  <view>{{item.address}}</view>
+                  <view>{{item.distance}}km</view>
+                </view>
+                <view class="top-fb">
+                  <image src="./images/zan.png"></image>
+                  <view>"{{item.brief_describe}}"</view>
+                </view>
+              </view>
+            </view>
+            <view class="bottom">
+              <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}})">
+                <view class="fuli-item-top">
+                  <text class="type">{{item.one_str}}</text>
+                  <text class="name">{{item.magic_goods_title}}</text>
+                  <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
+                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+                </view>
+                <view class="fuli-item-bottom">
+                  <text class="desc">{{item.magic_goods_name}}</text>
+                  <text class="num">已领 {{item.get_num}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+        <scroll-view class="shop-data" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1 }}">
+          <view class="shop-data-item" wx:for="{{nearbyData}}" wx:for-item="item" wx:key="index"  @tap="gotonear({{index}})">
+            <view class="top">
+              <view class="pic-wrapper">
+                <image class="pic" src="{{item.main_img}}"></image>
+              </view>
+              <view class="top-content">
+                <text class="shop-name">{{item.magic_shop_name}}</text>
+                <view class="type-wrapper">
+                  <view>{{item.classify_magic_goods}}</view>
+                  <view>{{item.per_consume}}</view>
+                </view>
+                <view class="type-wrapper">
+                  <view>{{item.address}}</view>
+                  <view>{{item.distance}}km</view>
+                </view>
+                <view class="top-fb">
+                  <image src="./images/zan.png"></image>
+                  <view>"{{item.brief_describe}}"</view>
+                </view>
+              </view>
+            </view>
+            <view class="bottom">
+              <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index"  @tap.stop="gotoWelfare({{item.id}})">
+                <view class="fuli-item-top">
+                  <text class="type">{{item.one_str}}</text>
+                  <text class="name">{{item.magic_goods_title}}</text>
+                  <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
+                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+                </view>
+                <view class="fuli-item-bottom">
+                  <text class="desc">{{item.magic_goods_name}}</text>
+                  <text class="num">已领 {{item.get_num}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  import wepy from 'wepy'
+  import cheader from '@/components/cheader'
+  import cheaderModel from '@/components/cheader-model'
+  import ShopModel from './shop-model'
+  import MyModel from '@/pages/My/index-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '推荐店铺',
+    }
+    data = {
+      loadingHidden: false,
+      GeographyData: null,
+      userInfo: null,
+      currentTabsIndex: '0',
+      TitleData: [],
+      headerinfo: null,
+      shopData: '',
+      nearbyData: '',
+      nearbyDataNum:'',
+      shopRepeatReuqest: true,
+      nearbyRepeatReuqest: true,
+      pageNum:{
+        shopPage: 1,
+        nearPage: 1,
+      }
+    }
+    methods = {
+      onShareAppMessage(){
+        return {
+          title: "推荐店铺",
+          path: 'pages/Shop/shopIndex',
+        }
+      },
+      onTabsItemTap(index){
+        this.currentTabsIndex = index
+        if(this.currentTabsIndex == 1 && this.nearbyData.length == 0){
+          ShopModel.getNearbyData(this.pageNum.nearPage,(ResData)=>{
+            if(ResData.code == 1){
+              this.nearbyDataNum = ResData.total_num
+              this.nearbyData = ResData.data
+              this.$apply()
+            }
+          })
+        }else if(this.currentTabsIndex == 0 && this.shopData.length == 0){
+          ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
+            if(ResData.code == 1){
+              this.shopData = ResData.data
+              this.$apply()
+            }
+          })
+        }
+      },
+      gotoShop(index){
+        const i = this.shopData[index].id
+        this.$navigate('./shopDetails',{id:i})
+      },
+      gotonear(index){
+        const i = this.nearbyData[index].id
+        this.$navigate('./shopDetails',{id:i})
+      },
+      gotoWelfare(index){
+        this.$navigate('../Shop/welfareDetails',{id:index})
+      },
+      onReachBottom(){
+        if (this.currentTabsIndex == 0){
+          if (!this.shopRepeatReuqest) {
+            return false
+          }
+          ++this.pageNum.shopPage
+          ShopModel.getShopIndexData(this.pageNum.shopPage,(Resdata)=>{
+            if(Resdata.code == 1){
+              if(this.shopData.length >= Resdata.total_num){
+                wx.showLoading({
+                  title: '已经到底了',
+                })
+                let timer = setTimeout(()=>{
+                  wx.hideLoading()
+                  this.shopRepeatReuqest = false
+                  clearTimeout(timer)
+                  this.$apply()
+                },2000)
+                this.$apply()
+                return false
+              }
+              this.shopData = [...this.shopData, ...Resdata.data]
+              this.$apply()
+            }
+          })
+        }
+        if (this.currentTabsIndex == 1){
+          if (!this.nearbyRepeatReuqest) {
+            return false
+          }
+          if(this.nearbyData.length >= this.nearbyDataNum){
+            wx.showLoading({
+              title: '已经到底了',
+            })
+            let timer = setTimeout(()=>{
+              wx.hideLoading()
+              this.nearbyRepeatReuqest = false
+              clearTimeout(timer)
+              this.$apply()
+            },2000)
+            this.$apply()
+            return false
+          }
+          ++this.pageNum.nearPage
+          ShopModel.getNearbyData(this.pageNum.nearPage,(Resdata)=>{
+            if(Resdata.code == 1){
+              this.nearbyData = [...this.nearbyData, ...Resdata.data]
+              this.$apply()
+            }
+          })
+        }
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this)
+    }
+    onLoad(){
+      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        if(ResData.code == 1){
+          this.headerinfo = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+      this.pageNum.shopPage=1
+      this.pageNum.nearPage=1
+      this.shopRepeatReuqest = true
+      this.nearbyRepeatReuqest = true
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        },()=>{
+          MyModel.twoGetCityName((res)=>{
+            console.log(res)
+          })
+        })
+      }
+      if(this.currentTabsIndex=='0'){
+        ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
+          if(ResData.code == 1){
+            this.shopData = ResData.data
+            this.TitleData = ResData.stores_recommend_str
+            this.$apply()
+          }
+        })
+      }else{
+        ShopModel.getNearbyData(this.pageNum.nearPage,(ResData)=>{
+          if(ResData.code == 1){
+            this.nearbyData = ResData.data
+            this.$apply()
+          }
+        })
+      }
+
+    }
+    components = {
+      cheader: cheader
+    }
+  }
+</script>
+<style lang="less">
+  .header{
+    padding-top: 24rpx;
+    padding-bottom: 20rpx;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    .name{
+      margin-left:30rpx;
+      margin-right: 12rpx;
+      font-size:28rpx;
+      color: #0c0c0c;
+    }
+    .icon-down{
+      width: 17rpx;
+      height: 10rpx;
+      margin-right: 40rpx;
+    }
+    .search-box{
+      width: 456rpx;
+      height: 56rpx;
+      border-radius: 50rpx;
+      background-color: #f3f3f3;
+      overflow:hidden;
+      display: flex;
+      align-items: center;
+      .icon-search{
+        margin-left:21rpx;
+        width: 26rpx;
+        height: 26rpx;
+        margin-right:14rpx;
+      }
+      .search-text{
+        flex: 1;
+        font-size:24rpx;
+        color: #a5a5a5;
+      }
+    }
+  }
+  .swiper-wrapper{
+    width: 100%;
+    height: 320rpx;
+    image{
+      width: 100%;
+      height: 100%
+    }
+  }
+
+  .tab-box{
+    position: relative;
+    z-index:2;
+    .tab-list{
+      width: 100%;
+      padding-left: 40rpx;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      border-bottom:1rpx solid #e4e4e4;
+      background-color: #fff;
+      .teb-item{
+        width: 136rpx;
+        text-align: center;
+        line-height: 90rpx;
+        font-size: 28rpx;
+        color: #4c4c4c;
+        border-bottom: 6rpx solid transparent;
+        ~ .teb-item{
+          margin-left: 46rpx;
+        }
+        &.active{
+          pointer-events:none;
+          color: #e5c079;
+          border-bottom: 6rpx solid #e5c079;
+        }
+      }
+    }
+  }
+  .tab-content{
+    .shop-data{
+      border-top: 8rpx solid #faf9f9;
+      margin-bottom: 58rpx;
+    }
+    .shop-data-item{
+      width: 688rpx;
+      margin-top: 30rpx;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 11rpx;
+      border: 1px solid #c5c079;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+    .top{
+      width: 626rpx;
+      display: flex;
+      margin-top: 24rpx;
+      margin-bottom: 31rpx;
+      .pic-wrapper{
+        overflow: hidden;
+        margin-right: 28rpx;
+        .pic{
+          width: 189rpx;
+          height: 189rpx;
+          border-radius: 7px;
+        }
+      }
+      .top-content{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        .shop-name{
+          width: 100%;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          padding-top:10rpx;
+          font-size:34rpx;
+          color: #000;
+          font-weight: bold;
+        }
+        .type-wrapper{
+          margin-top: 14rpx;
+          font-size: 0;
+          display: flex;
+          align-items: center;
+          view{
+            max-width: 8em;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            font-size: 26rpx;
+            color: #888888;
+            &:first-child{
+              margin-right: 26rpx;
+            }
+          }
+        }
+      }
+      .top-fb{
+        margin-top:22rpx;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        image{
+          width: 30rpx;
+          height: 30rpx;
+          margin-right: 13rpx;
+        }
+        view{
+          font-size:26rpx;
+          color: #888888;
+          flex:1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+    .bottom{
+      width: 626rpx;
+      .fuli-item{
+        width: 100%;
+        padding-top:18rpx;
+        padding-bottom:18rpx;
+        border-top: 1px solid #dedede;
+        .fuli-item-top{
+          display: flex;
+          align-items: center;
+          .type{
+            border: 1rpx solid #f3dddd;
+            width: 34rpx;
+            line-height:34rpx;
+            text-align: center;
+            font-size: 24rpx;
+            color: #dd8084;
+            border-radius: 4rpx;
+            background-color: #fdf0ef;
+          }
+          .name{
+            font-size: 28rpx;
+            color: #000000;
+            margin-left:22rpx;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .btn{
+            margin-left:auto;
+            width: 120rpx;
+            line-height: 58rpx;
+            text-align: center;
+            border-radius: 50rpx;
+            background-color: #ff6068;
+            font-size:24rpx;
+            color: #fff;
+            letter-spacing: 2rpx;
+            &.end{
+              background-color:#ccc;
+            }
+          }
+        }
+        .fuli-item-bottom{
+          margin-top:8rpx;
+          font-size:0;
+          display: flex;
+          .desc{
+            flex: 1;
+            font-size:26rpx;
+            color: #fa6564;
+            margin-left:56rpx;
+            margin-right: 59rpx;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .num{
+            width: 120rpx;
+            text-align: center;
+            margin-top: 19rpx;
+            font-size:24rpx;
+            color: #9d9d9d;
+          }
+        }
+      }
+    }
+  }
+</style>
+

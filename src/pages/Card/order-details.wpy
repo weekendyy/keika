@@ -1,0 +1,352 @@
+<template>
+  <view class="Order-details" hidden="{{!loadingHidden}}">
+    <view class="order-state">
+      <view class="state-wrapper" wx:if="{{DetailsData.status == 2 }}">
+        <text>使用成功</text>
+      </view>
+      <view class="state-wrapper" wx:if="{{DetailsData.status == 3 }}">
+        <text>已过期</text>
+      </view>
+      <view class="evaluate" wx:if="{{DetailsData.status == 1 }}">
+        <!--待使用-->
+        <text>等待使用</text>
+      </view>
+    </view>
+    <view class="details">
+      <view class="details-header">
+        <text>{{DetailsData.shop_name}}</text>
+      </view>
+      <view class="details-main">
+        <view class="goods-pic">
+          <image src="{{DetailsData.banner_img}}"></image>
+        </view>
+        <view class="goods-name">
+          <text>{{DetailsData.activity_name}}</text>
+        </view>
+        <view class="goods-Price">
+            <text class="old">{{DetailsData.price}}</text>
+            <text class="num">x1</text>
+        </view>
+      </view>
+      <view class="details-discount">
+        <view>
+          <text>商品总价</text>
+          <text>￥{{DetailsData.price}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="Order-Code">
+      <view>
+        <text>下单时间:</text>
+        <text>{{DetailsData.create_time}}</text>
+      </view>
+    </view>
+    <view class="footer">
+        <!--订单成功 或者 订单取消掉的时候 -->
+        <text class="del-order" wx:if="{{DetailsData.status == 2 || DetailsData.status == 3}}" @tap.stop="delOrder()">删除订单</text>
+        <!--待付款-->
+        <!--待使用-->
+        <text class="payment" wx:if="{{DetailsData.status == 1}}" @tap="gotoDestory">去使用</text>
+    </view>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CardModel from './Card-model'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '订单详情'
+    }
+    data = {
+      loadingHidden: true,
+      DetailsData: '',
+      groupsData: null,
+      orderID: '',
+    }
+    methods = {
+      gotoDestory(){
+        wx.navigateTo({
+          url: './coupon?id='+ this.orderID
+        })
+      },
+      /*   删除订单 */
+      delOrder(){
+        CardModel.delOrder({order_id: this.orderID}, ResData=>{
+          if (Number(ResData.code) == 1){
+            wx.showToast({
+              title: "删除成功",
+              icon:'loading',
+              duration: 500,
+              mask: true,
+            })
+          }
+          setTimeout(()=>{
+            wx.navigateBack({
+              delta: 1
+            })
+          }, 1000)
+        })
+      },
+    }
+    onLoad(options){
+      this.orderID = options.id
+    }
+    onShow(){
+      CardModel.orderDetails({order_id:this.orderID}, ReaData=> {
+        if(ReaData.code ==1) {
+          this.DetailsData = ReaData.data
+          this.loadingHidden = true
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color:#f3f5f5;
+    height:100%;
+  }
+  text{
+    line-height: 1;
+  }
+  .Order-details .order-state,.user-info-wrapper,.details > view,.Order-Code{
+    width:auto;
+    padding-left:28rpx;
+    padding-right:28rpx;
+    background-color: #fff;
+  }
+  .order-state{
+    width: auto;
+    height: 140rpx;
+    background-image: linear-gradient( -90deg, rgb(255,104,58) 0%, rgb(255,155,100) 100%);
+    color: #ffffff;
+    .state-wrapper{ // 成功和失败的
+      width: 100%;
+      height: inherit;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text{
+        font-size:34rpx;
+        color:#fff;
+      }
+    }
+    .Waiting{ // 待付款
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      color:#fff;
+      > view{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        &:first-child{
+          margin-top:33rpx;
+        }
+        &:last-child{
+          justify-content: flex-end;
+        }
+      }
+      .Waiting-title{
+        font-size:34rpx;
+      }
+      .Waiting-time{
+        font-size:28rpx;
+      }
+      .Waiting-money{
+        font-size:24rpx;
+      }
+    }
+    .evaluate{ // 待评价
+      height:100%;
+      display: flex;
+      align-items: center;
+      image{
+        width:28rpx;
+        height:40rpx;
+        margin-right:26rpx;
+      }
+      .evaluate-text {
+        font-size:28rpx;
+      }
+      .evaluate-date{
+        flex: 1;
+        text-align: right;
+        font-size:34rpx;
+      }
+    }
+  }
+  .user-info-wrapper{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size:28rpx;
+    color:#666666;
+    padding-top: 10rpx;
+    padding-bottom: 10rpx;
+    .user-info{
+      display: flex;
+      align-items: center;
+      .icon-address{
+        width:22rpx;
+        height:30rpx;
+      }
+      .shipping-name{
+        margin-left:40rpx;
+        margin-right:68rpx;
+      }
+    }
+    .address{
+      margin-left:66rpx;
+      margin-top:14rpx;
+      display: flex;
+      align-items: flex-start;
+      .address-desc {
+        flex: 1;
+        margin-left: 20rpx;
+      }
+    }
+
+  }
+  .details{
+    margin-top: 20rpx;
+    margin-bottom:20rpx;
+    .details-header{
+      text{
+        font-size:28rpx;
+        line-height:74rpx;
+        color:#212121;
+      }
+      ~ view {
+        border-top:1rpx solid #e5e5e8;
+      }
+    }
+    .details-main{
+      display: flex;
+      padding-top:30rpx;
+      padding-bottom:30rpx;
+      .goods-pic{
+        image{
+          width:118rpx;
+          height:118rpx;
+          border:1rpx solid #eaeaea;
+        }
+      }
+      .goods-name{
+        margin-left:32rpx;
+        font-size:0;
+        text{
+          font-size:28rpx;
+          color:#272727;
+        }
+      }
+      .goods-Price{
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        text-align: right;
+        .old{
+          margin-top:6rpx;
+          text-decoration: line-through;
+          font-size:28rpx;
+        }
+        .new {
+          margin-top:4rpx;
+          font-size:28rpx;
+          color:#686868;
+        }
+        .num {
+          margin-top:6rpx;
+          text-align: right;
+          font-size:28rpx;
+          &:first-letter{
+            font-size:20rpx;
+          }
+        }
+      }
+    }
+    .details-discount{
+      padding-top:23rpx;
+      padding-bottom:27rpx;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      > view {
+        display: flex;
+        justify-content: space-between;
+        font-size:24rpx;
+        color: #9a9a9a;
+        &:last-child{
+          text{
+            font-size:28rpx;
+            color:#414141;
+          }
+        }
+      }
+    }
+    .Actual-payment{
+      height: 86rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text{
+        &:first-child{
+          font-size: 28rpx;
+          color: #414141;
+        }
+        &:last-child{
+          font-size:32rpx;
+          color:#ff3861;
+        }
+      }
+    }
+  }
+  .Order-Code{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text{
+      display: inline-block;
+      font-size:24rpx;
+      color: #666;
+      &:first-child{
+        width:180rpx;
+        text-align: left;
+      }
+    }
+  }
+  .footer{
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    height: 106rpx;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: #fff;
+    border-top:1rpx solid #e6e6e6;
+    text,navigator{
+      margin-right:42rpx;
+      width:162rpx;
+      height:70rpx;
+      text-align: center;
+      line-height:70rpx;
+      font-size:26rpx;
+      border-radius: 4rpx;
+    }
+    .del-order{
+      border:1rpx solid #353535;
+    }
+    .payment{
+      color:#ff6a3c;
+      margin-left:14rpx;
+      border:1rpx solid #ff6a3c;
+      vertical-align: top;
+    }
+  }
+</style>

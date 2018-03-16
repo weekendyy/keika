@@ -1,0 +1,324 @@
+<template>
+  <import src="../../wxParse/wxParse.wxml"/>
+  <view class="Index-container">
+    <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
+        <swiper-item class="banner-item" wx:for="{{shopDetail.banner_img}}" wx:for-item="item" wx:key="index">
+          <image src="{{item}}" mode="aspectFill"></image>
+        </swiper-item>
+    </swiper>
+    <view class="item-wrapper">
+      <view class="item">
+        <view class="shop-info-header">
+          <text class="shop-title">{{shopDetail.magic_shop_name}}</text>
+        </view>
+        <text class="time">营业时间:{{shopDetail.business_time}}</text>
+      </view>
+      <view class="item h120">
+        <image src="./images/icon-address.png" class="icon-address"></image>
+        <text class="address" @tap="openMap('{{shopDetail.longitude}}')">{{shopDetail.address}}</text>
+        <image src="./images/icon-tel.png" class="icon-tel" @tap="tel('{{shopDetail.link_tel}}')"></image>
+      </view>
+    </view>
+    <view class="Discount-wrapper">
+      <view class="Discount-item" wx:for="{{shopDetail.magicgoods}}" wx:for-item="item" wx:key="index" @tap.default="gotoWelfare({{item.id}})">
+        <view class="title-wrapper">
+          <text class="type">{{item.one_str}}</text>
+          <text class="title">{{item.magic_goods_name}}</text>
+        </view>
+        <view class="content-wrapper">
+          <text class="content">{{item.magic_goods_title}}</text>
+          <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
+          <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+        </view>
+        <view class="footer">
+          <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
+          <text class="num">已领{{item.get_num}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="shopDetails-wrapper">
+      <view class="shopDetails-header">
+        <image src="./images/about.png"></image>
+        <text>店铺详情</text>
+      </view>
+      <view class="shopDetails-content">
+        <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import wxParse from '../../wxParse/wxParse'
+  import ShopModel from './shop-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '店铺详情',
+    }
+    data = {
+      shopId: null,
+      shopDetail: null,
+    }
+    methods = {
+      onShareAppMessage(){
+        return {
+          title: this.shopDetail.magic_shop_name,
+          path: 'pages/Shop/shopDetails?id='+ this.shopId,
+        }
+      },
+      openMap(data){
+        let latitude = data.split(",")[0]
+        let longitude = data.split(",")[1]
+        this.$navigate('./map',{latitude:latitude,longitude:longitude,shopName:this.shopDetail.magic_shop_name,shopAddress:this.shopDetail.address})
+      },
+      tel(data){
+        wx.makePhoneCall({
+          phoneNumber: data
+        })
+      },
+      gotoWelfare(index){
+        this.$navigate('../Shop/welfareDetails',{id:index})
+      }
+    }
+    onLoad(options){
+      this.shopId = options.id
+    }
+    onShow(){
+      ShopModel.getShopDetail({magic_shop_id:this.shopId}, (ResData)=>{
+        if(ResData.code == 1){
+          this.shopDetail = ResData.data
+          const article = this.shopDetail.detail;
+          wxParse.wxParse('article', 'html', article, this, 0);
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>
+<style lang="less">
+  .Index-container{
+    height: 100%;
+  }
+  .h120{
+    height: 120rpx;
+  }
+  .h80{
+    height:80rpx;
+  }
+  .swiper{
+    height: 400rpx;
+    width: 100%;
+    .banner-item{
+      height: 100%;
+      width: 100%;
+    }
+    image{
+      height: 100%;
+      width: 100%;
+    }
+  }
+  .item-wrapper {
+    margin-bottom: 20rpx;
+    display: flex;
+    border-bottom: 1rpx solid #dddddd;
+    flex-direction: column;
+    background-color: #fff;
+    .item {
+      margin-left:30rpx;
+      padding-right:30rpx;
+    }
+    .item + .item{
+      border-top: 1rpx solid #dddddd;
+    }
+    .shop-info-header{
+      width:  100%;
+      margin-top:38rpx;
+      margin-bottom:24rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .shop-title {
+        flex: 1;
+        font-size:36rpx;
+        color:#323232;
+        font-weight: 500;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        line-height: 42rpx;
+      }
+      .time{
+        display: block;
+        font-size:28rpx;
+        color:#747474;
+        margin-bottom:34rpx;
+      }
+    }
+    .time{
+      display: block;
+      font-size:28rpx;
+      color:#747474;
+      margin-bottom:34rpx;
+    }
+    .h120, .h80{
+      display: flex;
+      align-items: center;
+      .address{
+        flex:1;
+        font-size:30rpx;
+        color:#323332;
+        margin-left:26rpx;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+      .icon-address{
+        width: 24rpx;
+        height: 32rpx;
+      }
+      .icon-tel{
+        width: 40rpx;
+        height: 40rpx;
+        padding: 25rpx;
+      }
+      .vip-title{
+        font-size: 34rpx;
+        margin-left:26rpx;
+        margin-right:auto;
+      }
+      .icon-vip{
+        width: 24rpx;
+        height:20rpx;
+      }
+      .vip-condition{
+        font-size:20rpx;
+        color:#888888;
+        margin-left:26rpx;
+        margin-right:auto;
+        + text {
+          font-size:20rpx;
+          color:#888888;
+        }
+      }
+    }
+  }
+  .Discount-wrapper{
+    border-top:20rpx solid #f6f5f5;
+    border-bottom: 20rpx solid #f6f5f5;
+    .Discount-item{
+      width: 720rpx;
+      height: 192rpx;
+      margin-left:auto;
+      display: flex;
+      flex-direction: column;
+      ~.Discount-item{
+        border-top: 1rpx solid #dedede;
+      }
+      .title-wrapper{
+        margin-top: 30rpx;
+        display: flex;
+        align-items: center;
+        .type{
+          padding-left:4rpx;
+          padding-right: 4rpx;
+          font-size: 24rpx;
+          line-height: 36rpx;
+          background-color: #fdf0ef;
+          border-radius: 3px;
+          border: solid 1rpx #f3dddd;
+          color: #dd8084;
+        }
+        .title{
+          flex:1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          font-size: 28rpx;
+          color: #222222;
+          margin-left: 22rpx;
+        }
+      }
+      .content-wrapper{
+        margin-top: 16rpx;
+        margin-bottom:18rpx;
+        margin-left: 58rpx;
+        margin-right: 32rpx;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .content{
+          font-size: 26rpx;
+          color: #fa6561;
+          flex: 1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+        }
+        .btn{
+          width: 120rpx;
+          line-height:52rpx;
+          text-align: center;
+          border-radius: 50rpx;
+          background-color: #ff6080;
+          font-size:24rpx;
+          color: #ffffff;
+          &.end{
+            background-color: #ccc;
+          }
+        }
+      }
+      .footer{
+        display: flex;
+        justify-content: space-between;
+        margin-left: 58rpx;
+        margin-right: 32rpx;
+        margin-bottom:29rpx;
+        text{
+          font-size:24rpx;
+          color: #9d9d9d;
+          &:last-child{
+            width: 120rpx;
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+  .shopDetails-wrapper{
+    .shopDetails-header{
+      margin-top:55rpx;
+      margin-bottom: 34rpx;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image{
+        width: 29rpx;
+        height: 40rpx;
+        margin-right:20rpx;
+      }
+      text{
+        font-size: 32rpx;
+        color: #111111;
+      }
+    }
+    .shopDetails-content{
+      width: 100%;
+      display: flex;
+      box-sizing: border-box;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30rpx;
+      .wxParse-p{
+        width: 100%;
+      }
+      .wxParse-p image{
+        width: 100%;
+      }
+    }
+  }
+</style>

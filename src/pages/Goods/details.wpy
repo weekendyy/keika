@@ -1,0 +1,874 @@
+<template>
+  <import src="../../wxParse/wxParse.wxml"/>
+  <view class="goods-details-wrapper" hidden="{{!loadingHidden}}">
+    <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
+      <repeat for="{{DetailsData.arr_banner}}" wx:key="index" wx:for-item="item">
+        <swiper-item class="banner-item">
+          <image src="{{item}}" mode="aspectFill"></image>
+        </swiper-item>
+      </repeat>
+    </swiper>
+    <view class="goods-header">
+      <view class="goods-header-title"><text>限时折扣</text></view>
+      <view class="goods-header-main w704">
+        <view class="price-wrapper">
+          <text class="Activity-price">¥{{DetailsData.discount_price}}</text>
+          <text class="Original-price">¥{{DetailsData.original_price}}</text>
+        </view>
+        <view class="right">
+          <text class="num">共{{DetailsData.num}}份/剩{{DetailsData.residue}}份</text>
+          <text class="follow">{{DetailsData.click_count}}人关注</text>
+        </view>
+      </view>
+    </view>
+    <view class="goods-wrapper">
+      <view class="goods-name-wrapper">
+        <text class="goods-name">{{DetailsData.name}}</text>
+        <view class="goods-share" @tap="Share">
+          <image src="./img/icon-share.png" class="icon-share"></image>
+          <text class="share">分享</text>
+        </view>
+      </view>
+      <view class="Activity-date">
+        <view>
+          <text>活动时间</text>
+          <text>{{DetailsData.from_time}} 至 {{DetailsData.to_time}}</text>
+        </view>
+        <view>
+          <text>截至时间</text>
+          <text>{{DetailsData.deadline}}</text>
+        </view>
+      </view>
+      <view class="goods-rule"  wx:if="{{DetailsData.rule_list.length > 0}}">
+        <repeat for="{{DetailsData.rule_list}}" wx:key="index" wx:for-item="item">
+          <view class="rule">
+            <image src="{{item[2]}}"></image>
+            <text>{{item[1]}}</text>
+          </view>
+        </repeat>
+      </view>
+      <view class="goods-sign" wx:if="{{DetailsData.shop_auth_list.length > 0}}">
+        <repeat for="{{DetailsData.shop_auth_list}}" wx:key="index" wx:for-item="item">
+          <image src="./img/icon_success.png"></image>
+          <text>{{item}}</text>
+        </repeat>
+      </view>
+    </view>
+    <view class="goods-process">
+      <image src="./img/goods_process.png"></image>
+    </view>
+    <view class="goods-details">
+      <view class="details-header">
+        <repeat for="{{detailsTitleData}}" wx:for-item="item" key="index">
+          <view class="details-title {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
+        </repeat>
+      </view>
+      <view class="details-main">
+        <view class="main-details" hidden="{{ currentTabsIndex != 0 }}">
+          <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+        </view>
+        <view class="main-details" hidden="{{ currentTabsIndex != 1 }}">
+          <repeat for="{{EvaluateData}}" wx:for-item="item" key="index">
+            <view class="Evaluate-item">
+              <view class="Evaluate-head">
+                <image class="Avatar" src="{{item.portrait_img}}"></image>
+                <text class="name">{{item.wechat_name}}</text>
+                <text class="date">{{item.create_time}}</text>
+              </view>
+              <view class="content">
+                <text>{{item.content}}</text>
+              </view>
+              <view class="pic-list" wx:if="{{item.image.length > 0}}">
+                <repeat for="{{item.image}}" wx:for-item="item" key="index">
+                  <image src="{{item}}"></image>
+                </repeat>
+              </view>
+              <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent" data-index="{{index}}">
+                <image src="./img/Fabulous@selecd.png" wx:if="{{item.like}}"></image>
+                <image src="./img/Fabulous.png" wx:else></image>
+                <text class="Fabulous">{{item.like_count}}</text>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+    </view>
+    <view class="more">
+      <view class="more-title">更多优惠商品</view>
+      <view class="more-main">
+        <repeat for="{{SeckillData}}" wx:for-item="item">
+          <navigator class="more-item" open-type="navigate" hover-class="none" url="/pages/Goods/details?id={{item.id}}">
+            <image src="{{item.main_img}}"></image>
+            <text>{{item.name}}</text>
+            <view class="Price-wrapper">
+              <text class="Seckill-title">秒杀价</text>
+              <text class="Seckill-element">¥{{item.discount_price}}</text>
+              <text class="Original-element">{{item.original_price}}</text>
+            </view>
+          </navigator>
+        </repeat>
+      </view>
+    </view>
+    <view class="footer-wrapper">
+      <navigator class="btn" open-type="switchTab" hover-class="none" url="/pages/Index/index">
+        <image src="./img/icon_index.png"></image>
+        <text>首页</text>
+      </navigator>
+      <view wx:if="{{DetailsData.time_status}}" class="Buy {{buy_log == 1 ? '' : (buy_log == 2 ? 'disabled':'')}}" @tap="buyGoods()">
+        立即抢购
+      </view>
+      <view wx:else class="Buy disabled">
+        活动已结束
+      </view>
+    </view>
+    <view class="Customer-wrapper">
+      <button open-type="contact">
+        <image src="./img/Customer.png"></image>
+      </button>
+    </view>
+    <action-sheet hidden="{{actionSheetHidden}}" bindchange="actionSheetChange">
+      <block wx:for-items="{{actionSheetItems}}" wx:key="index">
+        <action-sheet-item class="item">
+          <button wx:if="{{index == 0}}" class="resetBtn" open-type="share"hover-stop-propagation="true" hover-class="none">{{item}}</button>
+          <button wx:if="{{index == 1}}" class="resetBtn" hover-class="none" hover-stop-propagation="true" bindgetuserinfo="getUserInfo" open-type="getUserInfo">{{item}}</button>
+        </action-sheet-item>
+      </block>
+      <action-sheet-cancel class="cancel">取消</action-sheet-cancel>
+    </action-sheet>
+  </view>
+  <loading hidden="{{loadingHidden}}">
+    加载中...
+  </loading>
+</template>
+
+<script>
+  const ERR_OK = 1
+  const IS_VIP = 1
+  const items =['发送给朋友', '生成卡片保存分享']
+  import wxParse from '../../wxParse/wxParse'
+  import wepy from 'wepy'
+  import DetailsModel from './details-model'
+  import MyModel from '@/pages/My/index-model'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '套餐详情'
+    }
+    data = {
+      currentTabsIndex: 0,
+      DetailsData: '',
+      detailsTitleData: ['商品详情','客户评价'],
+      VipState: true,
+      loadingHidden: false,
+      goods_id: '',
+      SeckillData: '',
+      EvaluateData: '',
+      moreData: '',
+      payState: true,
+      actionSheetHidden: true,
+      actionSheetItems: items,
+      Geography: null,
+      userInfo: null,
+      buy_log:null
+    }
+    methods= {
+      /* tab切换 */
+      onTabsItemTap(i){
+        let index = i
+        if(index == 1 && !this.EvaluateData){
+          DetailsModel.getEvaluateData(this.goods_id, ResData=>{
+            if(ResData.code == 1) {
+              this.EvaluateData = ResData.data
+              this.$apply()
+            }
+          })
+        }
+        this.currentTabsIndex = index
+        this.$apply()
+      },
+      /* 点赞 */
+      FabulousEvent($event){
+        let i= DetailsModel.getDataSet($event,'index')
+        let indexlike = this.EvaluateData[i].like
+        let indexId = this.EvaluateData[i].id
+        DetailsModel.PostEvaluateLike(indexId, ResData=> {
+          if(ResData.code == 1){
+            wx.showToast({
+              title: '点赞成功',
+              icon: 'success',
+              duration: 1500
+            })
+            this.EvaluateData[i].like = 1
+            ++this.EvaluateData[i].like_count
+            this.$apply()
+          }
+        })
+      },
+      /* 下单 */
+      buyGoods(){
+        DetailsModel.delOrder(this.goods_id,ResData=>{
+          if(Number(ResData.code) == ERR_OK) {
+            wx.showToast({
+              title: '抢购成功',
+              icon: 'success',
+              duration: 2000
+            })
+            wx.navigateTo({
+              url: './Confirm-order?orderId='+ ResData.order_id
+            })
+          }
+          if(Number(ResData.code) == 0) {
+            wx.showToast({
+              title: '订单异常',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 2) {
+            wx.showToast({
+              title: '库存不够啦!!!',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 3) {
+            wx.showToast({
+              title: '商品下架了!!!',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 4) {
+            wx.showToast({
+              title: '活动过期啦!!!',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 11) {
+            wx.showToast({
+              title: ResData.message,
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+        })
+      },
+      Share(){
+        this.actionSheetHidden =  !this.actionSheetHidden
+      },
+      /* 取消上拉反馈 */
+      actionSheetChange(){
+        this.actionSheetHidden =  !this.actionSheetHidden
+      },
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let param = {
+          promotionID: this.goods_id,
+        }
+        if(res.detail.userInfo){
+          let userInfo = res.detail.userInfo
+          Object.assign(param,{wechat_name: userInfo.nickName,wechat_portrait: userInfo.avatarUrl})
+        }else {
+          Object.assign(param,{wechat_name: '我的',wechat_portrait: DetailsModel.defaultImg})
+        }
+        this.actionSheetHidden =  !this.actionSheetHidden
+        DetailsModel.createPoster(param, ResData=>{
+          if(ResData.code === 1) {
+            wx.hideLoading()
+            wx.previewImage({
+              urls: [ResData.data]
+            })
+          }
+        })
+      },
+      onShareAppMessage(name){
+        return {
+          title: this.DetailsData.name,
+          desc: wepy.$instance.globalData.shareName,
+          path: '/pages/Goods/details?id='+ this.goods_id
+        }
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this)
+    }
+    onLoad(options){
+      this.goods_id = options.id
+      DetailsModel.getGoodsDetails(this.goods_id,ResData =>{
+        if (ResData.code == 1) {
+          this.DetailsData = ResData.promotion[0]
+          const article = this.DetailsData.detail;
+          this.buy_log = this.DetailsData.buy_log;
+          wxParse.wxParse('article', 'html', article, this, 0);
+          this.$apply()
+        }
+      })
+      DetailsModel.getMorePromotion( ResData=>{
+        if (ResData.code == 1) {
+          this.SeckillData = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        })
+      }
+      DetailsModel.getVipStateInfo(ResData=>{
+        if( Number(ResData.code)==1 ){
+          if(Number(ResData.check_result.status) == IS_VIP) {
+            this.VipState = false
+            this.$apply()
+          }
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>
+<style lang="less">
+
+  @import "../../wxParse/wxParse.wxss";
+  action-sheet-item{
+    padding: 0;
+    ~ action-sheet-item{
+      border-top: 2rpx solid #e8e8e8;
+    }
+  }
+  .resetBtn{
+    background-color: #fff;
+    padding-top: 10rpx;
+    padding-bottom: 10rpx;
+    line-height: 80rpx;
+    &:after{
+      border: none;
+    }
+  }
+  .goods-details-wrapper{
+    background-color: #f9f9f8;
+    overflow: hidden;
+  }
+  .w704{
+    padding-left:24rpx;
+    padding-right:24rpx;
+  }
+  .swiper{
+    width: 100%;
+    height:530rpx;
+    image{
+      width:100%;
+      height:100%;
+    }
+  }
+  .goods-header{
+    margin-top:-50rpx;
+    position: relative;
+    .goods-header-title{
+      width: 142rpx;
+      background-image: linear-gradient(to right,#ff4f11,#ff5610);
+      border-top-right-radius: 10rpx;
+      text-align: center;
+      font-size:0;
+      text {
+        font-size:24rpx;
+        color:#fff;
+        line-height:200%;
+      }
+    }
+  }
+  .goods-header-main{
+    height:100rpx;
+    display: flex;
+    justify-content:space-between;
+    background-image: linear-gradient(to right,#ff4f11,#ff8c0c);
+    .price-wrapper {
+      display: flex;
+      height:100%;
+      align-items: center;
+      .Activity-price{
+        &:first-letter {
+          font-size:40rpx;
+          margin-right:2rpx;
+        }
+        font-size:74rpx;
+        color: #fff;
+        margin-right:12rpx;
+      }
+      .Original-price{
+        font-size:30rpx;
+        color:#fff;
+        text-decoration:line-through;
+        padding-top:34rpx
+      }
+      .Vip-wrapper{
+        height:40rpx;
+        line-height:40rpx;
+        color: #fff;
+        font-size:24rpx;
+        padding-left: 12rpx;
+        padding-right: 12rpx;
+        border:1rpx solid #fff;
+        margin-bottom:8rpx;
+        .Vip-price{
+          margin-left:12rpx;
+        }
+      }
+
+    }
+    .right{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      color: #fff;
+      .num {
+        font-size: 26rpx;
+        margin-bottom:8rpx;
+      }
+      .follow{
+        font-size: 24rpx;
+        text-align: right;
+      }
+    }
+  }
+  .Open-vip{
+    height:85rpx;
+    display: flex;
+    align-items: center;
+    border-bottom:1rpx solid #e3e2e2;
+    margin-bottom:20rpx;
+    background-color: #fff;
+    .icon-time{
+      width:32rpx;
+      height:32rpx;
+      margin-right:12rpx;
+    }
+    text{
+      font-size:26rpx;
+      color:#2c2c2c;
+      &:last-child {
+        margin-left: auto;
+        font-size:24rpx;
+        color:#ff5051;
+        &::after{
+          content: ">";
+          margin-left: 4rpx;
+        }
+      }
+    }
+  }
+  .goods-wrapper{
+    background-color: #fff;
+    border-top:1rpx solid #e3e2e2;
+    > view {
+      border-bottom:1rpx solid #e3e2e2;
+      padding-left:4%;
+      width: 96%;
+    }
+    .goods-name-wrapper {
+      display: flex;
+      align-items: center;
+      border-bottom:1rpx solid #e3e2e2;
+      margin-left: 4%;
+      padding-left:0;
+      height:128rpx;
+      .goods-name {
+        flex: 1;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        font-size: 36rpx;
+        color:#242424;
+      }
+      .goods-share{
+        width: 80rpx;
+        height: 80rpx;
+        margin-right: 20rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        border-radius: 50%;
+        background-color: #f2f2f2;
+        .icon-share{
+          width: 34rpx;
+          height: 34rpx;
+          margin-top: 6rpx;
+        }
+        .share {
+          color: #7a7a7a;
+          font-size: 20rpx;
+          margin-top: 4rpx;
+        }
+      }
+    }
+    .Activity-date{
+      height:106rpx;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      justify-content:center;
+      font-size:24rpx;
+      color:#242424;
+      text:first-child{
+        color: #848589;
+        margin-right:32rpx;
+      }
+    }
+    .goods-rule{
+      display: flex;
+      padding-top:27rpx;
+      padding-bottom:27rpx;
+      align-items: center;
+      flex-wrap: wrap;
+      background-color:#faf9f9;
+      font-size:24rpx;
+      >.rule {
+        width: 234rpx;
+        color:#848589;
+        display: flex;
+        align-items:center;
+        &:nth-child(n+4) {
+          margin-top:32rpx;
+        }
+        image{
+          width:30rpx;
+          height:30rpx;
+          margin-right:12rpx;
+        }
+      }
+    }
+    .goods-sign{
+      height:86rpx;
+      display: flex;
+      align-items: center;
+      font-size:24rpx;
+      color:#242424;
+      image{
+        width: 28rpx;
+        height:28rpx;
+        margin-left:0;
+        margin-right:12rpx;
+        &:nth-child(n+2){
+          margin-left:42rpx;
+        }
+      }
+    }
+  }
+  .goods-process{
+    padding-left:0;
+    margin-top: 20rpx;
+    margin-bottom:20rpx;
+    border-top: 1rpx solid #e3e2e2;
+    border-bottom:1rpx solid #e3e2e2;
+    image{
+      width: 100%;
+      height:165rpx;
+    }
+  }
+  .goods-details{
+    background-color: #fff;
+    .details-header{
+      display: flex;
+      border-top:1rpx solid #e3e2e2;
+      border-bottom:1rpx solid #e3e2e2;
+      .details-title{
+        width:50%;
+        height: 83rpx;
+        line-height:84rpx;
+        font-size:28rpx;
+        text-align: center;
+        color: #000000;
+        &.active{
+          color:#ed4f4f;
+          margin-bottom:-1rpx;
+          border-bottom:1rpx solid #ed4f4f;
+        }
+      }
+    }
+    .main-details {
+      &:last-child{
+        background-color: #f5f5f7;
+      }
+      .wxParse-p image{
+        width: 100%;
+      }
+    }
+    .Evaluate-item{
+      padding-top:20rpx;
+      padding-bottom: 18rpx;
+      background-color: #fff;
+      border-bottom: 1px solid #e2e2e2;
+      ~ .Evaluate-item{
+        margin-top: 10rpx;
+      }
+      .Evaluate-head{
+        margin-left:12rpx;
+        display: flex;
+        align-items: center;
+        .Avatar{
+          width:  72rpx;
+          height: 72rpx;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+        .name{
+          margin-left: 10rpx;
+          font-size: 26rpx;
+          color: #222226;
+        }
+        .date{
+          margin-left: auto;
+          margin-right: 25rpx;
+          font-size: 24rpx;
+          color: #dddddd;
+        }
+      }
+      .content{
+        margin-left: 97rpx;
+        margin-right: 30rpx;
+        text {
+          line-height: 40rpx;
+          font-size: 26rpx;
+          color: #5d5d5f;
+        }
+      }
+      .pic-list{
+        margin-left: 97rpx;
+        margin-right: 30rpx;
+        image{
+          width: 136rpx;
+          height: 136rpx;
+          margin-right: 12rpx;
+        }
+      }
+      .Fabulous-warpper{
+        margin-left: auto;
+        margin-right: 30rpx;
+        margin-top: 30rpx;
+        width: 108rpx;
+        height: 34rpx;
+        display: flex;
+        align-items: center;
+        border: 1rpx solid #ccc;
+        border-radius: 50rpx;
+        font-size: 0;
+        color: #b5b4b4;
+        &.active{
+          color: #ff4344;
+          border: 1rpx solid #ff4344;
+          pointer-events: none;
+        }
+        image{
+          width: 22rpx;
+          height: 20rpx;
+          padding-left: 22rpx;
+          padding-right:20rpx;
+        }
+        .Fabulous{
+          line-height: 34rpx;
+          margin-right: 34rpx;
+          font-size: 18rpx;
+
+        }
+      }
+    }
+  }
+  .more{
+    margin-bottom: 120rpx;
+    .more-title{
+      height:100rpx;
+      line-height:100rpx;
+      text-align: center;
+      font-size:28rpx;
+      color:#666666;
+    }
+    .more-main{
+      width:100%;
+      display: flex;
+      .more-item{
+        display: flex;
+        flex-direction: column;
+        padding:1px;
+        border:1rpx solid #e5e5e5;
+        margin-left:16rpx;
+        image{
+          width:340rpx;
+          height:340rpx;
+        }
+        > text{
+          margin-top:24rpx;
+          font-size:24rpx;
+          color: #323323;
+        }
+        .Price-wrapper{
+          display: flex;
+          align-items: flex-end;
+          margin-left:7rpx;
+          .Seckill-title {
+            color: #ff4344;
+            font-size: 24rpx;
+            margin-right:14rpx;
+          }
+          .Seckill-element{
+            color: #ff4344;
+            font-size: 42rpx;
+            &::first-letter{
+              font-size:30rpx;
+            }
+          }
+          .Original-element{
+            margin-left:26rpx;
+            color: #7d7d7d;
+            text-decoration:line-through;
+            font-size:24rpx;
+          }
+        }
+      }
+    }
+  }
+  .footer-wrapper{
+    width:100%;
+    z-index:999;
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    .btn{
+      background-color: #fff;
+      width: 139rpx;
+      height:98rpx;
+      display: flex;
+      flex-direction: column;
+      justify-content:center;
+      align-items: center;
+      image{
+        width: 42rpx;
+        height: 42rpx;
+      }
+      text {
+        margin-top:6rpx;
+        font-size:20rpx;
+        color: #565656;
+      }
+    }
+    .btn ~ .btn{
+      border-left:1rpx solid #efefee;
+    }
+    .Buy{
+      flex: 1;
+      width:  100%;
+      text-align: center;
+      line-height:98rpx;
+      color:#fff;
+      background-image: linear-gradient(90deg, #fb7b03 0%,#ff4913 100%),linear-gradient(#ff4344,#ff4344);
+      &.disabled{
+        background-image: linear-gradient(to right, #cbcbcb,#9a9a9a);
+        pointer-events: none;
+      }
+    }
+  }
+  .Customer-wrapper{
+    position: fixed;
+    right: 20rpx;
+    bottom: 120rpx;
+    button{
+      padding: 0;
+      line-height:0;
+      background-color: transparent;
+      &::after{
+        border: none;
+      }
+    }
+    image{
+      width: 70rpx;
+      height: 70rpx;
+    }
+  }
+</style>

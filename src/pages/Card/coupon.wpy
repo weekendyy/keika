@@ -1,0 +1,237 @@
+<template>
+  <view class="coupon">
+    <view class="goods-wrapper">
+      <view class="goods-pic">
+        <image src="{{goodsInfo.banner_img}}"></image>
+      </view>
+      <view class="goods-info">
+        <text>{{goodsInfo.activity_name}}</text>
+        <text>￥{{goodsInfo.price}}</text>
+      </view>
+    </view>
+    <view class="Verification-wrapper">
+      <view class="Verification-main">
+        <view class="title">
+          <text>密码验证</text>
+        </view>
+        <view class="main">
+          <text>商家密码</text>
+          <input placeholder="请让收银员或者店员输入密码" maxlength="20" @input="bindKeyInput"/>
+        </view>
+      </view>
+      <view class="Verification-options">
+        <button class="btn" @tap="passVerification">确定消费</button>
+        <text class="Requirement">把此页出示给商家进行验证(截图无效)</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import CardModel from './Card-model'
+  export default class Index extends wepy.page{
+    config = {
+      navigationBarTitleText: '宝贝核销'
+    }
+    data = {
+      goodsInfo: '',
+      passModel:'',
+      orderId: '',
+    }
+    methods = {
+      bindKeyInput($event){
+        this.passModel = $event.detail.value.trim()
+      },
+      passVerification(){
+        if(Number(this.passModel.length)==0){
+          wx.showToast({
+            title: '请输入验证密码',
+            icon:'loading',
+            duration: 1000
+          })
+          return false
+        }
+        if(Number(this.passModel.length) <= 5){
+          wx.showToast({
+            title: '请输入最少6位',
+            icon:'loading',
+            duration: 1000
+          })
+          return false
+        }
+        let param = {
+          cancel_password: this.passModel,
+          order_id: this.orderId,
+        }
+        CardModel.end_cancel(param, ResData=>{
+          if(ResData.data.code != 1) {
+            let message = ResData.data.message
+            wx.showToast({
+              title: message,
+              icon:'loading',
+              duration: 1000
+            })
+            return false
+          }
+          if(ResData.data.code == 1 ) {
+            wx.showToast({
+              title: "核销成功",
+              icon:'loading',
+              duration: 1000,
+              success: function(){
+                let timer1 = setTimeout(()=>{
+                  wx.showToast({
+                    title: "正在返回上一页",
+                    icon: "success",
+                    duration: 1000
+                  })
+                  clearTimeout(timer1)
+                },1700)
+                let timer2 = setTimeout(()=>{
+                  wx.navigateBack({
+                    delta: 1
+                  })
+                  clearTimeout(timer2)
+                },2200)
+              }
+            })
+          }
+        })
+      }
+    }
+    onLoad(options){
+      this.orderId = options.id
+      CardModel.luckyOrderCancel({order_id:this.orderId}, ResData=> {
+        if(ResData.code == 1){
+          this.goodsInfo = ResData.data
+          this.$apply()
+        }
+      })
+    }
+  }
+</script>
+
+<style lang="less">
+  page{
+    background-color:#f3f5f5;
+    height:100%;
+  }
+.order-state{
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAu4AAACMCAMAAAAUYNyAAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NTc3MiwgMjAxNC8wMS8xMy0xOTo0NDowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTQgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjdBMzEzOTREQjRBMDExRTc5REFGQjM1Q0M4MDNDNzE0IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjdBMzEzOTRFQjRBMDExRTc5REFGQjM1Q0M4MDNDNzE0Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6N0EzMTM5NEJCNEEwMTFFNzlEQUZCMzVDQzgwM0M3MTQiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6N0EzMTM5NENCNEEwMTFFNzlEQUZCMzVDQzgwM0M3MTQiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5ibuTbAAADAFBMVEX/ilb/pXb/pHX/ckL/c0P/hVL/fkz/f03/g1D/hFH/dkb/hlP/cEH/fUv/azz/eEf/dUX/gU//ekn/iVX/gE7/oHL/j1r/nG//i1f/onT/jVj/jln/o3X/oXP/ckP/ajv/iFT/iFX/fEr/fEv/cUL/d0b/d0f/hlL/cED/cUH/gk//e0r/dkX/e0n/aTr/fUz/glD/az3/h1P/h1T/bD7/gU7/kFv/lF7/jFf/jFj/kVz/jVn/lV//nXD/k13/n3H/lmD/m27/pHf/o3T/mWz/mm3/nGv/nGz/onP/o3b/mmr/pHj/kVv/nWz/nW//klz/l2H/kl3/nnD/nnH/m2v/nGn/n3L/k17/m2n/mWn/nGr/mm7/m2j/mGv/onX/m2f/mW3/mmn/onb/pXj/pHn/pXf/oXT/m2r/l2D/mmv/m2z/oHP/mmj/mGj/mWj/o3f/mGf/oXX/oXb/l2b/mWf/pXn/mGb/mGH/l2X/oHT/nWv/mWr/l2f/mGn/mGL/n23/lmX/oHX/onf/nGj/kmP/nmz/kWH/mmf/o3j/lmT/l2j/mWb/lWT/lGL/oHb/oXH/n27/oXL/kGD/kV3/kl7/kl//oHD/k2D/lGH/pHr/mGX/n2//mmb/pXr/oG7/l2T/kF7/n3D/nm3/nm7/lWP/oXD/j13/lmb/jlz/oHH/jVr/k2H/lF//mWT/kFz/l2L/mGT/nm//lWL/oG//jFn/lmn/nG3/kV7/lWf/lmP/mWP/kF//nnL/mWX/lmH/mmz/k2T/kF3/mWv/kmD/jlr/kmL/l2r/lGP/lmL/kV//mGP/lGb/lGD/m23/nW3/k2P/k1//k2L/j17/lmj/lGX/l2P/lmf/onL/lWb/lWD/j1v/nmv/mmT/jFr/nWr/mWL/lWH/l2n/n2z/lGT/mmX/i1j/l2v/jVv/mGr/j1z/jlv/jl3/onH/kmH/m2X/nG7/o3P/nW7/lWX/m2b/kWD/nGf/b0D/eUj/bj//bT7/ajz/bD3/dET/aDr/aTv/pHboLQqfAAAJE0lEQVR42uzYd1zTdx7H8W97e09qaeFGb+/t3dFrUbCBwGm1NQhchGOfBQQM5SCiRJGySzggcIDH3htUlmitWrdtta5rr7u39970mwUZvyxMQsjn/Xw8/AcC5hFfvPlE9j8AMhheAkDuAN6Y+xcByGD/ByADuQNyB0DuACs79w8DkMH+DUAGcgfkDuCVub8bgAzkDpRy/woAGew/AGQgd0DuAF6Z+9cByGD/AiADuQNyB/DK3P8JQAZyB+QO4JW5/x2ADOQOyB3AK3P/NAAZ7J0AZCB3oJT7ZwDIYB8HIIO9AYAM5A6Ucv8QABnsjQBkIHeglPt/AchA7oDcAbwy9/cCkIHcgVLunwcgg70dgAzkDpRy/wQAGeyTAGSw9wCQgdyBUu7/ACADuQNyB/DK3N8PQAZyB0q5fwGADPY5ADLYXQBksI8BkMHeBUAGcgdKuX8JgAz2ZgAykDtQyv0tAGQgd6CU+wcByEDuQCn3bwCQwd4HQAZyB0q5fxaADPZlADLYWwHIQO5AKfe3AZCB3IFS7m8CIAO5A6XcPwVABnsHABnIHSjl/lUAMtjXAMhgHwEgg30UgAz2AQAykDtQyh1gBbj99tcOHPhZf39vb+9vuru7W1tbZ3+k9siCfQJOaj+lfuAs/5JL3XghwVOKfo333NvbfamVV3xy377HHjt3bmrq8sGDT/x8q7PgVYblSPtA/y96u1v5OKurnpriTW91B/5bAsDFDvT/uvvS7CMnn3zm3NTll57Yum65IHdwSd+93bN/5Xlfv3xwGes2z/1bAE5wx4mfHjtz/OlTf75atuvxdZ6KfRtgifp7W8/87slXrl99aeu6768I7A4AB9ypGfFXeviG37fyIHew7e4Tx84MnKq4Wvb40ftWNHY3gLATv5o9/vQz18t+ue573oLdCWDoxPDk8cqKHn6rrPU+yB00bjtWN9DZU7bz6Fpvxm4DylbX1FdWyHZtu7CKBOROU00drzydSuXI3VVrOTxcMzlZV1dfPzDQUFl5qrOiokKhUPT09Mjy8/PL9NIXlOXryXp6+CP54ys6OysrKwcG6uvr6mprJ2tqhodXO+vpTdafUvCLZRVRbDUs1XBATW1dPa+6kxctk2Wmp0ct1a4F6QIyuXyZTKEoreisbGiof6qutqYmwJGnGlDXwE+Wo39YRRxydyhwdd8871KFLH/pbQt3Lhi6OvV8QzIDPH/+a0Bbv8X4axtKM8PWrgJt7t8FGzZtGWwYn27JzdkeFeccZtFvF6DZdAM5hnjsucZaWqbHxxvOD26p3XS/5mkHPDWeG/XQBjDEAkBITW19w3hpriw9KsypdhoR2nt16aaXjAHjgTfInt/9ilINWdS2C/ccTo2IOPzgPWAEuRvZVHu+slMhS98Z5nS2Q7dRuu3QFZlhFzZE7NnBPaq3Jy814jC61+d+P3D3Dr443ZKzPcwdBK8bk0sm25DZKZOT06i2eMe0ZIeFjEUkx3M7jGXp7OHZ+/hEBD74AGlsE2m158enczOjtrmBhfatXvHmt8zi7a6d98ywQxsisvZq7BCmHfkFeamaM4cmdi9NW26c5muestktUswJrHzaIoGJzy7XWJj37JSQscDkDI298YKM910jWSOPS+Vjz9eeGHq5D754pdFdnQuFniJwzlgPXZu6rvPMuM0XH/DJytCFvpTS87S5a9GKnm2h4/x0bnbc5ofcwEL826yd8YL/I7lwu2dmRqUc2hCYF1+it9eISegC9/viNWNKW30EBSyu8fTgN73djdON2ZEh7iAyY2HnI/XMTxmNYk4Te1rKobE2n5iMcJ2SkgxjYh2BkY/RMF14vcWJX1x6L8f4n8AxUdroEe8MffBIS3mcyKNKj7SjdF3mganxC5nfXOmmoZuWTqF1Xe5agX8SpTV6U/SDp0f5+7nlCV1kY9KtlK7NPKskMdwo9BK7Q7daep5A6T50MNMPtF1MKT+75jsr242RuTTRenex2n20nnnyOlKpVF16yvqONp9kcXiisXBjQVom0RswrX6B2cQn+5vy/h8AJvzhvg5RZPmVFVn9kdHilBC3xC2Yt0Hg0YK7bhx5WkqIuvKYDKuR6ysPynBK52alk9l5ZvWzfR0hkeVnj6yU0tdcKZeK3C5asG/zwBcTT0uLE10ca+vzt1F5kB2Vi+MtdZ7lQOdULhrmb4+2Dnlk8ejIGg82MlQcLXfZpMuNiOSWizciMek9mh8sVf5+GQ/v536skZho/XoxiF5rXkNskcC+q/kas3LSeDPm0KPV2TcPeVz2I3PF0W5fcvO2JRKhPZdK5EXKtmr/GHG4cN8ChZsmrm1cbCVyezM3DJ1W6UvIXa+vaX20tNkj5n7jaHFktHtJ1GFLhMpexIe8vSnQJzk+IzHRrsDNCtdFLrYu3kLl6Fw499CbUjVRIJfENs/s/sFy2DjTXChxt0JJoRld49HyooImVXWo33zCw8YSdGwFrjtVbNCW7ick2Ixx86G0MV8nqVYp2+USafPQ7o3ucfZVqTsrtzDkEjlfcVW1v684SHOQ799vELntSRduXrB76ytv1r3NsSeJueB7Vvc1dRTx9IvnRl3U/shQszTSJaS2RPI3xO3Kpr7qa75+8+EWwrbUtuW6g6zMuP2Nm3eOwl2eu3D7zUNnnRP/bt66y8XqSSX8RGlXTqj6/JNjxBnh9nZttW3LZ4vYNjsiR+eWcg92q9DqrgllQdGzz0v+Fvv754Ze+KGjXnjuL7GuU8jbfpbH3aSqqg719ROrb/AE25I0lhC33W4VZtfxDouY3zLzDa2uUvEfgfYiuTxaUiiNbW6em5uZ2S1k5lUnRS15Xs4nu12pbJpQVanLDvabD0owfX9p/C7T7J2mo3PutPjtHHwwxzz2mQXzH4TqqqoqlUrVpFQWFCiVqq6urp+oFei9XGTg5YUPF6gfNMEf3cW/vuq3166Fhv4xmBc9P5+UZDLM4Q4KctS8U9h91ID13G9dGeaTElyA15/kMBcVfTNHDdhpReSuXmXXCEpywzQjcOTuSOyUIEmX5u7x//5BLsG/77xnzDe4kYfnfou7qf9OVIHcAZA7AHIHQO4Ay5v7LQBkIHcg5HUBBgDzo1VT4g5ldQAAAABJRU5ErkJggg==");
+  width: auto;
+  height:140rpx;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  image{
+    padding-left:20rpx;
+    width:28rpx;
+    height:40rpx;
+    margin-right:26rpx;
+  }
+  text{
+    &:first-of-type{
+      font-size:28rpx;
+    }
+    &:last-child{
+      flex: 1;
+      text-align: right;
+      font-size:34rpx;
+      padding-right:20rpx;
+    }
+  }
+}
+  .goods-wrapper{
+    background: #fff;
+    padding-left:20rpx;
+    padding-right:20rpx;
+    padding-top: 30rpx;
+    padding-bottom:30rpx;
+    display: flex;
+    align-items: center;
+    margin-bottom:28rpx;
+    .goods-pic{
+      margin-right:32rpx;
+      image{
+        width:118rpx;
+        height:118rpx;
+        border:1px solid #eaeaea;
+        vertical-align: top;
+      }
+    }
+    .goods-info{
+      display: flex;
+      flex-direction: column;
+      text{
+        &:first-child{
+          font-size:28rpx;
+          color:#272727;
+        }
+        &:last-child{
+          margin-top:22rpx;
+          font-size:32rpx;
+          color:#ff683a;
+        }
+      }
+    }
+  }
+.Verification-wrapper{
+  margin-top:30rpx;
+  .Verification-main{
+    background-color: #fff;
+    text{
+      display: block;
+      line-height:80rpx;
+      width: 156rpx;
+      text-align: center;
+      font-size:28rpx;
+    }
+    .title {
+      text{
+        color:#ff6236;
+        border-bottom: 6rpx solid #ff6236;
+        margin-bottom:-6rpx;
+        line-height:70rpx;
+      }
+    }
+    .main{
+      display: flex;
+      border-top:2rpx solid #f0f0f0;
+      height:80rpx;
+      line-height:80rpx;
+      text{
+        color: #888888;
+      }
+      input{
+        flex:1;
+        font-size:28rpx;
+        height: 80rpx;
+        border-left:1px solid #f0f0f0;
+        padding-left: 38rpx;
+      }
+    }
+  }
+  .Verification-options{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .btn{
+      width: 358rpx;
+      line-height:80rpx;
+      text-align: center;
+      background-image: linear-gradient(0deg, #ff683a 0%, #ff9b64 100%), ;
+      color:#ffffff;
+      font-size:34rpx;
+      border-radius: 10rpx;
+      margin-top:56rpx;
+      margin-bottom:30rpx;
+      letter-spacing: 2rpx;
+    }
+    .Requirement{
+      font-size:24rpx;
+      color: #888888;
+    }
+  }
+}
+</style>

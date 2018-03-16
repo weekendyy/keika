@@ -1,0 +1,131 @@
+<template>
+
+  <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1}}" wx:if="{{headerinfo.home_banner.length}}">
+    <repeat for="{{headerinfo.home_banner}}" key="index">
+      <swiper-item class="swiper-item">
+        <image class="swiper-image" src="{{item.banner_url}}"></image>
+      </swiper-item>
+    </repeat>
+  </swiper>
+  <view class="open-vip" @tap="gotoOpenVip()" wx:if="{{headerinfo.open_status == 2}}">
+    <view class="open-wrapper">
+      <image src="{{headerinfo.card_img}}" class="logo"></image>
+      <view class="user-info">
+        <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
+        <text class="name">{{userInfo.userInfo.nickName}}</text>
+        <view class="open">
+          <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
+          <text class="btn">{{headerinfo.magic_auth_str[1]}}</text>
+        </view>
+      </view>
+    </view>
+    <image class="open-bg" src="./images/open-vip-bg.jpg"></image>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import cheaderModel from './cheader-model'
+  export default class extends wepy.component{
+      props = {
+        headerinfo: {},
+        userInfo:{}
+      }
+      data = {
+      }
+      methods = {
+        gotoOpenVip(){
+          wx.navigateTo({
+            url: '../Vip/Index'
+          })
+        }
+      }
+  }
+</script>
+<style lang="less">
+  .swiper-wrapper{
+    width: 100%;
+    height: 320rpx;
+    image{
+      width: 100%;
+      height: 100%
+    }
+  }
+  .open-vip{
+    padding-top: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #faf9f9;
+    .open-wrapper{
+      width:  640rpx;
+      height: 390rpx;
+      background-color: #000000;
+      border-radius: 20rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .logo{
+        width: 335rpx;
+        height: 120rpx;
+        margin-top: 94rpx;
+      }
+      .user-info{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 37rpx;
+        .pic{
+          width: 64rpx;
+          height: 64rpx;
+          border: 4rpx solid #e6c17a;
+          border-radius: 50%;
+          margin-left: 30rpx;
+          overflow: hidden;
+        }
+        .name{
+          margin-left: 23rpx;
+          flex: 1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          font-size: 28rpx;
+          color: #e7c375;
+        }
+        .open{
+          margin-left:auto;
+          display: flex;
+          flex-direction: column;
+          .no-vip{
+            width: 194rpx;
+            text-align: center;
+            font-size: 22rpx;
+            color: #e7c375;
+          }
+          .btn{
+            margin-top:10rpx;
+            width: 190rpx;
+            margin-right: 32rpx;
+            text-align: center;
+            font-size: 28rpx;
+            color: #e7c375;
+            line-height: 70rpx;
+            border: 1rpx solid #e3c289;
+            border-radius: 8rpx;
+            background-color: #412d2e;
+            letter-spacing: 6rpx;
+          }
+        }
+      }
+
+    }
+    .open-bg{
+      width: 100%;
+      height: 59rpx;
+      margin-bottom:-20rpx;
+      position: relative;
+      z-index: 1;
+    }
+  }
+</style>
