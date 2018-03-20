@@ -310,7 +310,7 @@
                 margin:15rpx 0 20rpx;
                 font-size:0;
                 .huodongtxt1{
-                  width: 95rpx;
+                  padding: 2rpx 10rpx;
                   height: 25rpx;
                   line-height:25rpx;
                   font-size: 20rpx;
@@ -321,9 +321,8 @@
                 }
                 .activedowm{
                   background-color: #888888;
-                  border:none;
+                  border:1rpx solid #888888;
                   color: #fff;
-                  padding:0 10rpx;
                 }
                 .huodongtxt2{
                   font-size: 28rpx;
@@ -377,10 +376,8 @@
                 line-height: 66rpx;
               }
               .takepartin_activedowm{
-                line-height: 58rpx;
-                background: #fff;
-                color:#888;
-                border:4rpx solid #888;
+                background: #888;
+                color:#fff;
               }
             }
           }

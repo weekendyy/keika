@@ -34,7 +34,7 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '开通黑卡会员',
+      navigationBarTitleText: '开通会员',
     }
     data = {
       currentTabsIndex: 0,

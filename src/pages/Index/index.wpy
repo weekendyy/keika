@@ -7,39 +7,6 @@
         <text>{{item.classify_name}}</text>
       </view>
     </view>
-    <!-- <view class="league">
-      <image src="http://p24lfn08v.bkt.clouddn.com/haodiansss.png" mode="widthFix" class="leagueImg"></image>
-      <swiper indicator-dots="{{false}}" class="league-swiper"
-        autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}">
-        <block wx:for="{{5}}">
-          <swiper-item>
-            <text>我已经成功入驻</text>
-          </swiper-item>
-        </block>
-      </swiper>
-      <view class="leaguebtn" @tap="openLeagueBox">我要入驻</view>
-    </view> -->
-    <!-- 入驻弹窗 -->
-    <!-- <view class="leagueWindow" wx:if="{{showLeagueWindow}}">
-      <view class="leagueBox {{showLeagueWindow?'showLeagueBox':''}}">
-        <image src="http://p24lfn08v.bkt.clouddn.com/%E5%A5%BD%E5%BA%97%E6%8E%A8%E8%8D%90-%E6%81%A2%E5%A4%8D%E7%9A%84_03.png" mode="widthFix" class="leagueBoxImg"></image>
-        <view class="leagueBox-title">
-          <text class="leagueBox-title-txt">留下您的联系方式</text>
-          <view class="leagueBox-title-desc">
-            <view class="league-cut"></view>
-            <text>Reservation consultatio</text>
-            <view class="league-cut"></view>
-          </view>
-        </view>
-        <form style="flex: 1">
-          <view class="formBox">
-            <input type="text" placeholder="请输入店铺名称" />
-            <input type="number" placeholder="请输入联系电话" />
-            <button>提交信息</button>
-          </view>
-        </form>
-      </view>`
-    </view> -->
     <view class="index-list" wx:if="{{activityData.length}}">
       <view class="index-header">
         <image src="./images/liwu.png"></image>
@@ -165,8 +132,7 @@
       userInfo: null,
       listtitle: null,
       navData: null,
-      home_goods_classify_str:null,
-      showLeagueWindow:false
+      home_goods_classify_str:null
     }
     methods = {
       onShareAppMessage(){
@@ -259,11 +225,6 @@
           })
           return false
         }
-      },
-      openLeagueBox(){
-        this.showLeagueWindow = true
-        this.$apply()
-        console.log("adasd")
       }
     }
     onLoad(){
@@ -282,6 +243,10 @@
             wepy.$instance.globalData.name = ResData.data.magic_top_title
             wx.setNavigationBarTitle({
               title: ResData.data.magic_top_title
+            })
+          }else{
+            wx.setNavigationBarTitle({
+              title: "首页"
             })
           }
           this.$apply()
@@ -423,7 +388,7 @@
     background-color: #fff;
     flex-wrap:wrap;
     .nav{
-      width: 25%;
+      flex: 0 0 187.5rpx;
       height:164rpx;
       display: flex;
       flex-direction: column;
@@ -438,137 +403,6 @@
         font-size: 26rpx;
         color: #0a0a0a;
       }
-    }
-  }
-  .league{
-    width: 100%;
-    height: 88rpx;
-    border-top: 2rpx solid #DCDCDC;
-    box-sizing: border-box;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    .leagueImg{
-      width: 96rpx;
-      height:53rpx;
-      margin-left: 33rpx;
-    }
-    .league-swiper{
-      flex: 1;
-      height: 100%;
-      text{
-        color: #A1A1A1;
-        font-size: 27rpx;
-        line-height: 86rpx;
-        margin-left: 17rpx;
-      }
-    }
-    .leaguebtn{
-      color: #fff;
-      font-size: 25rpx;
-      line-height: 50rpx;
-      background-color: #FF2400;
-      border-radius: 8rpx;
-      padding: 0 20rpx;
-      margin-right: 20rpx;
-    }
-  }
-  .leagueWindow{
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: rgba(0,0,0,.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    z-index: 20;
-    .leagueBox{
-      border-radius: 25rpx;
-      width: 585rpx;
-      height: 788rpx;
-      background-color: #fff;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: .3s;
-      opacity: 0;
-      transform: scale(.9);
-      pointer-events: none;
-      .leagueBoxImg{
-        width: 100%;
-        flex: 0 0 261rpx;
-      }
-      .leagueBox-title{
-        flex: 0 0 170rpx;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-        padding: 0 20rpx;
-        .leagueBox-title-txt{
-          color: #000;
-          font-size: 27rpx;
-          font-weight: bold;
-          line-height: 1;
-          margin-bottom: 22rpx;
-        }
-        .leagueBox-title-desc{
-          line-height: 1;
-          display: flex;
-          align-items: center;
-          width: 100%;
-          .league-cut{
-            flex: 1;
-            height: 1px;
-            background-color: #F6F5F5;
-          }
-          text{
-            color: #CFC6CF;
-            font-size: 14rpx;
-            margin: 0 10rpx;
-          }
-        }
-      }
-      .formBox{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 545rpx;
-        height: 100%;
-        box-sizing: border-box;
-        padding: 0 20rpx;
-        input{
-          background-color: #F6F5F5;
-          font-size: 24rpx;
-          padding: 25rpx 22rpx;
-          width: 100%;
-          height: 73rpx;
-          box-sizing: border-box;
-          margin-bottom: 30rpx; 
-        }
-        button{
-          background-color: #FF6633;
-          color: #fff;
-          font-size: 24rpx;
-          border-radius: 0;
-          width: 335rpx;
-          height: 59rpx;
-          line-height: 59rpx;
-          margin-top: 30rpx;
-          &:after{
-            content:none;
-          }
-        }
-      }
-    }
-    .showLeagueBox{
-      opacity: 1;
-      transform: scale(1);
     }
   }
   .index-list{
@@ -727,7 +561,6 @@
             font-size: 28rpx;
             background-color: #e8c180;
             color: #fff;
-            box-shadow: 0 0 20rpx rgba(121,80,10,.2);
           }
           .num-wrapper{
             margin-top: 16rpx;

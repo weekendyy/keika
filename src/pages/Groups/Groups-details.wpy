@@ -14,7 +14,7 @@
       </view>
       <view class="time-wrapper">
         <text class="time" wx:if="{{ clock =='已经截止'}}">活动已经截止</text>
-        <text class="time" wx:if="{{ clock!='已经截止'}}">距结束 {{clock}}</text>
+        <text class="time" wx:if="{{ clock!='已经截止'}}">距{{start_time?'开始':'结束'}} {{clock}}</text>
       </view>
     </view>
     <view class="details-introduce">
@@ -145,11 +145,11 @@
         <image class="index-icon" src="./images/icon-index.png"></image>
         <text class="index-text">首页</text>
       </navigator>
-      <view class="purchase {{payState == true ? '' : 'disabled'}}" @tap="buyGoods('1')">
+      <view class="purchase {{payState == true ? '' : 'disabled'}} {{DetailData.group_goods_status==2?'':'disabled'}}" @tap="buyGoods('1')">
         <text class="purchase-Price">{{DetailData.discount_price}}</text>
         <text class="purchase-text">单独购买</text>
       </view>
-      <view class="buy-wrapper {{payState == true ? '' : 'disabled'}}" @tap="buyGoods('2')">
+      <view class="buy-wrapper {{payState == true ? '' : 'disabled'}} {{DetailData.group_goods_status==2?'':'disabled'}}" @tap="buyGoods('2')">
         <text class="buy-Price">{{DetailData.group_price}}</text>
         <text class="buy-text">{{DetailData.group_person}}人拼团</text>
       </view>
@@ -171,16 +171,21 @@
 <script>
   let timer = null
   function countdown(that) {
-    let total_micro_second = that.end_time;
+    let total_micro_second = that.start_time || that.end_time;
     that.clock = dateformat(total_micro_second)
-    if (total_micro_second <= 0) {
+    if (that.end_time <= 0) {
       that.clock = "已经截止"
       that.$apply()
       return false
     }
     timer = setInterval(function() {
       total_micro_second -= 1000;
-      that.end_time -= 1000
+      if(that.start_time>0){
+        that.start_time -= 1000
+      }
+      if(that.end_time>0){
+        that.end_time -= 1000
+      }
       clearInterval(timer)
       countdown(that)
     }, 1000)
@@ -233,8 +238,9 @@
       loadingHidden: false,
       clock: '',
       end_time: '',
+      start_time:'',
       userInfo: null,
-      GeographyData: null,
+      GeographyData: null
     }
     methods = {
       onTabsItemTap(i){
@@ -422,6 +428,7 @@
           this.DetailData = ResData.data
           const article = this.DetailData.detail;
           this.end_time = this.DetailData.reside_time * 1000;
+          this.start_time = this.DetailData.no_start_reside_time * 1000;
           countdown(this)
           wxParse.wxParse('article', 'html', article, this, 0);
           this.$apply()

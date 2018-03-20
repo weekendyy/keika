@@ -2,6 +2,10 @@
   <import src="../../wxParse/wxParse.wxml"/>
   <view class="container" hidden="{{!loadingHidden}}">
     <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
+    <view class="likeNum">
+      <image src="images/loverico.png" mode="widthFix" class="loveIcon"></image>
+      <text>{{likeNum}}人喜欢</text>
+    </view>
   	<view class="mainBox">
  		<text class="title">{{DetailData.title}}</text>
  		<view class="starttime" wx:if="{{DetailData.status == 2}}">
@@ -100,10 +104,13 @@
   	</view>
     <view class="giftintroducebox">
       <view class="jpdescbox_title">
-        <text class="jpdescbox_txt">奖品介绍</text>
+        <text class="jpdescbox_txt">{{rules.title}}</text>
       </view>
       <view class="desc-wrapper">
-        <template is="wxParse" data="{{wxParseData:article2.nodes}}"/>
+        <view wx:for="{{rules.content}}">
+          {{item}}
+        </view>
+        
       </view>
     </view>
     <view class="giftintroducebox">
@@ -148,7 +155,8 @@
           that.end_time = that.DetailData.residue_time * 1000
           countdown(that)
           wxParse.wxParse('article1', 'html', that.DetailData.details, that, 5);
-          wxParse.wxParse('article2', 'html', that.DetailData.prize_details, that, 5);
+          // wxParse.wxParse('article2', 'html', that.DetailData.prize_details, that, 5);
+
         })
         that.$apply()
         return false
@@ -211,6 +219,8 @@
       LaunchState: true,
       exchangeState: true,
       shareState: true,
+      likeNum:'',
+      rules:''
     }
     onLoad(options){
       if(options.launch_id){
@@ -376,6 +386,8 @@
           BargainModel.getLuckyDetail(this.param,(ResData)=>{
             this.DetailData = ResData.activity_attr
             this.bargain = ResData.bargain
+            this.likeNum = ResData.activity_attr.see_num
+            this.rules = ResData.rule_str
             this.isOne = ResData.bargain.launch.help_count
             if(wx.getStorageSync('launch_id')){
               wx.removeStorage({
@@ -408,7 +420,7 @@
               }
             }
             wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-            wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+            // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
             this.$apply()
           })
           this.$apply()
@@ -463,7 +475,7 @@
                 }
               }
               wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-              wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+              // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
               this.$apply()
             })
             this.loadingHidden = true
@@ -516,7 +528,7 @@
                 }
               }
               wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-              wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+              // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
               this.$apply()
             })
             this.$apply()
@@ -574,7 +586,7 @@
                   }
                 }
                 wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-                wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+                // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
                 this.$apply()
               })
             })
@@ -596,6 +608,29 @@
   .bannerpic{
     width:750rpx;
     height: 424rpx;
+  }
+  .likeNum{
+    position: absolute;
+    top: 25rpx;
+    right: 0;
+    background:rgba(0,0,0,.5);
+    padding:0 35rpx 0 26rpx;
+    z-index: 44444;
+    color: #fff;
+    height: 54rpx;
+    font-size: 24rpx;
+    box-sizing: border-box;
+    border-top-left-radius: 30rpx;
+    border-bottom-left-radius: 30rpx;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    z-index: 8888;
+    .loveIcon{
+      width: 26rpx;
+      height: 26rpx;
+      margin-right: 10rpx;
+    }
   }
   .container{
     display: flex;
@@ -620,6 +655,7 @@
       .title{
         font-size: 35rpx;
         color:#0e0e0e;
+        width: 90%;
       }
       .starttime{
         display: flex;
@@ -672,7 +708,7 @@
         width:570rpx;
         background-color: #E8E8E8;
         border-radius: 30rpx;
-        height: 32rpx;
+        height: 40rpx;
         position: relative;
         display: flex;
         justify-content: center;
@@ -808,6 +844,11 @@
         width: 634rpx;
         .wxParse-p view,.wxParse-p image{
           width: 100%;
+        }
+        view{
+          color:#616161;
+          line-height:50rpx;
+          font-size:27rpx;
         }
       }
       .jpdescbox_title{

@@ -5,6 +5,10 @@
       <swiper-item class="banner-item">
         <image src="{{goodsInfo.banner_url}}" mode="aspectFill"></image>
       </swiper-item>
+      <view class="likeNum">
+        <image src="images/loverico.png" mode="widthFix" class="loveIcon"></image>
+        <text>{{likeNum}}人喜欢</text>
+      </view>
     </swiper>
     <view class="card-content">
       <view class="card-title">
@@ -113,6 +117,7 @@
       queryData: {},
       LuckStatus: true,
       target: '',
+      likeNum:''
     }
     methods = {
       onShareAppMessage(){
@@ -269,6 +274,7 @@
           this.goodsInfo = ResData.data
           const article = ResData.data.prize_detail
           wxParse.wxParse('article', 'html', article, this, 0)
+          this.likeNum = ResData.data.browse_num
         }
         this.$apply()
       })
@@ -312,6 +318,28 @@
     image{
       height: 100%;
       width: 100%;
+    }
+    .likeNum{
+      position: absolute;
+      top: 25rpx;
+      right: 0;
+      background:rgba(0,0,0,.5);
+      padding:0 35rpx 0 26rpx;
+      z-index: 44444;
+      color: #fff;
+      height: 54rpx;
+      font-size: 24rpx;
+      box-sizing: border-box;
+      border-top-left-radius: 30rpx;
+      border-bottom-left-radius: 30rpx;
+      display: flex;
+      align-items: center;
+      line-height: 1;
+      .loveIcon{
+        width: 26rpx;
+        height: 26rpx;
+        margin-right: 10rpx;
+      }
     }
   }
   .card-content{
@@ -428,7 +456,7 @@
         }
       }
       .card-box{
-        width: 572rpx;
+        width: 520rpx;
         display: flex;
         justify-content: space-between;
         margin: 26rpx auto 0;
@@ -436,8 +464,7 @@
           justify-content: center;
         }
         .card{
-          width: 520rpx;
-          margin: 0 auto;
+          width: 300rpx;
           height: 70rpx;
           background-color: #ef494d;
           border-radius: 34rpx;
@@ -461,13 +488,13 @@
           }
         }
         .help{
-          width: 212rpx;
+          width: 190rpx;
           height: 70rpx;
           background-color: #ef494d;
           border-radius: 34rpx;
           line-height:0;
           text-align: center;
-          margin-right:none;
+          margin-right:0;
           text{
             line-height: 70rpx;
             font-size: 26rpx;

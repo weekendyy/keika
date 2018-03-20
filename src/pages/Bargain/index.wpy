@@ -371,10 +371,8 @@
                 line-height: 66rpx;
               }
               .takepartin_activedowm{
-                line-height: 58rpx;
-                background: #fff;
-                color:#888;
-                border:4rpx solid #888;
+                background: #888;
+                color:#fff;
               }
             }
           }

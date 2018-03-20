@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="My-order">
     <view class="order-header">
       <repeat for="{{tabHeaderTitles}}" key="index">
@@ -179,6 +180,9 @@
             </view>
           </view>
         </repeat>
+      </view>
+      <view class="emptyGoodsTipsBox" wx:if="{{!orderAllData.length}}">
+        <template is="emptyGoodsTips"></template>
       </view>
     </view>
   </view>
@@ -398,6 +402,7 @@
   }
 </script>
 <style lang="less">
+  @import '../../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   page{
     background-color:#f3f5f5;
     height:100%;
@@ -405,7 +410,7 @@
   @stateColor:#ff6a3c;
   .order-header{
     width:100%;
-    height:84rpx;
+    flex: 0 0 84rpx;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -580,5 +585,17 @@
           }
         }
       }
+    }
+    .My-order{
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .order-main{
+      flex: 1;
+    }
+    .emptyGoodsTipsBox{
+      background-color: #fff;
+      height: 100%;
     }
 </style>

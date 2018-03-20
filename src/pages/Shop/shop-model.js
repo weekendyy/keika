@@ -101,6 +101,48 @@ class Shop extends Base {
     }
     this.request(param)
   }
+
+  /**
+   * 提交入驻信息
+   * @param queryData
+   * @param callback
+   */
+  postJoinShop(queryData, callback){
+    let param = {
+      url: 'v5/magic_shop/add_from_in_data',
+      data: {
+        link_tel: queryData.link_tel,
+        link_shop_name: queryData.link_shop_name,
+        wechat_name: queryData.wechat_name,
+        wechat_img: queryData.wechat_img
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+
+  /**
+   * 获取好店列表信息
+   * @param queryData
+   * @param callback
+   */
+  getShopListInfo(queryData, callback){
+    let param = {
+      url: 'v5/magic_shop/magic_shop_classify',
+      data: {
+        page_num:queryData.page_num,
+        choose_type:queryData.choose_type,
+        parent_classify_id:queryData.parent_classify_id,
+        son_classify_id:queryData.son_classify_id
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
 }
 const ShopModel = new Shop()
 export default ShopModel

@@ -1,6 +1,60 @@
 <template>
-  <view class="index-container" hidden="{{!loadingHidden}}">
+  <view class="index-container" hidden="{{!loadingHidden}}" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
     <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <!-- 分类列表 -->
+      <!-- swpier形式 -->
+    <view class="shopClassify" style="height: {{shopClassifys.length<5?'170rpx':'310rpx'}}" wx:if="{{shopClassifys.length!=0}}">
+      <swiper indicator-dots="{{shopClassifyNum.length<9?false:true}}" class="shopClassify-swiper">
+        <block wx:for="{{shopClassifyNum}}">
+          <swiper-item>
+            <block wx:for="{{item}}">
+              <view class="classifyItem" @tap="gotoShopList({{item.id}})">
+                <image src="{{item.img_url}}" mode="aspectFill" class="classifyItem-pic"></image>
+                <text>{{item.title_name}}</text>
+              </view>
+            </block>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+    <!-- 入驻栏 -->
+    <view class="league">
+      <image src="{{magic_from_str.today_in_img}}" mode="widthFix" class="leagueImg"></image>
+      <swiper indicator-dots="{{false}}" class="league-swiper" circular
+        autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}">
+        <block wx:for="{{from_in_shop_data}}">
+          <swiper-item>
+            <view>
+              <text>{{item.wechat_name}}</text>
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+      <view class="leaguebtn" wx:if="{{check_join==2}}" hover-class="leaguebtn-hover" hover-start-time="0" hover-stay-time="0" @tap="openLeagueBox">{{magic_from_str.in_shop_str}}</view>
+    </view>
+    <!-- 入驻弹窗 -->
+    <view class="leagueWindow">
+      <view class="leagueBox {{showLeagueWindow?'showLeagueBox':''}}">
+        <image src="{{magic_from_str.form_in_img}}" class="leagueBoxImg"></image>
+        <view class="leagueBox-title">
+          <text class="leagueBox-title-txt">{{magic_from_str.contact_str}}</text>
+          <view class="leagueBox-title-desc">
+            <view class="league-cut"></view>
+            <text>Reservation consultatio</text>
+            <view class="league-cut"></view>
+          </view>
+        </view>
+        <form style="flex: 1" bindsubmit="submitJoinShopInfo">
+          <view class="formBox">
+            <input type="text" placeholder="{{magic_from_str.shop_name_str}}" @input="shopNameInp" />
+            <input type="number" placeholder="{{magic_from_str.link_tel_str}}" @input="telInp" />
+            <button form-type="submit" hover-class="submit-hover" hover-start-time="0" hover-stay-time="0">{{magic_from_str.from_button_str}}</button>
+          </view>
+        </form>
+      </view>
+      <view class="leagueBox-cover" wx:if="{{showLeagueWindow}}" ></view>
+      <image src="images/close.png" mode="aspectFill" wx:if="{{showLeagueWindow}}" class="closeIcon" @tap="closeleagueBox"></image>
+    </view>
     <view class="tab-box">
       <view class="tab-list">
         <repeat for="{{TitleData}}" wx:for-item="item" key="index">
@@ -117,7 +171,23 @@
       pageNum:{
         shopPage: 1,
         nearPage: 1,
-      }
+      },
+      showLeagueWindow:false,
+      shopClassifys:[],
+      from_in_shop_data:[],
+      magic_from_str:[],
+      link_tel:'',
+      link_shop_name:'',
+      check_join:1
+    }
+    computed = {
+        shopClassifyNum () {
+            let result = [];
+            for(var i=0,len=this.shopClassifys.length;i<len;i+=8){
+               result.push(this.shopClassifys.slice(i,i+8));
+            }
+            return result
+        }
     }
     methods = {
       onShareAppMessage(){
@@ -218,7 +288,86 @@
             res && res(data)
           })
         });
-      }.bind(this)
+      }.bind(this),
+      openLeagueBox(){
+        this.showLeagueWindow = true
+        this.$apply()
+        console.log(this.shopClassifyNum)
+      },
+      closeleagueBox(){
+        this.showLeagueWindow = false
+        this.$apply()
+      },
+      submitJoinShopInfo(){
+        let query = {}
+        query.link_tel = this.link_tel
+        query.link_shop_name = this.link_shop_name
+        query.wechat_name = this.userInfo.userInfo.nickName
+        query.wechat_img = this.userInfo.userInfo.avatarUrl
+        if(!this.link_shop_name){
+          wx.showToast({
+            title: '请输入店铺名称',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false;
+        }
+        if(Number(this.link_tel.length) === 0){
+          wx.showToast({
+            title: '请输入手机号码',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false
+        }
+        if(Number(this.link_tel.length) <= 10){
+          wx.showToast({
+            title: '手机长度不足',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false
+        }
+        if(!(/^1[34578]\d{9}$/.test(this.link_tel))){
+          wx.showToast({
+            title: '手机格式错误',
+            icon:'loading',
+            duration: 1000,
+            mask: true,
+          })
+          return false;
+        }
+        ShopModel.postJoinShop(query,(resData)=>{
+          this.showLeagueWindow = false
+          this.$apply()
+          console.log(resData)
+          if(resData.code == 1){
+            wx.showToast({
+              title: '恭喜提交成功!',
+              icon: 'none'
+            })
+            this.check_join = 1
+            this.$apply()
+          }else{
+            wx.showToast({
+              title: resData.message,
+              icon: 'none'
+            })
+          }
+        })
+      },
+      shopNameInp(e){
+        this.link_shop_name = e.detail.value
+      },
+      telInp(e){
+        this.link_tel = e.detail.value
+      },
+      gotoShopList(id){
+        this.$navigate('shopList',{id:id})
+      }
     }
     onLoad(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
@@ -306,6 +455,10 @@
           if(ResData.code == 1){
             this.shopData = ResData.data
             this.TitleData = ResData.stores_recommend_str
+            this.shopClassifys = ResData.classify_data
+            this.from_in_shop_data = ResData.from_in_shop_data
+            this.magic_from_str = ResData.magic_from_str
+            this.check_join = ResData.check_join
             this.$apply()
           }
         })
@@ -325,6 +478,249 @@
   }
 </script>
 <style lang="less">
+  .index-container{
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  .shopClassify{
+    width: 100%;
+    height: 310rpx;
+    background-color: #fff;
+    border-bottom: 2rpx solid #D8D8D8;
+    .shopClassify-swiper{
+      width: 100%;
+      height: 100%;
+      .wx-swiper-dot{
+        width:18rpx;
+        display: inline-flex;
+        height: 5rpx;
+        margin-left: 10rpx;
+        justify-content:space-between;
+      }
+      .wx-swiper-dot::before{
+        content: '';
+        flex-grow: 1; 
+        background: #ECECEC;
+        border-radius: 1rpx
+      }
+      .wx-swiper-dot-active::before{
+        background:#CACACA;   
+      }
+      swiper-item{
+        display: flex;
+        flex-wrap: wrap;
+        box-sizing:border-box;
+        padding:25rpx 0;
+        justify-content: flex-start;
+        .classifyItem{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex: 0 0 187.5rpx;
+          justify-content: center;
+          height: 130rpx;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          float:left;
+          .classifyItem-pic{
+            width: 70rpx;
+            height: 70rpx;
+            flex: 0 0 70rpx;
+            border-radius: 100%;
+            background-color: #fff;
+          }
+          text{
+            font-size: 25rpx;
+            line-height: 1;
+            margin-top: 14rpx;
+            max-width:110rpx;
+            overflow:hidden;
+            text-overflow:ellipsis;
+          }
+        }
+      }
+    }
+  }
+  .league{
+    width: 100%;
+    height: 108rpx;
+    box-sizing: border-box;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    border-bottom: 20rpx solid #FAF9F9;
+    .leagueImg{
+      width: 96rpx;
+      height:53rpx;
+      margin-left: 33rpx;
+    }
+    .league-swiper{
+      flex: 1;
+      height: 100%;
+      view{
+        overflow: hidden;
+        width: 90%;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        text{
+          color: #888;
+          font-size: 27rpx;
+          line-height: 86rpx;
+          margin-left: 17rpx;
+        }
+      }
+    }
+    .leaguebtn{
+      color: #fff;
+      font-size: 25rpx;
+      line-height: 50rpx;
+      background-color: #FF2400;
+      border-radius: 8rpx;
+      padding: 0 20rpx;
+      margin-right: 20rpx;
+      transition: .2s;
+    }
+    .leaguebtn-hover{ 
+      transform: scale(1.1);
+    }
+  }
+  .leagueWindow{
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    pointer-events: none;
+    .leagueBox{
+      border-radius: 29rpx;
+      width: 585rpx;
+      height: 788rpx;
+      background-color: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: .5s;
+      transform: translateY(-100rpx);
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      top: 120rpx;
+      left: 50%;
+      margin-left: -292rpx;
+      z-index: 300;
+      box-shadow: 0 0 20rpx rgba(41,5,5,.8);
+      .leagueBoxImg{
+        width: 100%;
+        flex: 0 0 261rpx;
+        border-top-left-radius: 29rpx;
+        border-top-right-radius: 29rpx;
+
+      }
+      .leagueBox-title{
+        flex: 0 0 170rpx;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        .leagueBox-title-txt{
+          color: #000;
+          font-size: 27rpx;
+          font-weight: bold;
+          line-height: 1;
+          margin-bottom: 22rpx;
+        }
+        .leagueBox-title-desc{
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          width: 100%;
+          .league-cut{
+            flex: 1;
+            height: 1px;
+            background-color: #F6F5F5;
+          }
+          text{
+            color: #CFC6CF;
+            font-size: 14rpx;
+            margin: 0 10rpx;
+          }
+        }
+      }
+      .formBox{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 545rpx;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        input{
+          background-color: #F6F5F5;
+          font-size: 24rpx;
+          padding: 20rpx 22rpx;
+          width: 100%;
+          height: 73rpx;
+          box-sizing: border-box;
+          margin-bottom: 30rpx; 
+        }
+        button{
+          background-color: #FF6633;
+          color: #fff;
+          font-size: 24rpx;
+          border-radius: 0;
+          width: 335rpx;
+          height: 59rpx;
+          line-height: 59rpx;
+          margin-top: 30rpx;
+          box-shadow: 0 0 20rpx rgba(142,139,139,.7);
+          transition: .3s;
+          &:after{
+            content:none;
+          }
+        }
+        .submit-hover{
+          transform: scale(1.1);
+        }
+      }
+    }
+    .leagueBox-cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      pointer-events: auto;
+    }
+    .showLeagueBox{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .closeIcon{
+      width: 70rpx;
+      height: 70rpx;
+      padding: 20rpx;
+      z-index: 200;
+      pointer-events: auto;
+      position: fixed;
+      top: 950rpx;
+      left: 50%;
+      margin-left: -55rpx;
+    }
+  }
   .header{
     padding-top: 24rpx;
     padding-bottom: 20rpx;
