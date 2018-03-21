@@ -1,6 +1,7 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
-  <view class="indexBox">
+  <view class="indexBox" hidden="{{!loadingHidden}}">
     <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
       <block wx:for="{{bannerpics}}" wx:key="{{key}}">
         <swiper-item class="swiperitembox">
@@ -70,6 +71,9 @@
       </view> -->
     </view>
   </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 
 <script>
@@ -96,7 +100,8 @@
       isGoodsEmpty:{
         NowIsGoodsEmpty:false,
         OldIsGoodsEmpty:false
-      }
+      },
+      loadingHidden:false
     }
     onLoad() {
       Groups.getIndexNowActivity('1',(data)=>{
@@ -114,6 +119,7 @@
             if(data.goods_data.length<5 && data.goods_data.length>0){
               this.isLoadedAll.NowIsLoadedAll=true
             }
+            this.loadingHidden = true
           }
           this.$apply()
       })
@@ -214,6 +220,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   Page{
     width: 100%;
