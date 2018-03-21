@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="activity-wrapper" hidden="{{!loadingHidden}}">
     <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
     <view class="activity-content">
@@ -71,9 +72,9 @@
       </view>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -313,6 +314,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   page{
     background-color: #faf9f9;
   }
