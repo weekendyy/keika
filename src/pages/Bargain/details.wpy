@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
   <view class="container" hidden="{{!loadingHidden}}">
     <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
@@ -136,9 +137,9 @@
       </view>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 
 <script>
@@ -601,6 +602,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   Page{
     width: 100%;
     background-color: #F7F9F9;
