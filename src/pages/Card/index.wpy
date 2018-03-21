@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="indexBox">
     <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
@@ -68,6 +69,9 @@
       </view> -->
     </view>
   </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 
 <script>
@@ -94,7 +98,8 @@
       isGoodsEmpty:{
         NowIsGoodsEmpty:false,
         OldIsGoodsEmpty:false
-      }
+      },
+      loadingHidden:false
     }
     onLoad() {
       CardModel.getIndexNowActivity('1',(data)=>{
@@ -112,6 +117,7 @@
             wx.setNavigationBarTitle({
               title: data.header_title
             })
+            this.loadingHidden = true
           }
           this.$apply()
       })
@@ -211,6 +217,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   Page{
     width: 100%;
