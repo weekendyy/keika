@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="Order-details" hidden="{{!loadingHidden}}">
     <view class="order-state">
       <view class="state-wrapper" wx:if="{{DetailsData.status == 2 }}">
@@ -49,9 +50,9 @@
         <text class="payment" wx:if="{{DetailsData.status == 1}}" @tap="gotoDestory">去使用</text>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -106,6 +107,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   page{
     background-color:#f3f5f5;
     height:100%;
