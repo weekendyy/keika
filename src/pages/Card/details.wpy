@@ -1,6 +1,7 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="card-wrapper {{LuckStatus == false ? 'active' : ''}}" hidden="{{!loadingHidden}}">
+  <view class="card-wrapper {{LuckStatus == false ? 'active' : ''}} {{loadingHidden?'show-card-wrapper':''}}">
     <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
       <swiper-item class="banner-item">
         <image src="{{goodsInfo.banner_url}}" mode="aspectFill"></image>
@@ -93,9 +94,9 @@
       </view>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -191,7 +192,6 @@
           successcallback && successcallback(data)
         }, (res)=>{
           MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
             this.$apply()
             res && res(data)
           })
@@ -211,7 +211,6 @@
         let user = wx.getStorageSync('user')
         if(user){
           this.userInfo = user
-          this.loadingHidden = true
           this.$apply()
         }
         if(!this.userInfo){
@@ -275,6 +274,7 @@
           const article = ResData.data.prize_detail
           wxParse.wxParse('article', 'html', article, this, 0)
           this.likeNum = ResData.data.browse_num
+          this.loadingHidden = true
         }
         this.$apply()
       })
@@ -282,6 +282,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   .h10{
     width: 3rpx;
     height: 10rpx;
@@ -302,9 +303,16 @@
     background-color: #f7f9f9;
   }
   .card-wrapper{
+    opacity: 0;
+    transition: .3s;
+    position: absolute;
     &.active{
       height: 100%;
       overflow: hidden;
+    }
+    &.show-card-wrapper{
+      opacity: 1;
+      position: relative;
     }
   }
   .swiper{
