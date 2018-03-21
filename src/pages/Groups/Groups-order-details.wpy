@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="Order-details" hidden="{{!loadingHidden}}">
     <view class="order-state" wx:if="{{groupsData.monad_id == 0 }}">
       <view class="state-wrapper" wx:if="{{groupsData.status == 4 }}">
@@ -167,9 +168,9 @@
       <text class="payment" wx:if="{{groupsData.status == 2 && groupsData.monad_status == 2}}" @tap="delGroupOrder">拼团失败</text>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -228,6 +229,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   page{
     background-color:#f3f5f5;
     height: 100%;
