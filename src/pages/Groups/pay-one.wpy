@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="pay" hidden="{{!loadingHidden}}">
     <view class="pay-success">
       <view class="goods-wrapper">
@@ -54,9 +55,9 @@
       </view>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import Groups from './Api/Groups.Api'
@@ -200,6 +201,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
 .pay-success{
   width: 100%;
   background-color: #fff6f4;
