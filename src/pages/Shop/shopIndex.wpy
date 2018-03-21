@@ -8,7 +8,7 @@
         <block wx:for="{{shopClassifyNum}}">
           <swiper-item>
             <block wx:for="{{item}}">
-              <view class="classifyItem" @tap="gotoShopList({{item.id}})">
+              <view class="classifyItem" @tap="gotoShopList({{item.id}},{{item.title_name}})">
                 <image src="{{item.img_url}}" mode="aspectFill" class="classifyItem-pic"></image>
                 <text>{{item.title_name}}</text>
               </view>
@@ -365,19 +365,19 @@
       telInp(e){
         this.link_tel = e.detail.value
       },
-      gotoShopList(id){
-        this.$navigate('shopList',{id:id})
+      gotoShopList(id,name){
+        this.$navigate('shopList',{id:id,name:name})
       }
     }
     onLoad(){
+    }
+    onShow(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data
           this.$apply()
         }
       })
-    }
-    onShow(){
       this.pageNum.shopPage=1
       this.pageNum.nearPage=1
       this.shopRepeatReuqest = true
