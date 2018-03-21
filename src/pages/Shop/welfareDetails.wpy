@@ -39,8 +39,14 @@
     <view class="open-vip" wx:if="{{card_status == 2}}" @tap="openVip()">
       <text>开通会员即可获赠</text>
     </view>
-    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2}}" @tap="addWelfare()">
+    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 3}}" @tap="addWelfare">
       <text>马上领取</text>
+    </view>
+    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 1}}">
+      <text>活动未开始</text>
+    </view>
+    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 2}}">
+      <text>活动已结束</text>
     </view>
     <view class="open-vip end" wx:if="{{card_status == 1 && check_get_log ==1}}">
       <text>已领取</text>
@@ -60,7 +66,8 @@
       id: null,
       WelfareData: null,
       card_status: null,
-      check_get_log: null
+      check_get_log: null,
+      time_status:null
     }
     methods = {
       onShareAppMessage(){
@@ -109,6 +116,7 @@
           this.card_status = ResData.card_status
           this.check_get_log = ResData.check_get_log
           this.WelfareData = ResData.data
+          this.time_status = ResData.data.time_status
           wxParse.wxParse('article1', 'html', this.WelfareData.magic_goods_detail, this, 5);
           this.$apply()
         }
