@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="welfare-container">
     <view class="welfare-nav">
       <repeat for="{{TitleData}}" wx:for-item="item" key="index">
@@ -39,6 +40,9 @@
             </view>
           </view>
         </view>
+      </view>
+      <view wx:if="{{orderData.length==0}}">
+      <template is="emptyGoodsTips" data="{{tipsTxt:'暂无福利'}}"></template>
       </view>
     </view>
   </view>
@@ -91,6 +95,7 @@
   }
 </script>
 <style lang="less">
+@import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
 .welfare-container{
   height: 100%;
   background-color: #f6f5f5;
