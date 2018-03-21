@@ -1,39 +1,39 @@
 <template>
   <view class="Order-details" hidden="{{!loadingHidden}}">
     <view class="order-state">
-      <view class="state-wrapper" wx:if="{{DetailsData.status == 4 }}">
+      <view class="state-wrapper" wx:if="{{status == 4 }}">
         <text>交易成功</text>
-        <text>{{DetailsData.order_time}}</text>
+        <text>{{order_time}}</text>
       </view>
-      <view class="state-wrapper" wx:if="{{DetailsData.status == 0 }}">
+      <view class="state-wrapper" wx:if="{{status == 0 }}">
         <text>交易关闭</text>
-        <text>{{DetailsData.order_time}}</text>
+        <text>{{order_time}}</text>
       </view>
-      <view class="Waiting"  wx:if="{{DetailsData.status == 1 }}">
+      <view class="Waiting"  wx:if="{{status == 1 }}">
         <view>
           <text class="Waiting-title">等待付款</text>
-          <text class="Waiting-time">剩余：{{DetailsData.surplusTime}}</text>
+          <text class="Waiting-time">剩余：{{surplusTime}}</text>
         </view>
         <view>
-          <text class="Waiting-money">需付款：{{DetailsData.pay_price}}</text>
+          <text class="Waiting-money">需付款：{{pay_price}}</text>
         </view>
       </view>
-      <view class="evaluate" wx:if="{{DetailsData.status == 3 }}">
+      <view class="evaluate" wx:if="{{status == 3 }}">
         <!--待评价-->
         <image src="../img/icon_evaluate.png"></image>
         <text class="evaluate-text">等待评价</text>
       </view>
-      <view class="evaluate" wx:if="{{DetailsData.status == 2 }}">
+      <view class="evaluate" wx:if="{{status == 2 }}">
         <!--待使用-->
         <image src="../img/icon_evaluate.png"></image>
         <text>等待使用</text>
-        <text class="evaluate-date">剩余：{{DetailsData.surplusTime}}</text>
+        <text class="evaluate-date">剩余：{{surplusTime}}</text>
       </view>
     </view>
-    <view class="user-info-wrapper" wx:if="{{DetailsData.shipping_name}}">
+    <view class="user-info-wrapper" wx:if="{{shipping_name}}">
       <view class="user-info">
         <image src="../img/icon_address.png" class="icon-address"></image>
-        <text class="shipping-name">{{DetailsData.shipping_name}}</text>
+        <text class="shipping-name">{{shipping_name}}</text>
         <text>{{DetailsData.shipping_tel}}</text>
       </view>
       <view class="address">
@@ -53,7 +53,7 @@
           <text>{{DetailsData.delivery_name}}</text>
         </view>
         <view class="goods-Price">
-            <text class="old">{{DetailsData.original_price}}</text>
+            <text class="old">{{original_price}}</text>
             <text class="new">{{DetailsData.discount_price}}</text>
             <text class="num">x{{DetailsData.buy_num}}</text>
         </view>
@@ -61,24 +61,24 @@
       <view class="details-discount">
         <view>
           <text>商品总价</text>
-          <text>￥{{DetailsData.original_price}}</text>
+          <text>￥{{original_price}}</text>
         </view>
-        <view  wx:if="{{DetailsData.vip_status == 0}}">
+        <view  wx:if="{{vip_status == 0}}">
           <text>优惠折扣</text>
-          <text>-￥{{((DetailsData.original_price * 100) - (DetailsData.discount_price *  100))/100}}</text>
+          <text>-￥{{((original_price * 100) - (DetailsData.discount_price *  100))/100}}</text>
         </view>
-        <view  wx:if="{{DetailsData.vip_status == 1}}">
+        <view  wx:if="{{vip_status == 1}}">
           <text>会员折扣</text>
-          <text>-￥{{((DetailsData.original_price * 100) - (DetailsData.vip_price *  100))/100}}</text>
+          <text>-￥{{((original_price * 100) - (DetailsData.vip_price *  100))/100}}</text>
         </view>
         <view>
           <text>订单总价</text>
-          <text>￥{{DetailsData.pay_price}}</text>
+          <text>￥{{pay_price}}</text>
         </view>
       </view>
       <view class="Actual-payment">
         <text>实付款</text>
-        <text>￥{{DetailsData.pay_price}}</text>
+        <text>￥{{pay_price}}</text>
       </view>
     </view>
     <view class="Order-Code">
@@ -86,28 +86,28 @@
         <text>订单编号:</text>
         <text>{{DetailsData.order_num}}</text>
       </view>
-      <view  wx:if="{{DetailsData.wechat_order_num}}">
+      <view  wx:if="{{wechat_order_num}}">
         <text>微信订单编号:</text>
-        <text>{{DetailsData.wechat_order_num}}</text>
+        <text>{{wechat_order_num}}</text>
       </view>
       <view>
         <text>下单时间:</text>
-        <text>{{DetailsData.order_time}}</text>
+        <text>{{order_time}}</text>
       </view>
-      <view wx:if="{{DetailsData.pay_time}}">
+      <view wx:if="{{pay_time}}">
         <text>付款时间:</text>
-        <text>{{DetailsData.pay_time}}</text>
+        <text>{{pay_time}}</text>
       </view>
     </view>
     <view class="footer">
         <!--订单成功 或者 订单取消掉的时候 -->
-        <text class="del-order" wx:if="{{DetailsData.status == 4 || DetailsData.status == 0}}" @tap.stop="delOrder()">删除订单</text>
+        <text class="del-order" wx:if="{{status == 4 || status == 0}}" @tap.stop="delOrder()">删除订单</text>
         <!--待付款-->
-        <text class="payment" wx:if="{{DetailsData.status == 1}}" @tap="orderPayment">去支付</text>
+        <text class="payment" wx:if="{{status == 1}}" @tap="orderPayment">去支付</text>
         <!--待评价-->
-        <text class="payment" wx:if="{{DetailsData.status == 3}}" @tap="orderEvaluate">去评价</text>
+        <text class="payment" wx:if="{{status == 3}}" @tap="orderEvaluate">去评价</text>
         <!--待使用-->
-        <text class="payment" wx:if="{{DetailsData.status == 2}}" @tap="gotoDestory">去使用</text>
+        <text class="payment" wx:if="{{status == 2}}" @tap="gotoDestory">去使用</text>
     </view>
   </view>
   <loading hidden="{{loadingHidden}}">
@@ -124,8 +124,15 @@
     data = {
       loadingHidden: true,
       DetailsData: '',
-      groupsData: null,
       orderID: '',
+      status:'',
+      order_time:'',
+      surplusTime:'',
+      pay_price:'',
+      shipping_name:'',
+      original_price:'',
+      vip_status:'',
+      pay_time:''
     }
     methods = {
       gotoDestory(){
@@ -169,6 +176,15 @@
       OrderModel.getMyOrderInfoById(this.orderID, ReaData=> {
         if(ReaData.code ==1) {
           this.DetailsData = ReaData.data
+          this.status = ReaData.data.status
+          this.order_time = ReaData.data.order_time
+          this.surplusTime = ReaData.data.surplusTime
+          this.pay_price = ReaData.data.pay_price
+          this.shipping_name = ReaData.data.shipping_name
+          this.original_price = ReaData.data.original_price
+          this.vip_status = ReaData.data.vip_status
+          this.wechat_order_num = ReaData.data.wechat_order_num
+          this.pay_time = ReaData.data.pay_time
           this.loadingHidden = true
           this.$apply()
         }
