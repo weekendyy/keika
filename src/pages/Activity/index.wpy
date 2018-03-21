@@ -230,14 +230,14 @@
           this.$apply()
         }
       })
+    }
+    onShow(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data
           this.$apply()
         }
       })
-    }
-    onShow(){
       let Geography = wx.getStorageSync('GeographyData')
       if(Geography){
         this.GeographyData = Geography
