@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="index-container" hidden="{{!loadingHidden}}" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
     <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
     <!-- 分类列表 -->
@@ -89,7 +90,9 @@
                 <view class="fuli-item-top">
                   <text class="type">{{item.one_str}}</text>
                   <text class="name">{{item.magic_goods_title}}</text>
-                  <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
+                  <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==3}}">领取</text>
+                  <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==1}}">未开始</text>
+                  <text class="btn end" wx:if="{{item.magicgetlog == null && item.time_status==2}}">已结束</text>
                   <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
                 </view>
                 <view class="fuli-item-bottom">
@@ -141,9 +144,9 @@
       </view>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -478,6 +481,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   .index-container{
     height: 100%;
     -webkit-overflow-scrolling: touch;
