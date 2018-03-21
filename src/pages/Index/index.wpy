@@ -117,7 +117,7 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '正在加载中...',
+      navigationBarTitleText: '首页',
       enablePullDownRefresh: true,
       backgroundTextStyle: 'dark'
     }
@@ -236,7 +236,7 @@
       })
       indexModel.getActivity((ResData)=>{
         if(ResData.code == 1){
-          this.activityData = [...this.activityData, ...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
+          this.activityData = [...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
           this.listtitle = ResData.data.char_str
           this.home_goods_classify_str=ResData.data.home_goods_classify_str
           if(ResData.data.magic_top_title){
@@ -336,6 +336,12 @@
     onPullDownRefresh(){
       this.pageNum=1;
       let isConnectNet = false
+      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        if(ResData.code == 1){
+          this.headerinfo = ResData.data
+          this.$apply()
+        }
+      })
       indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
         if(ResData.code == 1){
           this.welfareData = ResData.data
@@ -346,7 +352,7 @@
       })
       indexModel.getActivity((ResData)=>{
         if(ResData.code == 1){
-          this.activityData = [...this.activityData, ...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
+          this.activityData = [...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
           this.listtitle = ResData.data.char_str
           this.home_goods_classify_str=ResData.data.home_goods_classify_str
           this.$apply()
@@ -369,7 +375,7 @@
             duration: 2000
           })
         }
-      },5000)
+      },10000)
     }
     components = {
       cheader: cheader
