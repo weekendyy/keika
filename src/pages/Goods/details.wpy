@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
   <view class="goods-details-wrapper" hidden="{{!loadingHidden}}">
     <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
@@ -136,9 +137,9 @@
       <action-sheet-cancel class="cancel">取消</action-sheet-cancel>
     </action-sheet>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 
 <script>
@@ -413,7 +414,7 @@
   }
 </script>
 <style lang="less">
-
+  @import '../tpls/loading/loading.wxss';
   @import "../../wxParse/wxParse.wxss";
   action-sheet-item{
     padding: 0;
