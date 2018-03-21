@@ -221,13 +221,13 @@
     align-items: center;
     .swiperBox{
       width: 750rpx;
-      height: 230rpx;
+      height: 320rpx;
       .swiperitembox{
         width: 750rpx;
-        height: 230rpx;
+        height: 320rpx;
         .bannerpic{
           width:750rpx;
-          height: 230rpx;
+          height: 320rpx;
         }
       }
     }
