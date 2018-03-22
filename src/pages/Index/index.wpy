@@ -1,14 +1,17 @@
 <template>
-  <view class="index-container" hidden="{{!loadingHidden}}">
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="index-container">
+    <view class="cheader-index {{loadingHidden?'show-header':''}}">
     <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
-    <view class="nav-wrapper" wx:if="{{navData.length}}">
+    </view>
+    <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}" >
       <view class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" @tap="navClick({{index}})">
         <image src="{{item.classify_img}}"></image>
         <text>{{item.classify_name}}</text>
       </view>
     </view>
-    <view class="index-list" wx:if="{{activityData.length}}">
-      <view class="index-header">
+    <view class="index-list {{loadingHidden?'show-index-list':''}}" >
+      <view class="index-header" wx:if="{{activityData.length}}">
         <image src="./images/liwu.png"></image>
         <text class="name">{{listtitle[0]}}</text>
       </view>
@@ -104,9 +107,9 @@
       </scroll-view>
     </view>
   </view>
-  <loading hidden="{{loadingHidden}}">
-    加载中...
-  </loading>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -383,8 +386,18 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/loading/loading.wxss';
   page{
     background-color: #faf9f9;
+  }
+  .cheader-index{
+    opacity: 0;
+    transform: scale(1.2);
+    transition: .8s .9s;
+  }
+  .show-header{
+    opacity: 1;
+    transform: scale(1);
   }
   .nav-wrapper{
     position: relative;
@@ -393,6 +406,9 @@
     display: flex;
     background-color: #fff;
     flex-wrap:wrap;
+    opacity: 0;
+    transform: scale(1.2);
+    transition: .8s .5s;
     .nav{
       flex: 0 0 187.5rpx;
       height:164rpx;
@@ -411,8 +427,15 @@
       }
     }
   }
+  .show-nav-wrapper{
+    opacity: 1;
+    transform: scale(1);
+  }
   .index-list{
     border-top: 20rpx solid #ececef;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: .8s .7s;
     .index-header{
       width: 100%;
       height: 116rpx;
@@ -579,6 +602,10 @@
         }
       }
     }
+  }
+  .show-index-list{
+    opacity: 1;
+    transform: scale(1);
   }
   .vip-list{
     border-top: 20rpx solid #ececef;
