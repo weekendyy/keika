@@ -3,5 +3,5 @@ class Config {
   }
 }
 Config.resUrl = 'https://api.czsjcrm.cn/';
-Config.shopID = '348';
+Config.shopID = '394';
 export default Config
