@@ -3,9 +3,10 @@ class Vip extends Base {
   constructor() {
     super()
   }
-  getVipType(callback){
+  getVipType(query,callback){
     let param = {
       url: 'v5/magic_card/open_card_choose',
+      data:query,
       sCallback(ResData) {
         callback && callback(ResData)
       }

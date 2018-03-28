@@ -48,8 +48,9 @@
     <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 2}}">
       <text>活动已结束</text>
     </view>
-    <view class="open-vip end" wx:if="{{card_status == 1 && check_get_log ==1}}">
-      <text>已领取</text>
+    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log ==1}}" style="pointer-events: {{use_status == 2?'none':'auto'}};" @tap="gotoUse">
+      <text wx:if="{{use_status == 1}}">去使用</text>
+      <text wx:if="{{use_status == 2}}">已使用</text>
     </view>
   </view>
 </template>
@@ -67,7 +68,9 @@
       WelfareData: null,
       card_status: null,
       check_get_log: null,
-      time_status:null
+      time_status:null,
+      orderId:'',
+      use_status:''
     }
     methods = {
       onShareAppMessage(){
@@ -101,10 +104,20 @@
               duration: 1500
             })
             this.check_get_log = 1
+            this.use_status = 1
+            this.orderId = ResData.data
             this.$apply()
-
+          } else{
+            wx.showLoading({
+              title: ResData.message,
+              icon: 'success',
+              duration: 1500
+            })
           }
         })
+      },
+      gotoUse(){
+        this.$navigate('../My/coupon?id='+this.orderId)
       }
     }
     onLoad(options){
@@ -113,10 +126,13 @@
     onShow(){
       ShopModel.getWelfareData({id:this.id}, (ResData)=>{
         if(ResData.code == 1){
+          this.orderId = ResData.order_id
+          this.$apply()
           this.card_status = ResData.card_status
           this.check_get_log = ResData.check_get_log
           this.WelfareData = ResData.data
           this.time_status = ResData.data.time_status
+          this.use_status = ResData.use_status
           wxParse.wxParse('article1', 'html', this.WelfareData.magic_goods_detail, this, 5);
           this.$apply()
         }
@@ -257,6 +273,8 @@
     width: 100%;
     background-color: #fff;
     margin-bottom: 100rpx;
+    box-sizing: border-box;
+    padding: 0 30rpx;
     .ActivityDetails-header{
       margin-top:60rpx;
       margin-bottom: 34rpx;
@@ -285,6 +303,7 @@
       padding-bottom: 80rpx;
       .wxParse-p{
         width: 100%;
+        color: #888;
       }
       .wxParse-p image{
         width: 100%;

@@ -89,7 +89,15 @@
       navigationBarBackgroundColor: '#faf9f9'
     }
     data = {
-      AddressInfo: {},
+      AddressInfo: {
+        shipping_name:'',
+        shipping_postcode:'',
+        shipping_province:'',
+        shipping_city:'',
+        shipping_area:'',
+        shipping_street:'',
+        shipping_tel:''
+      },
       orderId: '',
       goods_info: '',
       requirePhone: '',
@@ -142,7 +150,7 @@
           })
           return false
         }
-        if(!(/^1[34578]\d{9}$/.test(this.requirePhone))){
+        if(!(/^1[345789]\d{9}$/.test(this.requirePhone))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -155,7 +163,7 @@
           orderID: this.orderId,
           shipping_phone: this.requirePhone
         }
-        if(this.groupsData.address_options == 1 && JSON.stringify(this.AddressInfo) == '{}'){
+        if(this.groupsData.address_options == 1 && this.AddressInfo.shipping_name == ''){
           wx.showToast({
             title: '请填写收货地址',
             icon: 'success',
@@ -205,12 +213,14 @@
       Groups.getGropusOrderDetail(_param,ResData=>{
         if(ResData.code === 1){
           this.groupsData = ResData.data
-          this.AddressInfo.shipping_name = this.groupsData.shipping_name
-          this.AddressInfo.shipping_province = this.groupsData.shipping_province
-          this.AddressInfo.shipping_city = this.groupsData.shipping_city
-          this.AddressInfo.shipping_area = this.groupsData.shipping_area
-          this.AddressInfo.shipping_street = this.groupsData.shipping_street
-          this.AddressInfo.shipping_tel = this.groupsData.shipping_phone
+          if(this.AddressInfo.shipping_name){
+            this.AddressInfo.shipping_name = this.groupsData.shipping_name
+            this.AddressInfo.shipping_province = this.groupsData.shipping_province
+            this.AddressInfo.shipping_city = this.groupsData.shipping_city
+            this.AddressInfo.shipping_area = this.groupsData.shipping_area
+            this.AddressInfo.shipping_street = this.groupsData.shipping_street
+            this.AddressInfo.shipping_tel = this.groupsData.shipping_phone
+          }
           this.real_tel = this.groupsData.real_tel
           this.requirePhone = this.groupsData.real_tel
           this.$apply()

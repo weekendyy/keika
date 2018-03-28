@@ -142,6 +142,7 @@ class Groups extends Base{
       data: {
         group_goods_id: queryData.group_goods_id,
         time_status: queryData.time_status,
+        magic_formID: queryData.formID
       },
       sCallback(resData){
         callback && callback(resData)
@@ -337,12 +338,13 @@ class Groups extends Base{
     this.request(param)
   }
   //获取进行中的活动数据
-  getIndexNowActivity(PageNum,callback){
+  getIndexNowActivity(query,callback){
     let param = {
       url: 'v5/magic_goods_list/group_goods_list',
       data: {
         time_status:'1',
-        page_num:PageNum || '1',
+        page_num:query.PageNum || query || '1',
+        magic_form_id:query.magic_formID || ''
       },
       sCallback: function(data) {
         callback && callback(data)

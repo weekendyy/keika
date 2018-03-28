@@ -319,8 +319,11 @@
       }.bind(this)
     }
     onLoad(options){
+      let query = {}
+      query.goods_id = options.id
+      query.magic_formID = options.formID
       this.goods_id = options.id
-      DetailsModel.getGoodsDetails(this.goods_id,ResData =>{
+      DetailsModel.getGoodsDetails(query,ResData =>{
         if (ResData.code == 1) {
           this.DetailsData = ResData.promotion[0]
           const article = this.DetailsData.detail;

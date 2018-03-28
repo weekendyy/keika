@@ -55,11 +55,12 @@ class Shop extends Base {
     let param = {
       url: 'v5/magic_shop/magic_shop_list',
       data: {
-        page_num: queryData,
+        page_num: queryData.page_num,
         versions: 'vip4',
         lng: Geography.latitude,
         lat: Geography.longitude,
-        choose_type: '2'
+        choose_type: '2',
+        magic_form_id: queryData.magic_form_id
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -114,7 +115,8 @@ class Shop extends Base {
         link_tel: queryData.link_tel,
         link_shop_name: queryData.link_shop_name,
         wechat_name: queryData.wechat_name,
-        wechat_img: queryData.wechat_img
+        wechat_img: queryData.wechat_img,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)

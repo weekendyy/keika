@@ -2,15 +2,17 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="index-container">
     <view class="cheader-index {{loadingHidden?'show-header':''}}">
-    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo" :formID.sync="formId"></cheader>
     </view>
+    <form report-submit="magic-formID" bindsubmit="navClickFromID">
     <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}" >
-      <view class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" @tap="navClick({{index}})">
+      <button class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" data-index="{{index}}" form-type="submit">
         <image src="{{item.classify_img}}"></image>
         <text>{{item.classify_name}}</text>
-      </view>
+      </button>
     </view>
-    <view class="index-list {{loadingHidden?'show-index-list':''}}" >
+    </form>
+    <view class="index-list {{loadingHidden?'show-index-list':''}}">
       <view class="index-header" wx:if="{{activityData.length}}">
         <image src="./images/liwu.png"></image>
         <text class="name">{{listtitle[0]}}</text>
@@ -135,7 +137,8 @@
       userInfo: null,
       listtitle: null,
       navData: null,
-      home_goods_classify_str:null
+      home_goods_classify_str:null,
+      formId:''
     }
     methods = {
       onShareAppMessage(){
@@ -147,19 +150,19 @@
       gotoDetails(index){
         const i = this.activityData[index]
         if(i.merge_goods_type == 2){
-          this.$navigate('../Groups/Groups-details',{id:i.group_id})
+          this.$navigate('../Groups/Groups-details',{id:i.group_id,formID:this.formId})
           return false
         }
         if(i.merge_goods_type == 1){
-          this.$navigate('../Goods/details',{id:i.promotion_id})
+          this.$navigate('../Goods/details',{id:i.promotion_id,formID:this.formId})
           return false
         }
         if(i.merge_goods_type == 4){
-          this.$navigate('../Bargain/details',{id:i.bargain_id})
+          this.$navigate('../Bargain/details',{id:i.bargain_id,formID:this.formId})
           return false
         }
         if(i.merge_goods_type == 3){
-          this.$navigate('../Card/details',{id:i.lucky_id})
+          this.$navigate('../Card/details',{id:i.lucky_id,formID:this.formId})
           return false
         }
       },
@@ -202,11 +205,13 @@
           })
         });
       }.bind(this),
-      navClick(index){
+      navClickFromID(e){
+        this.formId = e.detail.formId
+        let index = e.detail.target.dataset.index
         let IndexData = this.navData[index]
         if (IndexData.choose_link == 1){
           wx.navigateTo({
-            url: IndexData.http_url,
+            url: IndexData.http_url+'?formId='+this.formId,
           })
           return false
         }
@@ -416,6 +421,12 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      &::after{
+        content:none;
+      }
       image{
         width: 50rpx;
         height: 50rpx;
@@ -457,6 +468,7 @@
       width: 690rpx;
       margin-left: auto;
       margin-right: auto;
+      padding: 0;
       display: flex;
       align-items: center;
       flex-direction: column;
@@ -466,6 +478,10 @@
       margin-bottom: 30rpx;
       overflow: hidden;
       transition: .5s;
+      border-radius: 0;
+      &::after{
+        content:none;
+      }
       .sign{
         position: absolute;
         left:0;

@@ -59,6 +59,7 @@
       currentTabsIndex: 0,
       orderData: null,
       TitleData: ['全部','未使用','已使用','已过期'],
+      formId:''
     }
     methods = {
       onTabsItemTap(index){
@@ -84,8 +85,11 @@
         this.$navigate("./coupon",{id:index})
       },
     }
-    onShow(){
-      MyModel.getOrderDataList({order_status:'4'}, (ResData)=>{
+    onLoad(e){
+      this.formId = e.formId
+    }
+    onShow(e){
+      MyModel.getOrderDataList({order_status:'4',magic_form_id:this.formId}, (ResData)=>{
         if(ResData.code == 1){
           this.orderData = ResData.data
           this.$apply()

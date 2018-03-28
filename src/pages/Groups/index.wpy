@@ -48,12 +48,12 @@
               <text class="itemtitle2">{{item.title_name}}</text>
               <view class="huodong">
                 <image wx:for="{{item.portrait_img}}" wx:key="{{key}}" src="{{item}}" mode="aspectFill" class="gouppic" wx:if="{{index<3}}"></image>
-                <text class="huodongtxt2">{{item.sale_count}}</text>
+                <text class="huodongtxt2 {{activeitem == 1?'noactive':''}}">{{item.sale_count}}</text>
               </view>
             </view>
             <view class="priceaandtake">
               <view class="price">
-                <view class="pricenow"><text>¥</text>{{item.group_price}}</view>
+                <view class="pricenow {{activeitem == 1 ?'noactive':''}}"><text>¥</text>{{item.group_price}}</view>
                 <view class="priceori">¥ {{item.original_price}}</view>
               </view>
               <view class="takepartin {{activeitem==0?'':'takepartin_activedowm'}}">{{activeitem==0?'我要参与':(activeitem==1?'去看看':'')}}</view>
@@ -103,8 +103,11 @@
       },
       loadingHidden:false
     }
-    onLoad() {
-      Groups.getIndexNowActivity('1',(data)=>{
+    onLoad(e) {
+      let query = {}
+      query.PageNum = '1'
+      query.magic_formID = e.formId
+      Groups.getIndexNowActivity(query,(data)=>{
           if (data.code == 1){
             this.NowActivityData = data.goods_data
             this.bannerpics = data.banner_list
@@ -133,6 +136,7 @@
             if (ResData.code == 1){
               this.OldActivityData = ResData.goods_data
               //无商品的情况
+              this.isGoodsEmpty.OldIsGoodsEmpty=false
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.OldIsGoodsEmpty=true
               }
@@ -350,6 +354,9 @@
                   color:#ff4422;
                   margin-left: 15rpx;
                 }
+                .noactive{
+                  color: #888;
+                }
               }
               .shengyu{
                 font-size: 24rpx;
@@ -374,6 +381,9 @@
                     margin-right: 10rpx;
                     font-size: 26rpx;
                   }
+                }
+                .noactive{
+                  color: #888;
                 }
                 .priceori{
                   font-size: 22rpx;

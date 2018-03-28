@@ -11,12 +11,13 @@ class Details extends Base{
    * @param goods_id 商品的ID
    * @param callback 商品的详细数据
    */
-  getGoodsDetails(goods_id,callback){
+  getGoodsDetails(query,callback){
     let param = {
       url:'v2/promotion/promotion_detail',
       data: {
-        promotion_id: goods_id,
-        version: 'vip3'
+        promotion_id: query.goods_id,
+        version: 'vip3',
+        magic_formID: query.magic_formID
       },
       sCallback: function (data) {
         callback && callback(data)
@@ -117,12 +118,13 @@ class Details extends Base{
     }
     this.request(param)
   }
-  getIndexNowActivity(PageNum,callback){
+  getIndexNowActivity(query,callback){
     let param = {
       url: 'v5/magic_goods_list/promotion_goods_list',
       data: {
         time_status:'1',
-        page_num:PageNum || '1',
+        page_num:query.PageNum || query || '1',
+        magic_form_id:query.magic_formID || ''
       },
       sCallback: function(data) {
         callback && callback(data)

@@ -308,12 +308,13 @@ class Bargain extends Base {
     this.request(param)
   }
   //获取进行中的活动数据
-  getIndexNowActivity(PageNum,callback){
+  getIndexNowActivity(query,callback){
     let param = {
       url: 'v5/magic_goods_list/bargain_goods_list',
       data: {
         time_status:'1',
-        page_num:PageNum || '1',
+        page_num:query.PageNum || query || '1',
+        magic_form_id:query.magic_formID || ''
       },
       sCallback: function(data) {
         callback && callback(data)

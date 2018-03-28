@@ -96,7 +96,8 @@ class order extends Base {
       url: 'v2/order/order_list',
       data: {
         pay_status: Postdata.type,
-        limit_num: Postdata.limit_num || 1
+        limit_num: Postdata.limit_num || 1,
+        magic_form_id: Postdata.magic_form_id
       },
       sCallback(ResData){
         callback && callback(ResData)

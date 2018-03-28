@@ -97,11 +97,11 @@
       AddressInfo: {},
       orderId: '',
       goods_info: '',
-      requirePhone: '',
       payState: true,
-      orderType: null,
-      groupsData: null,
-      groupsPay_type: null,
+      requirePhone: '',
+      orderType: '',
+      groupsData: '',
+      groupsPay_type: '',
       real_tel:''
     }
     methods = {
@@ -148,7 +148,7 @@
           })
           return false
         }
-        if(!(/^1[34578]\d{9}$/.test(this.requirePhone))){
+        if(!(/^1[345789]\d{9}$/.test(this.requirePhone))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -270,17 +270,18 @@
     }
     onLoad(options){
       this.orderId = options.orderId
+      this.requirePhone = ''
       orderModel.getOrderInfoById(this.orderId, ResData=> {
         if (ResData.code == 1) {
           this.goods_info = ResData.data
-          this.AddressInfo.shipping_name = this.goods_info.shipping_name
-          this.AddressInfo.shipping_province = this.goods_info.shipping_province
-          this.AddressInfo.shipping_city = this.goods_info.shipping_city
-          this.AddressInfo.shipping_area = this.goods_info.shipping_area
-          this.AddressInfo.shipping_street = this.goods_info.shipping_street
-          this.AddressInfo.shipping_tel = this.goods_info.shipping_phone
-          this.real_tel = this.goods_info.real_tel
-          this.requirePhone = this.goods_info.real_tel
+          this.AddressInfo.shipping_name = this.goods_info.shipping_name || ''
+          this.AddressInfo.shipping_province = this.goods_info.shipping_province || ''
+          this.AddressInfo.shipping_city = this.goods_info.shipping_city || ''
+          this.AddressInfo.shipping_area = this.goods_info.shipping_area || ''
+          this.AddressInfo.shipping_street = this.goods_info.shipping_street || ''
+          this.AddressInfo.shipping_tel = this.goods_info.shipping_phone || ''
+          this.real_tel = this.goods_info.real_tel || ''
+          this.requirePhone = this.goods_info.real_tel || ''
           this.$apply()
         }
       })

@@ -5,18 +5,20 @@
     <!-- 分类列表 -->
       <!-- swpier形式 -->
     <view class="shopClassify" style="height: {{shopClassifys.length<5?'170rpx':'310rpx'}}" wx:if="{{shopClassifys.length!=0}}">
+      <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
       <swiper indicator-dots="{{shopClassifyNum.length<9?false:true}}" class="shopClassify-swiper">
         <block wx:for="{{shopClassifyNum}}">
           <swiper-item>
             <block wx:for="{{item}}">
-              <view class="classifyItem" @tap="gotoShopList({{item.id}},{{item.title_name}})">
+              <button class="classifyItem" data-index="{{index}}" form-type="submit" >
                 <image src="{{item.img_url}}" mode="aspectFill" class="classifyItem-pic"></image>
                 <text>{{item.title_name}}</text>
-              </view>
+              </button>
             </block>
           </swiper-item>
         </block>
       </swiper>
+      </form>
     </view>
     <!-- 入驻栏 -->
     <view class="league">
@@ -45,7 +47,7 @@
             <view class="league-cut"></view>
           </view>
         </view>
-        <form style="flex: 1" bindsubmit="submitJoinShopInfo">
+        <form style="flex: 1" bindsubmit="submitJoinShopInfo" report-submit="magic-formID">
           <view class="formBox">
             <input type="text" placeholder="{{magic_from_str.shop_name_str}}" @input="shopNameInp" />
             <input type="number" placeholder="{{magic_from_str.link_tel_str}}" @input="telInp" />
@@ -57,13 +59,15 @@
       <image src="images/close.png" mode="aspectFill" wx:if="{{showLeagueWindow}}" class="closeIcon" @tap="closeleagueBox"></image>
     </view>
     <view class="tab-box">
-      <view class="tab-list">
-        <repeat for="{{TitleData}}" wx:for-item="item" key="index">
-          <view class="teb-item {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
-        </repeat>
-      </view>
+      <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
+        <view class="tab-list">
+          <repeat for="{{TitleData}}" wx:for-item="item" key="index">
+            <button form-type="submit" data-index="{{index}}" class="teb-item {{currentTabsIndex == index ? 'active': ''}}">{{item}}</button>
+          </repeat>
+        </view>
+      </form>
       <view class="tab-content">
-        <scroll-view class="shop-data" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0 }}" bindscrolltolower="onReachBottom">
+        <scroll-view scroll-y="true" class="shop-data" hidden="{{ currentTabsIndex != 0 }}">
           <view class="shop-data-item" wx:for="{{shopData}}" wx:for-item="item" wx:key="index" @tap="gotoShop({{index}})">
             <view class="top">
               <view class="pic-wrapper">
@@ -90,10 +94,14 @@
                 <view class="fuli-item-top">
                   <text class="type">{{item.one_str}}</text>
                   <text class="name">{{item.magic_goods_title}}</text>
-                  <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==3}}">领取</text>
+                  <!-- <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==3}}">领取</text>
                   <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==1}}">未开始</text>
                   <text class="btn end" wx:if="{{item.magicgetlog == null && item.time_status==2}}">已结束</text>
-                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text> -->
+                  <text class="btn" wx:if="{{item.get_status == 1 && item.time_status==3}}">领取</text>
+                  <text class="btn" wx:if="{{item.time_status==1}}">未开始</text>
+                  <text class="btn end" wx:if="{{item.time_status==2}}">已结束</text>
+                  <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
                 </view>
                 <view class="fuli-item-bottom">
                   <text class="desc">{{item.magic_goods_name}}</text>
@@ -102,8 +110,8 @@
               </view>
             </view>
           </view>
-        </scroll-view>
-        <scroll-view class="shop-data" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1 }}">
+        </scroll-view> 
+        <scroll-view scroll-y="true" class="shop-data" hidden="{{ currentTabsIndex != 1 }}">
           <view class="shop-data-item" wx:for="{{nearbyData}}" wx:for-item="item" wx:key="index"  @tap="gotonear({{index}})">
             <view class="top">
               <view class="pic-wrapper">
@@ -181,7 +189,8 @@
       magic_from_str:[],
       link_tel:'',
       link_shop_name:'',
-      check_join:1
+      check_join:1,
+      formId:''
     }
     computed = {
         shopClassifyNum () {
@@ -199,10 +208,15 @@
           path: 'pages/Shop/shopIndex',
         }
       },
-      onTabsItemTap(index){
+      onTabsItemTapFormId(e){
+        this.formId = e.detail.formId
+        let index = e.detail.target.dataset.index
         this.currentTabsIndex = index
+        let query = {}
+        query.magic_form_id = this.formId
+        query.page_num = this.pageNum.nearPage
         if(this.currentTabsIndex == 1 && this.nearbyData.length == 0){
-          ShopModel.getNearbyData(this.pageNum.nearPage,(ResData)=>{
+          ShopModel.getNearbyData(query,(ResData)=>{
             if(ResData.code == 1){
               this.nearbyDataNum = ResData.total_num
               this.nearbyData = ResData.data
@@ -229,58 +243,6 @@
       gotoWelfare(index){
         this.$navigate('../Shop/welfareDetails',{id:index})
       },
-      onReachBottom(){
-        if (this.currentTabsIndex == 0){
-          if (!this.shopRepeatReuqest) {
-            return false
-          }
-          ++this.pageNum.shopPage
-          ShopModel.getShopIndexData(this.pageNum.shopPage,(Resdata)=>{
-            if(Resdata.code == 1){
-              if(this.shopData.length >= Resdata.total_num){
-                wx.showLoading({
-                  title: '已经到底了',
-                })
-                let timer = setTimeout(()=>{
-                  wx.hideLoading()
-                  this.shopRepeatReuqest = false
-                  clearTimeout(timer)
-                  this.$apply()
-                },2000)
-                this.$apply()
-                return false
-              }
-              this.shopData = [...this.shopData, ...Resdata.data]
-              this.$apply()
-            }
-          })
-        }
-        if (this.currentTabsIndex == 1){
-          if (!this.nearbyRepeatReuqest) {
-            return false
-          }
-          if(this.nearbyData.length >= this.nearbyDataNum){
-            wx.showLoading({
-              title: '已经到底了',
-            })
-            let timer = setTimeout(()=>{
-              wx.hideLoading()
-              this.nearbyRepeatReuqest = false
-              clearTimeout(timer)
-              this.$apply()
-            },2000)
-            this.$apply()
-            return false
-          }
-          ++this.pageNum.nearPage
-          ShopModel.getNearbyData(this.pageNum.nearPage,(Resdata)=>{
-            if(Resdata.code == 1){
-              this.nearbyData = [...this.nearbyData, ...Resdata.data]
-              this.$apply()
-            }
-          })
-        }
-      },
       _loadData:function (successcallback) {
         MyModel.getUserInfo((data)=> {
           successcallback && successcallback(data)
@@ -295,18 +257,19 @@
       openLeagueBox(){
         this.showLeagueWindow = true
         this.$apply()
-        console.log(this.shopClassifyNum)
       },
       closeleagueBox(){
         this.showLeagueWindow = false
         this.$apply()
       },
-      submitJoinShopInfo(){
+      submitJoinShopInfo(e){
+        this.formId = e.detail.formId
         let query = {}
         query.link_tel = this.link_tel
         query.link_shop_name = this.link_shop_name
         query.wechat_name = this.userInfo.userInfo.nickName
         query.wechat_img = this.userInfo.userInfo.avatarUrl
+        query.formId = this.formId
         if(!this.link_shop_name){
           wx.showToast({
             title: '请输入店铺名称',
@@ -334,7 +297,7 @@
           })
           return false
         }
-        if(!(/^1[34578]\d{9}$/.test(this.link_tel))){
+        if(!(/^1[345789]\d{9}$/.test(this.link_tel))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -346,7 +309,6 @@
         ShopModel.postJoinShop(query,(resData)=>{
           this.showLeagueWindow = false
           this.$apply()
-          console.log(resData)
           if(resData.code == 1){
             wx.showToast({
               title: '恭喜提交成功!',
@@ -368,11 +330,13 @@
       telInp(e){
         this.link_tel = e.detail.value
       },
-      gotoShopList(id,name){
-        this.$navigate('shopList',{id:id,name:name})
+      gotoOpenVipFormId(e){
+        this.formId = e.detail.formId
+        let index = e.detail.target.dataset.index
+        let id = this.shopClassifyNum[0][index].id
+        let name = this.shopClassifyNum[0][index].title_name
+        this.$navigate('shopList',{id:id,name:name,formId:this.formId})
       }
-    }
-    onLoad(){
     }
     onShow(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
@@ -466,7 +430,10 @@
           }
         })
       }else{
-        ShopModel.getNearbyData(this.pageNum.nearPage,(ResData)=>{
+        let query = {}
+        query.magic_form_id = this.formId
+        query.page_num = this.pageNum.nearPage
+        ShopModel.getNearbyData(query,(ResData)=>{
           if(ResData.code == 1){
             this.nearbyData = ResData.data
             this.$apply()
@@ -475,6 +442,61 @@
       }
 
     }
+    onReachBottom(){
+      if (this.currentTabsIndex == 0){
+        if (!this.shopRepeatReuqest) {
+          return false
+        }
+        ++this.pageNum.shopPage
+        ShopModel.getShopIndexData(this.pageNum.shopPage,(Resdata)=>{
+          if(Resdata.code == 1){
+            if(this.shopData.length >= Resdata.total_num){
+              wx.showLoading({
+                title: '已经到底了',
+              })
+              let timer = setTimeout(()=>{
+                wx.hideLoading()
+                this.shopRepeatReuqest = false
+                clearTimeout(timer)
+                this.$apply()
+              },2000)
+              this.$apply()
+              return false
+            }
+            this.shopData = [...this.shopData, ...Resdata.data]
+            this.$apply()
+          }
+        })
+      }
+      if (this.currentTabsIndex == 1){
+        if (!this.nearbyRepeatReuqest) {
+          return false
+        }
+        if(this.nearbyData.length >= this.nearbyDataNum){
+          wx.showLoading({
+            title: '已经到底了',
+          })
+          let timer = setTimeout(()=>{
+            wx.hideLoading()
+            this.nearbyRepeatReuqest = false
+            clearTimeout(timer)
+            this.$apply()
+          },2000)
+          this.$apply()
+          return false
+        }
+        ++this.pageNum.nearPage
+        let query = {}
+        query.magic_form_id = this.formId
+        query.page_num = this.pageNum.nearPage
+        ShopModel.getNearbyData(query,(Resdata)=>{
+          if(Resdata.code == 1){
+            this.nearbyData = [...this.nearbyData, ...Resdata.data]
+            this.$apply()
+          }
+        })
+      }
+    }
     components = {
       cheader: cheader
     }
@@ -482,10 +504,6 @@
 </script>
 <style lang="less">
   @import '../tpls/loading/loading.wxss';
-  .index-container{
-    height: 100%;
-    -webkit-overflow-scrolling: touch;
-  }
   .shopClassify{
     width: 100%;
     height: 310rpx;
@@ -526,7 +544,13 @@
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          background-color: transparent;
           float:left;
+          margin: 0;
+          padding: 0;
+          &::after{
+            content:none;
+          }
           .classifyItem-pic{
             width: 70rpx;
             height: 70rpx;
@@ -784,12 +808,19 @@
       border-bottom:1rpx solid #e4e4e4;
       background-color: #fff;
       .teb-item{
+        padding: 0;
+        margin: 0;
+        background-color: transparent;
         width: 136rpx;
         text-align: center;
         line-height: 90rpx;
         font-size: 28rpx;
         color: #4c4c4c;
         border-bottom: 6rpx solid transparent;
+        border-radius: 0;
+        &::after{
+          content:none;
+        }
         ~ .teb-item{
           margin-left: 46rpx;
         }
@@ -804,7 +835,7 @@
   .tab-content{
     .shop-data{
       border-top: 8rpx solid #faf9f9;
-      margin-bottom: 58rpx;
+      padding-bottom: 60rpx;
     }
     .shop-data-item{
       width: 688rpx;

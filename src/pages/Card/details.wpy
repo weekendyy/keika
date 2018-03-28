@@ -27,12 +27,22 @@
             </view>
           </repeat>
         </view>
-        <view class="card-box success" wx:if="{{goodsInfo.first_join == 1}}" @tap="add()">
+        <view class="card-box success" wx:if="{{goodsInfo.first_join == 1 && goodsInfo.status == 1}}" @tap="add()">
           <view class="card">
             <text>我也要参加</text>
           </view>
         </view>
-        <view class="card-box" wx:if="{{goodsInfo.check_collect_status == 2 && goodsInfo.check_exchange_statu == 2 && goodsInfo.first_join == 2}}">
+        <view class="card-box success" wx:if="{{goodsInfo.status == 3}}">
+          <view class="card nostart">
+            <text>活动未开始</text>
+          </view>
+        </view>
+        <view class="card-box success" wx:if="{{goodsInfo.status == 2}}">
+          <view class="card nostart">
+            <text>活动已结束</text>
+          </view>
+        </view>
+        <view class="card-box" wx:if="{{goodsInfo.check_collect_status == 2 && goodsInfo.check_exchange_statu == 2 && goodsInfo.first_join == 2 && goodsInfo.status == 1}}">
           <view class="card {{cardStatus == true ? 'active' : ''}}" wx:if="{{goodsInfo.raffle_num !=0}}" @tap="open()">
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
           </view>
@@ -43,7 +53,7 @@
             <text>更多福利</text>
           </button>
         </view>
-        <view class="card-box success" wx:if="{{goodsInfo.check_collect_status == 1 || goodsInfo.check_exchange_statu == 1  && goodsInfo.first_join == 2}}">
+        <view class="card-box success" wx:if="{{goodsInfo.check_collect_status == 1 || goodsInfo.check_exchange_statu == 1  && goodsInfo.first_join == 2 && goodsInfo.status == 1}}">
           <view class="card" wx:if="{{goodsInfo.check_collect_status == 1 && goodsInfo.check_exchange_statu == 2}}"  @tap="exchange()">
             <text>收集成功,点击领取</text>
           </view>
@@ -203,6 +213,9 @@
         this.queryData.employer_user_id = options.employer_user_id
       }
       this.queryData.lucky_goods_id = options.id
+      if(options.formID){
+        this.queryData.magic_formID = options.formID
+      }
     }
     onShow(){
       let Geography = wx.getStorageSync('GeographyData')
@@ -495,6 +508,9 @@
             color: #ffffff;
           }
         }
+        .nostart{
+          background-color: #E8E9F1;
+        }
         .help{
           width: 190rpx;
           height: 70rpx;
@@ -576,6 +592,7 @@
         margin:0 auto;
         .wxParse-p view, .wxParse-p image{
           width: 630rpx;
+          color: #888;
         }
       }
     }

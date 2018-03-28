@@ -1,8 +1,9 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="My-container" hidden="{{!loadingHidden}}">
+    <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
     <view class="open-vip">
-      <view class="open-wrapper" @tap="gotoVip()">
+      <view class="open-wrapper" >
         <image src="{{vipInfo.card_img}}" class="logo"></image>
         <view class="user-info">
           <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
@@ -10,31 +11,36 @@
             <text class="name">{{userInfo.userInfo.nickName}}</text>
             <text class="date" wx:if="{{vipInfo.open_status == 1}}">{{vipInfo.end_time}}</text>
           </view>
-          <text class="btn" wx:if="{{vipInfo.open_status == 2}}">{{magic_auth_str[1]}}</text>
-          <text class="btn" wx:if="{{vipInfo.open_status == 1}}">{{magic_auth_str[2]}}</text>
+          <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 2}}">{{magic_auth_str[1]}}</button>
+          <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 1}}">{{magic_auth_str[2]}}</button>
         </view>
       </view>
       <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
     </view>
+    </form>
     <view class="nav-wrapper">
       <view class="nav">
-        <form report-submit='contact' bindsubmit="test" >
-        <button open-type="contact" form-type="submit">
-          <image src="./images/icon-kefu.png"></image>
-          <text>{{center_index_str[0]}}</text>
-        </button>
+        <form report-submit='magic_form_id'>
+          <button open-type="contact">
+            <image src="./images/icon-kefu.png"></image>
+            <text>{{center_index_str[0]}}</text>
+          </button>
         </form>
       </view>
-      <view class="nav" @tap="gotowelfare($event)">
-        <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
-        <image src="./images/icon-fuli.png"></image>
-        <text>{{center_index_str[1]}}</text>
-      </view>
-      <view class="nav" @tap="gotoOrder()">
-        <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text>
-        <image src="./images/icon-all.png"></image>
-        <text>{{center_index_str[2]}}</text>
-      </view>
+      <form report-submit='magic_form_id' bindsubmit="gotowelfare">
+        <button class="nav" form-type="submit">
+          <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
+          <image src="./images/icon-fuli.png"></image>
+          <text>{{center_index_str[1]}}</text>
+        </button>
+      </form>
+      <form report-submit='magic_form_id' bindsubmit="gotoOrder">
+        <button class="nav" form-type="submit">
+          <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text>
+          <image src="./images/icon-all.png"></image>
+          <text>{{center_index_str[2]}}</text>
+        </button>
+      </form>
     </view>
     <view class="desc-wrapper">
       <view class="title-wrapper">
@@ -101,16 +107,16 @@
       loadingHidden: false,
       center_index_str: null,
       magic_auth_str: null,
+      formId:''
     }
     methods = {
-      gotowelfare($event){
-       this.$navigate('/pages/My/welfare')
+      gotowelfare(e){
+        this.formId = e.detail.formId
+        this.$navigate('/pages/My/welfare',{formId:this.formId})
       },
-      gotoOrder(){
-        this.$navigate('./order/order',{id:0})
-      },
-      gotoVip(){
-        this.$navigate('../Vip/Index')
+      gotoOrder(e){
+        this.formId = e.detail.formId
+        this.$navigate('./order/order',{id:0,formId:this.formId})
       },
       gotoDetail(index){
         this.$navigate('./articleDetails',{id:index})
@@ -126,8 +132,9 @@
           })
         });
       }.bind(this),
-      test(e){
-        console.log(e.detail.formId)
+      gotoOpenVipFormId(e){
+        this.formId = e.detail.formId
+        this.$navigate('../Vip/Index?formId='+this.formId)
       }
     }
     onShow(){
@@ -298,7 +305,6 @@
         }
         .btn{
           width: 194rpx;
-          margin-right: 40rpx;
           text-align: center;
           font-size: 28rpx;
           color: #e7c375;
@@ -306,6 +312,13 @@
           border: 1rpx solid #e3c289;
           border-radius: 10rpx;
           background-color: #412d2e;
+          background-color: transparent;
+          padding: 0;
+          margin:0;
+          margin-right: 40rpx;
+          &::after{
+            content:none;
+          }
         }
       }
     }
@@ -326,6 +339,8 @@
     display: flex;
     justify-content: space-around;
     .nav{
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -333,6 +348,10 @@
       padding-left:30rpx;
       padding-right:30rpx;
       position: relative;
+      height: 100%;
+      &::after{
+        content:none;
+      }
       button{
         display: flex;
         flex-direction: column;

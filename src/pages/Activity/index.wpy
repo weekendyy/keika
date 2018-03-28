@@ -1,77 +1,81 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="activity-wrapper" hidden="{{!loadingHidden}}">
-    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
-    <view class="activity-content">
-      <view class="activity-tab">
-        <repeat for="{{TitleData}}" wx:for-item="item" key="index">
-          <view class="tab-item {{currentTabsIndex == index ? 'active': ''}}" @tap="onTabsItemTap({{index}})">{{item}}</view>
-        </repeat>
-      </view>
-      <view class="activity-tab-box">
-          <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0}}">
-            <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoNowDetails({{index}})">
-              <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-                <image src="../../images/icon-qianggou.png"></image>
-              </view>
-              <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-                <image src="../../images/icon-pintuan.png"></image>
-              </view>
-              <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-                <image src="../../images/icon-kanjia.png"></image>
-              </view>
-              <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-                <image src="../../images/icon-jifu.png"></image>
-              </view>
-              <image class="item-pic" src="{{item.banner}}"></image>
-              <view class="item-data">
-                <view class="brand">
-                  <text>品牌 : </text>
-                  <text>{{item.brand_name}}</text>
+  <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
+    <view class="activity-wrapper" hidden="{{!loadingHidden}}">
+      <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+      <view class="activity-content">
+        <view class="activity-tab">
+            <repeat for="{{TitleData}}" wx:for-item="item" key="index">
+              <button class="tab-item {{currentTabsIndex == index ? 'active': ''}}" data-index="{{index}}" form-type="submit" >
+                {{item}}
+              </button>
+            </repeat>
+        </view>
+        <view class="activity-tab-box">
+            <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0}}">
+              <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoNowDetails({{index}})">
+                <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
+                  <image src="../../images/icon-qianggou.png"></image>
                 </view>
-                <text class="stitle">{{item.name}}</text>
-                <view class="date-wrapper">
-                  <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
-                  <view class="num-wrapper">
-                    剩余: <text class="num">{{item.residue_num}}</text> 份
+                <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
+                  <image src="../../images/icon-pintuan.png"></image>
+                </view>
+                <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
+                  <image src="../../images/icon-kanjia.png"></image>
+                </view>
+                <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
+                  <image src="../../images/icon-jifu.png"></image>
+                </view>
+                <image class="item-pic" src="{{item.banner}}"></image>
+                <view class="item-data">
+                  <view class="brand">
+                    <text>品牌 : </text>
+                    <text>{{item.brand_name}}</text>
+                  </view>
+                  <text class="stitle">{{item.name}}</text>
+                  <view class="date-wrapper">
+                    <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
+                    <view class="num-wrapper">
+                      剩余: <text class="num">{{item.residue_num}}</text> 份
+                    </view>
                   </view>
                 </view>
               </view>
-            </view>
-          </scroll-view>
-          <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1}}">
-            <view class="index-item" wx:for="{{OldActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoOldDetails({{index}})">
-              <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-                <image src="../../images/icon-qianggou.png"></image>
-              </view>
-              <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-                <image src="../../images/icon-pintuan.png"></image>
-              </view>
-              <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-                <image src="../../images/icon-kanjia.png"></image>
-              </view>
-              <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-                <image src="../../images/icon-jifu.png"></image>
-              </view>
-              <image class="item-pic" src="{{item.banner}}"></image>
-              <view class="item-data">
-                <view class="brand">
-                  <text>品牌 : </text>
-                  <text>{{item.brand_name}}</text>
+            </scroll-view>
+            <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1}}">
+              <view class="index-item" wx:for="{{OldActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoOldDetails({{index}})">
+                <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
+                  <image src="../../images/icon-qianggou.png"></image>
                 </view>
-                <text class="stitle">{{item.name}}</text>
-                <view class="date-wrapper">
-                  <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
-                  <view class="num-wrapper">
-                    剩余: <text class="num">{{item.residue_num}}</text> 份
+                <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
+                  <image src="../../images/icon-pintuan.png"></image>
+                </view>
+                <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
+                  <image src="../../images/icon-kanjia.png"></image>
+                </view>
+                <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
+                  <image src="../../images/icon-jifu.png"></image>
+                </view>
+                <image class="item-pic" src="{{item.banner}}"></image>
+                <view class="item-data">
+                  <view class="brand">
+                    <text>品牌 : </text>
+                    <text>{{item.brand_name}}</text>
+                  </view>
+                  <text class="stitle">{{item.name}}</text>
+                  <view class="date-wrapper">
+                    <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
+                    <view class="num-wrapper">
+                      剩余: <text class="num">{{item.residue_num}}</text> 份
+                    </view>
                   </view>
                 </view>
               </view>
-            </view>
-          </scroll-view>
+            </scroll-view>
+        </view>
       </view>
     </view>
-  </view>
+  </form>
   <view hidden="{{loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -101,7 +105,8 @@
       pageNum:{
         NowActivityPage: 1,
         OldActivityPage: 1,
-      }
+      },
+      formId:null
     }
     methods = {
       onShareAppMessage(){
@@ -110,10 +115,15 @@
           path: 'pages/Activity/index',
         }
       },
-      onTabsItemTap(index){
+      onTabsItemTapFormId(e){
+        this.formId = e.detail.formId
+        let index = e.detail.target.dataset.index
         this.currentTabsIndex = index
         if(this.currentTabsIndex == 1 && this.OldActivityData.length == 0){
-          ActivityModel.getPast(this.pageNum.OldActivityPage,Resdata=>{
+          let query = {}
+          query.pageNum = this.pageNum.OldActivityPage
+          query.magic_formID = this.formId
+          ActivityModel.getPast(query,Resdata=>{
             if(Resdata.code == 1){
               this.OldActivityData = [...this.OldActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
               this.$apply()
@@ -201,7 +211,10 @@
             return false
           }
           ++this.pageNum.OldActivityPage
-          ActivityModel.getPast(this.pageNum.OldActivityPage,(Resdata)=>{
+          let query = {}
+          query.pageNum = this.pageNum.OldActivityPage
+          query.magic_formID = this.formId
+          ActivityModel.getPast(query,(Resdata)=>{
             if(Resdata.code == 1){
               if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0){
                 wx.showLoading({
@@ -333,6 +346,13 @@
           text-align: center;
           font-size: 30rpx;
           color: #9b9b9b;
+          padding:0;
+          margin:0;
+          background-color:#fff;
+          border-radius: 0;
+          &::after{
+            content:none;
+          }
           &.active{
             color: #ff1818;
             border-bottom: 4rpx solid #ff1818;

@@ -5,7 +5,7 @@
       <text>等待使用</text>
     </view>
     <view class="Confirm_header {{goods_info.status == 1 ? 'active': ''}}">
-      <view class="no-address" wx:if="{{!AddressInfo.shipping_name}}" @tap="getAddress">
+      <view class="no-address" wx:if="{{!AddressInfo.shipping_name}}"  @tap="getAddress">
         <image src="./images/icon_address.png"></image>
         <text>可以选择添加收货地址</text>
       </view>
@@ -89,7 +89,8 @@
       goods_info: '',
       requirePhone: '',
       payState: true,
-      real_tel:''
+      real_tel:'',
+      choose_address:''
     }
     methods = {
       getAddress(){
@@ -117,7 +118,7 @@
          this.requirePhone = $event.detail.value.trim()
       },
       buy(){
-        if(!this.AddressInfo.shipping_name) {
+        if(!this.AddressInfo.shipping_name && this.choose_address == 1) {
           wx.showToast({
             title: '请填写收货地址',
             icon:'loading',
@@ -144,7 +145,7 @@
           })
           return false
         }
-        if(!(/^1[34578]\d{9}$/.test(this.requirePhone))){
+        if(!(/^1[345789]\d{9}$/.test(this.requirePhone))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -263,6 +264,7 @@
           this.AddressInfo.shipping_area = this.goods_info.shipping_area
           this.AddressInfo.shipping_street = this.goods_info.shipping_street
           this.AddressInfo.shipping_tel = this.goods_info.shipping_phone
+          this.choose_address = this.goods_info.choose_address
           this.real_tel = this.goods_info.real_tel
           this.requirePhone = this.goods_info.real_tel
         }

@@ -3,7 +3,8 @@
     <view class="order-state">
       <image src="./images/icon_evaluate.png"></image>
       <text>等待使用</text>
-      <text>剩余：{{goodsInfo.residue_time}}</text>
+      <text wx:if="{{goodsInfo.residue_time}}">剩余：{{goodsInfo.residue_time}}</text>
+      <text wx:if="{{!goodsInfo.residue_time}}">已过核销日期</text>
     </view>
     <view class="goods-wrapper">
       <view class="goods-pic">
@@ -25,7 +26,7 @@
         </view>
       </view>
       <view class="Verification-options">
-        <button class="btn" @tap="passVerification">确定消费</button>
+        <button class="btn {{!goodsInfo.residue_time?'disable':''}}" @tap="passVerification">确定消费</button>
         <text class="Requirement">把此页出示给商家进行验证(截图无效)</text>
       </view>
     </view>
@@ -232,6 +233,10 @@
       margin-top:56rpx;
       margin-bottom:30rpx;
       letter-spacing: 2rpx;
+    }
+    .disable{
+      pointer-events: none;
+      background: #999;
     }
     .Requirement{
       font-size:24rpx;

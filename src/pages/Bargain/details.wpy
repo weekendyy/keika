@@ -8,13 +8,13 @@
       <text>{{likeNum}}人喜欢</text>
     </view>
   	<view class="mainBox">
- 		<text class="title">{{DetailData.title}}</text>
- 		<view class="starttime" wx:if="{{DetailData.status == 2}}">
- 			<view class="starttimetxt">距开始</view>
- 			<view class="timenumber">
-        <text>{{clock.day}}</text>:<text>{{clock.hour}}</text>:<text>{{clock.min}}</text>:<text>{{clock.second}}</text>
- 			</view>
- 		</view>
+      <text class="title">{{DetailData.title}}</text>
+      <view class="starttime" wx:if="{{DetailData.status == 2}}">
+ 			  <view class="starttimetxt">距开始</view>
+   			<view class="timenumber">
+          <text>{{clock.day}}</text>:<text>{{clock.hour}}</text>:<text>{{clock.min}}</text>:<text>{{clock.second}}</text>
+   			</view>
+      </view>
       <view class="starttime" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 }}">
         <view class="starttimetxt">距结束</view>
         <view class="timenumber">
@@ -30,32 +30,32 @@
       <view class="starttime" wx:if="{{DetailData.status == 4 && DetailData.last_num != 0}}">
         <view class="starttimetxt">已过期</view>
       </view>
- 		<view class="juzishuju" wx:if="{{bargain.launch}}">
- 			<view class="juzishuju_left">
- 				<image src="{{bargain.launch.headimgurl}}" mode="aspectFill" class="juziPic"></image>
- 				<text>{{bargain.launch.nickname}}</text>
- 			</view>
- 			<view class="banjian">
- 				<text>帮减人数：</text>
- 				<text>{{bargain.launch.help_count}}</text>
- 			</view>
- 		</view>
- 		<view class="priceBar">
- 			<view class="pricepro" style="width:{{(DetailData.current_price/DetailData.price)* 100}}%;"></view>
- 			<text class="pricenow">现价:{{DetailData.current_price}}元</text>
- 		</view>
- 		<view class="juzishuju">
- 			<view class="banjian">
- 				<text>底价：</text>
- 				<text>{{DetailData.floor_price}}元</text>
- 			</view>
- 			<view class="banjian">
- 				<text>原价：</text>
- 				<text>{{DetailData.price}}元</text>
- 			</view>
- 		</view>
+   		<view class="juzishuju" wx:if="{{bargain.launch}}">
+   			<view class="juzishuju_left">
+   				<image src="{{bargain.launch.headimgurl}}" mode="aspectFill" class="juziPic"></image>
+   				<text>{{bargain.launch.nickname}}</text>
+   			</view>
+   			<view class="banjian">
+   				<text>帮减人数：</text>
+   				<text>{{bargain.launch.help_count}}</text>
+   			</view>
+   		</view>
+   		<view class="priceBar">
+   			<view class="pricepro" style="width:{{(DetailData.current_price/DetailData.price)* 100}}%;"></view>
+   			<text class="pricenow">现价:{{DetailData.current_price}}元</text>
+   		</view>
+   		<view class="juzishuju">
+   			<view class="banjian">
+   				<text>底价：</text>
+   				<text>{{DetailData.floor_price}}元</text>
+   			</view>
+   			<view class="banjian">
+   				<text>原价：</text>
+   				<text>{{DetailData.price}}元</text>
+   			</view>
+   		</view>
       <block wx:if="{{bargain.is_own == 1}}">
-        <view class="menpiaobtn success" wx:if="{{isOne == 0 && DetailData.status != 4 && DetailData.status != 2}}" @tap="myadd()">
+        <view class="menpiaobtn success" wx:if="{{isOne == 0 && DetailData.status != 4 && DetailData.status != 2 && DetailData.status != 3}}" @tap="myadd()">
           <view class="kanyidao">我也要参加</view>
         </view>
         <view class="menpiaobtn" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 && bargain.launch.is_minimum !=1 && isOne != 0}}">
@@ -69,13 +69,13 @@
         <view class="menpiaobtn success"  wx:if="{{DetailData.status == 2}}">
           <view class="kanyidao">未开始</view>
         </view>
-        <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
+        <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 2 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
           <view class="kanyidao">减价成功,立即购买</view>
         </view>
         <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
           <view class="kanyidao">减价成功,立即兑换</view>
         </view>
-        <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && DetailData.status != 4 && bargain.launch.use_status == 0}}">
+        <view class="menpiaobtn success" @tap="gotoUse()" wx:if="{{bargain.launch.receive_status == 1 && DetailData.status != 4 && bargain.launch.use_status == 0}}">
           <view class="kanyidao">去使用</view>
         </view>
         <view class="menpiaobtn success" wx:if="{{DetailData.status == 4 && bargain.launch.use_status == 0}}">
@@ -87,7 +87,7 @@
       </block>
       <block wx:if="{{bargain.is_own == 0}}">
         <view class="menpiaobtn success">
-          <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">我也要参加</view>
+          <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">返回我的首页</view>
         </view>
       </block>
   	</view>
@@ -153,9 +153,12 @@
         BargainModel.getLuckyDetail(that.param,(ResData)=>{
           that.DetailData = ResData.activity_attr
           that.bargain = ResData.bargain
+          that.likeNum = ResData.activity_attr.see_num
+          that.rules = ResData.rule_str
+          that.isOne = ResData.bargain.launch.help_count
           that.end_time = that.DetailData.residue_time * 1000
           countdown(that)
-          wxParse.wxParse('article1', 'html', that.DetailData.details, that, 5);
+          wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5);
           // wxParse.wxParse('article2', 'html', that.DetailData.prize_details, that, 5);
 
         })
@@ -199,7 +202,6 @@
   import wepy from 'wepy'
   import BargainModel from './Bargain-model'
   import MyModel from '@/pages/My/index-model'
-  import indexModel from '@/pages/Index/index-model'
   import wxParse from '../../wxParse/wxParse'
   export default class jika extends wepy.page {
     config = {
@@ -214,33 +216,26 @@
       DetailData: null,
       bargain: null,
       end_time: null,
-      clock: '',
+      clock: null,
       RankingData: null,
       isOne: 0,
       LaunchState: true,
       exchangeState: true,
       shareState: true,
       likeNum:'',
-      rules:''
+      rules:null
     }
     onLoad(options){
+      let that = this
       if(options.launch_id){
         this.param = {
           launch_id: options.launch_id,
         }
       }
+      if(options.formID){
+        Object.assign(this.param, {magic_formID:options.formID})
+      }
       this.param.activity_id = options.id || 24
-      BargainModel.getBargainLoad({activity_id: this.param.activity_id},(ResData)=>{
-        // 砍价排行榜
-        this.RankingData = ResData
-        this.$apply()
-      })
-      indexModel.getActivity((ResData)=>{
-        if(ResData.code == 1){
-          wepy.$instance.globalData.name = ResData.data.magic_top_title
-          this.$apply()
-        }
-      })
     }
     methods = {
       onShareAppMessage(){
@@ -270,8 +265,8 @@
       gotoBuy(){
         this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
       },
-      gotoMy(){
-        this.$switch('/pages/My/index');
+      gotoUse(){
+        this.$navigate('/pages/Bargain/Bargain-coupon',{id:this.bargain.launch.id});
       },
       gotoIndex(){
         this.$switch('/pages/Index/index');
@@ -384,12 +379,14 @@
         if(user){
           this.userInfo = user
           this.loadingHidden = true
+          this.$apply()
           BargainModel.getLuckyDetail(this.param,(ResData)=>{
             this.DetailData = ResData.activity_attr
             this.bargain = ResData.bargain
             this.likeNum = ResData.activity_attr.see_num
             this.rules = ResData.rule_str
             this.isOne = ResData.bargain.launch.help_count
+            wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
             if(wx.getStorageSync('launch_id')){
               wx.removeStorage({
                 key: 'launch_id'
@@ -420,11 +417,10 @@
                 return false
               }
             }
-            wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-            // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
+            
             this.$apply()
           })
-          this.$apply()
+          
         }
         if(!this.userInfo){
           this.methods._loadData((data)=>{
@@ -445,6 +441,10 @@
             BargainModel.getLuckyDetail(this.param,(ResData)=>{
               this.DetailData = ResData.activity_attr
               this.bargain = ResData.bargain
+              this.likeNum = ResData.activity_attr.see_num
+              this.rules = ResData.rule_str
+              this.isOne = ResData.bargain.launch.help_count
+              wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
               if(wx.getStorageSync('launch_id')){
                 wx.removeStorage({
                   key: 'launch_id'
@@ -475,8 +475,6 @@
                   return false
                 }
               }
-              wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-              // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
               this.$apply()
             })
             this.loadingHidden = true
@@ -498,6 +496,10 @@
             BargainModel.getLuckyDetail(this.param,(ResData)=>{
               this.DetailData = ResData.activity_attr
               this.bargain = ResData.bargain
+              this.likeNum = ResData.activity_attr.see_num
+              this.rules = ResData.rule_str
+              this.isOne = ResData.bargain.launch.help_count
+              wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5);
               if(wx.getStorageSync('launch_id')){
                 wx.removeStorage({
                   key: 'launch_id'
@@ -528,8 +530,6 @@
                   return false
                 }
               }
-              wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-              // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
               this.$apply()
             })
             this.$apply()
@@ -556,6 +556,10 @@
               BargainModel.getLuckyDetail(this.param,(ResData)=>{
                 this.DetailData = ResData.activity_attr
                 this.bargain = ResData.bargain
+                this.likeNum = ResData.activity_attr.see_num
+                this.rules = ResData.rule_str
+                this.isOne = ResData.bargain.launch.help_count
+                wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
                 if(wx.getStorageSync('launch_id')){
                   wx.removeStorage({
                     key: 'launch_id'
@@ -586,8 +590,6 @@
                     return false
                   }
                 }
-                wxParse.wxParse('article1', 'html', this.DetailData.details, this, 5);
-                // wxParse.wxParse('article2', 'html', this.DetailData.prize_details, this, 5);
                 this.$apply()
               })
             })
@@ -598,6 +600,17 @@
           })
         })
       }
+      BargainModel.getBargainLoad({activity_id: this.param.activity_id},(ResData)=>{
+        // 砍价排行榜
+        this.RankingData = ResData
+        this.$apply()
+      })
+    }
+    onHide(){
+      clearInterval(timer)
+    }
+    onUnload(){
+      clearInterval(timer)
     }
   }
 </script>
@@ -658,6 +671,7 @@
         font-size: 35rpx;
         color:#0e0e0e;
         width: 90%;
+        text-align: center;
       }
       .starttime{
         display: flex;
@@ -825,6 +839,7 @@
         flex-direction: column;
         .wxParse-p view,.wxParse-p image{
           width: 100%;
+          color: #888;
         }
       }
     }
@@ -876,7 +891,7 @@
         margin-bottom: 28rpx;
       }
       .helpbargain{
-        width: 525rpx;
+        width: 650rpx;
         margin: 0 auto;
         .titleitem{
           width:100%;
@@ -886,24 +901,24 @@
             display: flex;
             justify-content: center;
             color: #ff7903;
-            font-size: 30rpx;
+            font-size: 32rpx;
           }
         }
         .people{
           margin-top: 28rpx;
           .peopleitem{
-            font-size: 21rpx;
+            font-size: 28rpx;
             color: rgb(1,1,1);
             display: flex;
             flex-direction: column;
             align-items: center;
             .peopleitemtxt1{
-              font-size: 22rpx;
+              font-size: 28rpx;
               line-height: 30rpx;
             }
             .peopleitemtxt2{
               line-height: 20rpx;
-              font-size: 14rpx;
+              font-size: 19rpx;
             }
           }
         }

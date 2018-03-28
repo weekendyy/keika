@@ -32,8 +32,9 @@ class Activity extends Base {
     let param = {
       url: 'v5/magic_goods/recommend_merge_goods',
       data: {
-        page_num: queryData,
-        time_status: '2'
+        page_num: queryData.pageNum,
+        time_status: '2',
+        magic_form_id: queryData.magic_formID||''
       },
       sCallback(ResData) {
         callback && callback(ResData)

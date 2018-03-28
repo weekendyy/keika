@@ -129,7 +129,7 @@
         <scroll-view scroll-y>
           <repeat for="{{GroupMonadDataSuccess}}" wx:for-item="item" key="index">
             <view class="item">
-              <image class="pic" src="{{item.portrait_img}}"></image>
+              <image class="pic" mode="aspectFill" src="{{item.portrait_img}}"></image>
               <text class="name">{{item.wechat_name}}</text>
               <text class="date">{{item.monad_time}}</text>
               <text class="state">已结束</text>
@@ -172,9 +172,9 @@
 <script>
   let timer = null
   function countdown(that) {
-    let total_micro_second = that.start_time || that.end_time;
+    let total_micro_second = that.start_time || that.end_time || 0;
     that.clock = dateformat(total_micro_second)
-    if (that.end_time <= 0) {
+    if (total_micro_second <= 0) {
       that.clock = "已经截止"
       that.$apply()
       return false
@@ -306,26 +306,24 @@
         })
       },
       ShowOpen(){
-        if(this.GroupMonadDataSuccess.length == 0){
-          let param = {
-            group_goods_id: this.goodsId,
-            time_status: '1',
-          }
-          Groups.getGroupMonad(param, ResData=>{
-            if(ResData.code === 1){
-              this.GroupMonadDataSuccess = ResData.data
-              this.$apply()
+        let param = {
+          group_goods_id: this.goodsId,
+          time_status: '1',
+        }
+        Groups.getGroupMonad(param, ResData=>{
+          if(ResData.code === 1){
+            this.GroupMonadDataSuccess = ResData.data
+            this.$apply()
+            if( this.GroupMonadDataSuccess.length == 0){
+              wx.showToast({
+                title: '暂时没有哦!',
+                icon: 'success',
+                duration: 1200
+              })
+              return false
             }
-          })
-        }
-        if( this.GroupMonadDataSuccess.length == 0){
-          wx.showToast({
-            title: '暂时没有哦!',
-            icon: 'success',
-            duration: 1200
-          })
-          return false
-        }
+          }
+        })
         // 显示遮罩层
         let animation = wx.createAnimation({
           duration: 200,
@@ -419,8 +417,20 @@
       }.bind(this)
     }
     onLoad(options){
-      let that = this;
       this.goodsId = options.id
+      this.$apply()
+      let query = {}
+      query.group_goods_id = this.goodsId
+      query.time_status = '3'
+      query.formID = options.formID
+      Groups.getGroupMonad(query, ResData=>{
+        if(ResData.code === 1){
+          this.GroupMonadData = ResData.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
       let param = {
         goodId: this.goodsId
       }
@@ -435,17 +445,6 @@
           this.$apply()
         }
       })
-      Groups.getGroupMonad({
-        group_goods_id: this.goodsId,
-        time_status: '3',
-      }, ResData=>{
-        if(ResData.code === 1){
-          this.GroupMonadData = ResData.data
-          this.$apply()
-        }
-      })
-    }
-    onShow(){
       let Geography = wx.getStorageSync('GeographyData')
       if(Geography){
         this.GeographyData = Geography
@@ -510,6 +509,7 @@
           }
         })
       }
+      
     }
     onReady(){
       /**
@@ -528,6 +528,9 @@
       })
     }
     onUnload(){
+      clearInterval(timer)
+    }
+    onHide(){
       clearInterval(timer)
     }
   }
@@ -1039,27 +1042,33 @@
           display: flex;
           align-items: center;
           .pic{
-            width: 90rpx;
+            flex: 0 0 90rpx;
             height: 90rpx;
             border-radius: 50%;
           }
           .name{
             max-width: 6em;
+            flex: 0 0 4em;
             overflow: hidden;
             text-overflow:ellipsis;
             white-space: nowrap;
             font-size: 28rpx;
             color: #2a2a2a;
-            margin-left: 16rpx;
+            margin-left: 30rpx;
           }
           .date{
             font-size: 22rpx;
             color: #999999;
             margin-left:auto;
             margin-right: 16rpx;
+            flex: 1;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 0 20rpx;
           }
           .state{
             width: 168rpx;
+            flex: 0 0 168rpx;
             line-height:66rpx;
             text-align: center;
             color: #fff;

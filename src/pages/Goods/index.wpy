@@ -38,7 +38,7 @@
             <text class="itemtitle">{{goods.name}}</text>
             <view class="priceaandtake">
               <view class="price">
-                <view class="pricenow"><text>¥</text>{{goods.discount_price}}</view>
+                <view class="pricenow {{activeitem == 1?'noactive':''}}"><text>¥</text>{{goods.discount_price}}</view>
                 <view class="priceori">¥ {{goods.original_price}}</view>
               </view>
               <view class="takepartin" style="background: {{activeitem==0?'linear-gradient(to left,#FF4722,#FF7422);':(activeitem==1?'#B5B5B5':'')}}">{{activeitem==0?'我要参与':(activeitem==1?'已过期':'')}}</view>
@@ -86,8 +86,11 @@
       },
       loadingHidden:false
     }
-    onLoad() {
-      DetailsModel.getIndexNowActivity('1',(data)=>{
+    onLoad(e) {
+      let query = {}
+      query.PageNum = '1'
+      query.magic_formID = e.formId
+      DetailsModel.getIndexNowActivity(query,(data)=>{
           if (data.code == 1){
             this.NowActivityData = data.goods_data
             this.bannerpics = data.banner_list
@@ -116,6 +119,7 @@
             if (ResData.code == 1){
               this.OldActivityData = ResData.goods_data
               //无商品的情况
+              this.isGoodsEmpty.OldIsGoodsEmpty=false
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.OldIsGoodsEmpty=true
               }
@@ -302,6 +306,9 @@
                   text{
                     margin-right: 10rpx;
                   }
+                }
+                .noactive{
+                  color: #888;
                 }
                 .priceori{
                   font-size: 26rpx;

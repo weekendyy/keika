@@ -63,10 +63,6 @@
           <template is="emptyGoodsTips"></template>
         </view>
       </scroll-view>
-
-      <!-- <view class="isLoadedAll" wx:if="{{(isLoadedAll.NowIsLoadedAll && activeitem==0)||(isLoadedAll.OldIsLoadedAll && activeitem==1)}}">
-        -------- 已经到底了 --------
-      </view> -->
     </view>
   </view>
   <view hidden="{{loadingHidden}}">
@@ -101,8 +97,11 @@
       },
       loadingHidden:false
     }
-    onLoad() {
-      CardModel.getIndexNowActivity('1',(data)=>{
+    onLoad(e) {
+      let query = {}
+      query.PageNum = '1'
+      query.magic_formID = e.formId
+      CardModel.getIndexNowActivity(query,(data)=>{
           if (data.code == 1){
             this.NowActivityData = data.goods_data
             this.bannerpics = data.banner_list
@@ -131,6 +130,7 @@
             if (ResData.code == 1){
               this.OldActivityData = ResData.goods_data
               //无商品的情况
+              this.isGoodsEmpty.OldIsGoodsEmpty=false
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.OldIsGoodsEmpty=true
               }

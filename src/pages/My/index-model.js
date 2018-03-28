@@ -91,6 +91,7 @@ class My extends Base {
       data: {
         order_status: queryData.order_status,
         page_num: 1,
+        magic_form_id: queryData.magic_form_id
       },
       sCallback(ResData){
         callback && callback(ResData)

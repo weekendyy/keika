@@ -45,6 +45,7 @@
       vipOpenState: true,
       numOpenState: true,
       card_id: '',
+      formID:''
     }
     methods = {
       onTabsItemTap(index){
@@ -135,6 +136,9 @@
                 })
                 this.vipOpenState = true
                 this.$apply()
+                wx.switchTab({
+                  url: '/pages/Index/index'
+                })
               }
               // 取消支付以后,也需要把支付状态变量设置成 true
               if(ResData == 1) {
@@ -146,8 +150,15 @@
         })
       }
     }
-    onShow(){
-      VipModel.getVipType((ResData)=>{
+    onLoad(e){
+      this.formID = e.formId
+    }
+    onShow(e){
+      let query = {}
+      if(this.formID){
+        query.magic_form_id = this.formID
+      }
+      VipModel.getVipType(query,(ResData)=>{
         if(ResData.code == 1){
           this.VipType = ResData.data.time_type
           this.open_status = ResData.data.open_status

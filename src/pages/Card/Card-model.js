@@ -18,11 +18,7 @@ class Card extends Base {
     }
     let param = {
       url: 'v6/lucky_new_goods/get_lucky_detail',
-      data: {
-        add_type: queryData.add_type,
-        lucky_goods_id: queryData.lucky_goods_id,
-        employer_user_id: queryData.employer_user_id
-      },
+      data: queryData,
       sCallback(ResData) {
         callback && callback(ResData)
       }
@@ -136,12 +132,13 @@ class Card extends Base {
     this.request(param)
   }
   //获取进行中的活动数据
-  getIndexNowActivity(PageNum,callback){
+  getIndexNowActivity(query,callback){
     let param = {
       url: 'v5/magic_goods_list/lucky_goods_list',
       data: {
         time_status:'1',
-        page_num:PageNum || '1',
+        page_num:query.PageNum || query || '1',
+        magic_form_id:query.magic_formID || ''
       },
       sCallback: function(data) {
         callback && callback(data)
