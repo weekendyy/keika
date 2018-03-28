@@ -1,0 +1,425 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <view class="shopList-container" hidden="{{!loadingHidden}}">
+    <!-- banner -->
+    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <!-- 好店类型 -->
+    <swiper indicator-dots="{{true}}" wx:if="{{shopClassifyNum.length!=0}}" class="shopClassify-swiper" indicator-dots="{{shopClassifyNum.length<5?false:true}}">
+      <block wx:for="{{shopClassifyNum}}" wx:for-index="idx">
+        <swiper-item>
+          <block wx:for="{{item}}">
+            <view class="classifyItem" @tap="classifyItemTap({{idx}},{{index}},{{item.id}})">
+              <image src="{{item.img_url}}" mode="aspectFill" class="classifyItem-pic"></image>
+              <text class="{{(currentTabsIndex[0]==idx && currentTabsIndex[1]==index)?'classifyItem-active':''}}">{{item.title_name}}</text>
+            </view>
+          </block>
+        </swiper-item>
+      </block>
+    </swiper>
+    <view class="shop-content">
+      <scroll-view class="shop-data" wx:if="{{shopData.length!=0}}" bindscrolltolower="onReachBottom">
+        <view class="shop-data-item" wx:for="{{shopData}}" wx:if="{{item.id}}" wx:for-item="item" wx:key="index" @tap="gotoShop({{index}})">
+          <view class="top">
+            <view class="pic-wrapper">
+              <image class="pic" src="{{item.main_img}}"></image>
+            </view>
+            <view class="top-content">
+              <text class="shop-name">{{item.magic_shop_name}}</text>
+              <view class="type-wrapper">
+                <view>{{item.classify_magic_goods}}</view>
+                <view>{{item.per_consume}}</view>
+              </view>
+              <view class="type-wrapper">
+                <view>{{item.address}}</view>
+                <view>{{item.distance}}km</view>
+              </view>
+              <view class="top-fb">
+                <image src="./images/zan.png"></image>
+                <view>"{{item.brief_describe}}"</view>
+              </view>
+            </view>
+          </view>
+          <view class="bottom">
+            <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}})">
+              <view class="fuli-item-top">
+                <text class="type">{{item.one_str}}</text>
+                <text class="name">{{item.magic_goods_title}}</text>
+                <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
+                <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+              </view>
+              <view class="fuli-item-bottom">
+                <text class="desc">{{item.magic_goods_name}}</text>
+                <text class="num">已领 {{item.get_num}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view wx:if="{{shopData.length==0}}">
+        <template is="emptyGoodsTips" data="{{tipsTxt:'暂无商店'}}"></template>
+      </view>
+    </view>
+  </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import ShopModel from './shop-model'
+  import cheaderModel from '@/components/cheader-model'
+  import cheader from '@/components/cheader'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '魔法黑卡',
+    }
+    data = {
+      loadingHidden:false,
+      bannerpics:[{banner_url:'http://oyu2qzx2v.bkt.clouddn.com/2018-03-16_142156.png'},{banner_url:'http://oyu2qzx2v.bkt.clouddn.com/2018-03-16_142156.png'}],
+      shopClassifys:[],
+      shopClassifys_son:[],
+      shopData:[1],
+      pageNum:1,
+      currentTabsIndex:['e','e'],
+      parent_id:'',
+      sonId:'',
+      isLoadAll:false,
+      headerinfo:null,
+      userInfo:null
+    }
+    computed = {
+        shopClassifyNum () {
+            let result = [];
+            for(var i=0,len=this.shopClassifys.length;i<len;i+=4){
+               result.push(this.shopClassifys.slice(i,i+4));
+            }
+            return result
+        }
+    }
+    methods = {
+      classifyItemTap(idx,index,sonId){
+        this.currentTabsIndex = [idx,index]
+        this.$apply()
+        this.pageNum = 1
+        this.isLoadAll = false
+        let queryDetail = {}
+        queryDetail.page_num = this.pageNum
+        queryDetail.choose_type = 2
+        queryDetail.parent_classify_id = this.parent_id
+        queryDetail.son_classify_id = sonId
+        this.sonId = sonId
+        ShopModel.getShopListInfo(queryDetail,(ResData)=>{
+          if(ResData.code == 1){
+            this.shopData = ResData.data
+          }
+          this.$apply()
+        })
+      },
+      gotoShop(index){
+        const i = this.shopData[index].id
+        this.$navigate('./shopDetails',{id:i})
+      },
+      gotoWelfare(index){
+        this.$navigate('../Shop/welfareDetails',{id:index})
+      }
+    }
+    onLoad(e){
+      let parent_id = e.id
+      this.parent_id = e.id
+      this.form_id = e.formId
+      let query = {}
+      query.banner_type = 1
+      query.magic_formID = e.formId
+      cheaderModel.getBannerInfo(query,(ResData)=>{
+        if(ResData.code == 1){
+          this.headerinfo = ResData.data
+          this.$apply()
+        }
+        this.loadingHidden = true
+      })
+      let user = wx.getStorageSync('user')
+      if(user){
+        this.userInfo = user
+        this.$apply()
+      }
+      wx.setNavigationBarTitle({
+        title: e.name
+      })
+    }
+    onShow(){
+      this.pageNum = 1
+      this.isLoadAll = false
+      let query = {}
+      query.page_num = this.pageNum
+      query.choose_type = 1
+      query.parent_classify_id = this.parent_id
+      query.son_classify_id = ''
+      ShopModel.getShopListInfo(query,(ResData)=>{
+        if(ResData.code == 1){
+          this.shopClassifys = ResData.son_classify_data
+          this.shopData = ResData.data
+        }
+        this.$apply()
+      })
+    }
+    components = {
+      cheader
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        this.pageNum++
+        let queryDetail = {}
+        queryDetail.page_num = this.pageNum
+        queryDetail.choose_type = this.sonId?2:1
+        queryDetail.parent_classify_id = this.parent_id
+        queryDetail.son_classify_id = this.sonId
+        ShopModel.getShopListInfo(queryDetail,(ResData)=>{
+          if(ResData.code == 1){
+            if(ResData.data.length == 0){
+              wx.showLoading({
+                title: '已经到底了',
+              })
+              this.isLoadAll = true
+              this.$apply()
+              let timer = setTimeout(()=>{
+                wx.hideLoading()
+                clearTimeout(timer)
+              },2000)
+            }
+            this.shopData = [...this.shopData,...ResData.data]
+          }
+          this.$apply()
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../tpls/loading/loading.wxss';
+  @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  .shopList-container{
+    display: flex;
+    flex-direction: column;
+  }
+  .swiperBox{
+    width: 100%;
+    flex: 0 0 390rpx;
+    .bannerpic{
+      width: 100%;
+      height: 390rpx;
+    }
+  }
+  .shopClassify-swiper{
+    width: 100%;
+    height: 190rpx;
+    border-bottom: 20rpx solid #FAF9F9;
+    .wx-swiper-dot{
+      width:18rpx;
+      display: inline-flex;
+      height: 5rpx;
+      margin-left: 10rpx;
+      justify-content:space-between;
+    }
+    .wx-swiper-dot::before{
+      content: '';
+      flex-grow: 1; 
+      background: #ECECEC;
+      border-radius: 1rpx
+    }
+    .wx-swiper-dot-active::before{
+      background:#CACACA;   
+    }
+    swiper-item{
+      display: flex;
+      flex-wrap: wrap;
+      box-sizing:border-box;
+      padding:25rpx 0;
+      .classifyItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 0 0 187.5rpx;
+        justify-content: center;
+        height: 130rpx;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        .classifyItem-pic{
+          width: 70rpx;
+          height: 70rpx;
+          flex: 0 0 70rpx;
+          border-radius: 40rpx;
+        }
+        text{
+          font-size: 25rpx;
+          line-height: 1;
+          margin-top: 14rpx;
+          max-width:110rpx;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        }
+        .classifyItem-active{
+          color: #E5C079;
+        }
+      }
+    }
+  }
+  .shop-content{
+    padding-bottom: 50rpx;
+    flex:1;
+    .shop-data{
+      border-top: 8rpx solid #faf9f9;
+      margin-bottom: 58rpx;
+    }
+    .shop-data-item{
+      width: 688rpx;
+      margin-top: 30rpx;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 11rpx;
+      border: 1px solid #c5c079;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+    .top{
+      width: 626rpx;
+      display: flex;
+      margin-top: 24rpx;
+      margin-bottom: 31rpx;
+      .pic-wrapper{
+        overflow: hidden;
+        margin-right: 28rpx;
+        .pic{
+          width: 189rpx;
+          height: 189rpx;
+          border-radius: 7px;
+        }
+      }
+      .top-content{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        .shop-name{
+          width: 100%;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          padding-top:10rpx;
+          font-size:34rpx;
+          color: #000;
+          font-weight: bold;
+        }
+        .type-wrapper{
+          margin-top: 14rpx;
+          font-size: 0;
+          display: flex;
+          align-items: center;
+          view{
+            max-width: 8em;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            font-size: 26rpx;
+            color: #888888;
+            &:first-child{
+              margin-right: 26rpx;
+            }
+          }
+        }
+      }
+      .top-fb{
+        margin-top:22rpx;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        image{
+          width: 30rpx;
+          height: 30rpx;
+          margin-right: 13rpx;
+        }
+        view{
+          font-size:26rpx;
+          color: #888888;
+          flex:1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+    .bottom{
+      width: 626rpx;
+      .fuli-item{
+        width: 100%;
+        padding-top:18rpx;
+        padding-bottom:18rpx;
+        border-top: 1px solid #dedede;
+        .fuli-item-top{
+          display: flex;
+          align-items: center;
+          .type{
+            border: 1rpx solid #f3dddd;
+            width: 34rpx;
+            line-height:34rpx;
+            text-align: center;
+            font-size: 24rpx;
+            color: #dd8084;
+            border-radius: 4rpx;
+            background-color: #fdf0ef;
+          }
+          .name{
+            font-size: 28rpx;
+            color: #000000;
+            margin-left:22rpx;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .btn{
+            margin-left:auto;
+            width: 120rpx;
+            line-height: 58rpx;
+            text-align: center;
+            border-radius: 50rpx;
+            background-color: #ff6068;
+            font-size:24rpx;
+            color: #fff;
+            letter-spacing: 2rpx;
+            &.end{
+              background-color:#ccc;
+            }
+          }
+        }
+        .fuli-item-bottom{
+          margin-top:8rpx;
+          font-size:0;
+          display: flex;
+          .desc{
+            flex: 1;
+            font-size:26rpx;
+            color: #fa6564;
+            margin-left:56rpx;
+            margin-right: 59rpx;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .num{
+            width: 120rpx;
+            text-align: center;
+            margin-top: 19rpx;
+            font-size:24rpx;
+            color: #9d9d9d;
+          }
+        }
+      }
+    }
+  }
+</style>
+

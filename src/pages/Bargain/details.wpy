@@ -295,9 +295,6 @@
           }
         })
       },
-      gotoBuy(){
-        this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
-      },
       openLaunch(){
 //        自己手动砍价
         let param = {

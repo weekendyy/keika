@@ -126,14 +126,13 @@
     onShow(){
       ShopModel.getWelfareData({id:this.id}, (ResData)=>{
         if(ResData.code == 1){
+          this.WelfareData = ResData.data
+          wxParse.wxParse('article1', 'html', this.WelfareData.magic_goods_detail, this, 5);
           this.orderId = ResData.order_id
-          this.$apply()
           this.card_status = ResData.card_status
           this.check_get_log = ResData.check_get_log
-          this.WelfareData = ResData.data
           this.time_status = ResData.data.time_status
           this.use_status = ResData.use_status
-          wxParse.wxParse('article1', 'html', this.WelfareData.magic_goods_detail, this, 5);
           this.$apply()
         }
       })

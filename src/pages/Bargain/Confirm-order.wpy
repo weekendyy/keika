@@ -258,15 +258,15 @@
       BargainModel.orderDetail({launch_id:this.launch_id}, (ResData)=>{
         if(ResData.code == 1){
           this.goods_info = ResData.data
-          this.AddressInfo.shipping_name = this.goods_info.shipping_name
-          this.AddressInfo.shipping_province = this.goods_info.shipping_province
-          this.AddressInfo.shipping_city = this.goods_info.shipping_city
-          this.AddressInfo.shipping_area = this.goods_info.shipping_area
-          this.AddressInfo.shipping_street = this.goods_info.shipping_street
-          this.AddressInfo.shipping_tel = this.goods_info.shipping_phone
-          this.choose_address = this.goods_info.choose_address
-          this.real_tel = this.goods_info.real_tel
-          this.requirePhone = this.goods_info.real_tel
+          this.AddressInfo.shipping_name = this.goods_info.shipping_name || ''
+          this.AddressInfo.shipping_province = this.goods_info.shipping_province || ''
+          this.AddressInfo.shipping_city = this.goods_info.shipping_city || ''
+          this.AddressInfo.shipping_area = this.goods_info.shipping_area || ''
+          this.AddressInfo.shipping_street = this.goods_info.shipping_street || ''
+          this.AddressInfo.shipping_tel = this.goods_info.shipping_phone || ''
+          this.choose_address = this.goods_info.choose_address || ''
+          this.real_tel = this.goods_info.real_tel || ''
+          this.requirePhone = this.goods_info.real_tel || ''
         }
         this.$apply()
       })

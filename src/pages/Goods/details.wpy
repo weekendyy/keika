@@ -116,7 +116,7 @@
         <text>首页</text>
       </navigator>
       <view wx:if="{{DetailsData.time_status}}" class="Buy {{buy_log == 1 ? '' : (buy_log == 2 ? 'disabled':'')}}" @tap="buyGoods()">
-        立即抢购
+         {{buy_log == 2?'已经购买过了':'立即抢购'}}
       </view>
       <view wx:else class="Buy disabled">
         活动已结束
