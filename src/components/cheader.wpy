@@ -1,5 +1,5 @@
 <template>
-
+<form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
   <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1}}" wx:if="{{headerinfo.home_banner.length}}">
     <repeat for="{{headerinfo.home_banner}}" key="index">
       <swiper-item class="swiper-item">
@@ -13,14 +13,15 @@
       <view class="user-info">
         <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
         <text class="name">{{userInfo.userInfo.nickName}}</text>
-        <view class="open">
+        <button class="open" form-type="submit">
           <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
           <text class="btn">{{headerinfo.magic_auth_str[1]}}</text>
-        </view>
+        </button>
       </view>
     </view>
     <image class="open-bg" src="./images/open-vip-bg.jpg"></image>
   </view>
+</form>
 </template>
 
 <script>
@@ -32,11 +33,13 @@
         userInfo:{}
       }
       data = {
+        formId:''
       }
       methods = {
-        gotoOpenVip(){
+        gotoOpenVipFormId(e){
+          this.formId = e.detail.formId
           wx.navigateTo({
-            url: '../Vip/Index'
+            url: '../Vip/Index?formId='+this.formId
           })
         }
       }
@@ -98,6 +101,12 @@
           margin-left:auto;
           display: flex;
           flex-direction: column;
+          background-color: transparent;
+          padding: 0;
+          margin: 0;
+          &::after{
+            content:none;
+          }
           .no-vip{
             width: 194rpx;
             text-align: center;
