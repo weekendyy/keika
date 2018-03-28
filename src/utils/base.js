@@ -27,6 +27,10 @@ class Base {
     if (params.setUpUrl) {
       url = params.url
     }
+    if(!wx.getStorageSync('token')){
+      that._refetch(params)
+      return false
+    }
     wx.request({
       url: url,
       data: params.data,
