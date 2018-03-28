@@ -8,7 +8,8 @@ class cheader extends Base {
       url: 'v5/magic_card/home_banner',
       data: {
         banner_type: queryData.banner_type,
-        versions: 'vip4'
+        versions: 'vip4',
+        magic_form_id: queryData.magic_formID
       },
       sCallback(ResData) {
         callback && callback(ResData)
