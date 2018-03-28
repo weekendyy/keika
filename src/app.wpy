@@ -67,6 +67,15 @@ export default class extends wepy.app {
       'pages/Groups/Groups-order-details', // 拼团订单详情页面
       'pages/Groups/Groups-coupon', // 拼团 核销页面
       'pages/Shop/shopList', //好店推荐 好店列表
+      
+    ],
+    "subPackages": [
+      {
+        "root": "bargainB",
+        "pages": [
+          "barginDetailB"
+        ]
+      }
     ],
     window: {
       backgroundTextStyle: 'light',
