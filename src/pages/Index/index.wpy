@@ -196,12 +196,15 @@
         ++this.pageNum
         indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
           if(this.welfareData.length >= ResData.total_num){
-            wx.showToast({
+            wx.showLoading({
               title: '已经到底了',
-              icon:'loading',
-              duration:1500
             })
-            this.preventRepeatReuqest = false
+            let timer = setTimeout(()=>{
+              wx.hideLoading()
+              this.preventRepeatReuqest = false
+              clearTimeout(timer)
+              this.$apply()
+            },1500)
             return false
           }
           if(ResData.code == 1){
