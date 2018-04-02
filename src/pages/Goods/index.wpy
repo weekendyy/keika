@@ -49,9 +49,6 @@
           <template is="emptyGoodsTips"></template>
         </view>
       </scroll-view>
-      <!-- <view class="isLoadedAll" wx:if="{{(isLoadedAll.NowIsLoadedAll && activeitem==0)||(isLoadedAll.OldIsLoadedAll && activeitem==1)}}">
-        -------- 已经到底了 --------
-      </view> -->
     </view>
   </view>
   <view hidden="{{loadingHidden}}">
@@ -102,7 +99,7 @@
               title: data.header_title
             })
             //商品加载完的情况
-            if(data.goods_data.length<5 && data.goods_data.length>0){
+            if(data.goods_data.length<=5 && data.goods_data.length>0){
               this.isLoadedAll.NowIsLoadedAll=true
             }
             this.loadingHidden = true

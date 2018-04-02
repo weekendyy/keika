@@ -319,6 +319,7 @@
     opacity: 0;
     transition: .3s;
     position: absolute;
+    padding-bottom: 30rpx;
     &.active{
       height: 100%;
       overflow: hidden;
@@ -567,12 +568,13 @@
     }
     .goods-box{
       width: 690rpx;
-      margin: 30rpx auto 100rpx;
+      margin: 30rpx auto 0;
       background-color: #ffffff;
       box-shadow: 0rpx 0rpx 16rpx 0rpx
       rgba(0, 0, 0, 0.15);
       border-radius: 8rpx;
       overflow: hidden;
+      padding-bottom: 20rpx;
       .goods-title{
         width: 100%;
         margin-top: 42rpx;
@@ -592,7 +594,6 @@
         margin:0 auto;
         .wxParse-p view, .wxParse-p image{
           width: 630rpx;
-          color: #888;
         }
       }
     }

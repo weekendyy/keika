@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
   <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
     <view class="activity-wrapper" hidden="{{!loadingHidden}}">
@@ -15,16 +16,24 @@
             <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0}}">
               <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoNowDetails({{index}})">
                 <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-                  <image src="../../images/icon-qianggou.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">限时抢购</view>
+                  </view>
                 </view>
                 <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-                  <image src="../../images/icon-pintuan.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">拼团活动</view>
+                  </view>
                 </view>
                 <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-                  <image src="../../images/icon-kanjia.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">砍价活动</view>
+                  </view>
                 </view>
                 <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-                  <image src="../../images/icon-jifu.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">集卡活动</view>
+                  </view>
                 </view>
                 <image class="item-pic" src="{{item.banner}}"></image>
                 <view class="item-data">
@@ -41,20 +50,31 @@
                   </view>
                 </view>
               </view>
+              <view wx:if="{{NowActivityData.length == 0}}">
+                <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
+              </view>
             </scroll-view>
             <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1}}">
               <view class="index-item" wx:for="{{OldActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoOldDetails({{index}})">
                 <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-                  <image src="../../images/icon-qianggou.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">限时抢购</view>
+                  </view>
                 </view>
                 <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-                  <image src="../../images/icon-pintuan.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">拼团活动</view>
+                  </view>
                 </view>
                 <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-                  <image src="../../images/icon-kanjia.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">砍价活动</view>
+                  </view>
                 </view>
                 <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-                  <image src="../../images/icon-jifu.png"></image>
+                  <view class="merge_goods_typeBox">
+                    <view class="merge_goods_type_txt">集卡活动</view>
+                  </view>
                 </view>
                 <image class="item-pic" src="{{item.banner}}"></image>
                 <view class="item-data">
@@ -70,6 +90,9 @@
                     </view>
                   </view>
                 </view>
+              </view>
+              <view wx:if="{{OldActivityData.length == 0}}">
+                <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
               </view>
             </scroll-view>
         </view>
@@ -188,16 +211,13 @@
           ++this.pageNum.NowActivityPage
           ActivityModel.getConduct(this.pageNum.NowActivityPage,(Resdata)=>{
             if(Resdata.code == 1){
-              if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0){
-                wx.showLoading({
+              if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0 && Resdata.data.lucky_data.length == 0 && Resdata.data.bargain_data.length == 0){
+                wx.showToast({
                   title: '已经到底了',
+                  icon:'loading',
+                  duration: 1500
                 })
-                let timer = setTimeout(()=>{
-                  wx.hideLoading()
-                  this.NowpreventRepeatReuqest = false
-                  clearTimeout(timer)
-                  this.$apply()
-                },2000)
+                this.NowpreventRepeatReuqest = false
                 this.$apply()
                 return false
               }
@@ -217,15 +237,12 @@
           ActivityModel.getPast(query,(Resdata)=>{
             if(Resdata.code == 1){
               if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0){
-                wx.showLoading({
+                wx.showToast({
                   title: '已经到底了',
+                  icon:'loading',
+                  duration: 1500
                 })
-                let timer = setTimeout(()=>{
-                  wx.hideLoading()
-                  this.OldpreventRepeatReuqest = false
-                  clearTimeout(timer)
-                  this.$apply()
-                },2000)
+                this.OldpreventRepeatReuqest = false
                 this.$apply()
                 return false
               }
@@ -327,6 +344,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   @import '../tpls/loading/loading.wxss';
   page{
     background-color: #faf9f9;
@@ -409,6 +427,7 @@
       position: relative;
       background-color: #ffffff;
       box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
+      overflow: hidden;
       + .index-item{
         margin-top: 30rpx;
       }
@@ -422,6 +441,21 @@
         image{
           width: 148rpx;
           height: 148rpx;
+        }
+        .merge_goods_typeBox{
+          width:200rpx;
+          height: 200rpx;
+          transform: rotateZ(-45deg);
+          .merge_goods_type_txt{
+            height: 60rpx;
+            background-color: #cf2824;
+            width:200rpx;
+            color: #fff;
+            font-size: 25rpx;
+
+            text-align: center;
+            line-height: 60rpx;
+          }
         }
       }
       .item-pic{

@@ -1,4 +1,5 @@
 <template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="index-container" hidden="{{!loadingHidden}}" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
     <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
@@ -98,10 +99,19 @@
                   <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==1}}">未开始</text>
                   <text class="btn end" wx:if="{{item.magicgetlog == null && item.time_status==2}}">已结束</text>
                   <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text> -->
-                  <text class="btn" wx:if="{{item.get_status == 1 && item.time_status==3}}">领取</text>
-                  <text class="btn" wx:if="{{item.time_status==1}}">未开始</text>
-                  <text class="btn end" wx:if="{{item.time_status==2}}">已结束</text>
-                  <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+                  <!-- 活动未开始 -->
+                  <block wx:if="{{item.time_status==1}}">
+                    <text class="btn">未开始</text>
+                  </block>
+                  <!-- 活动进行中 -->
+                  <block wx:if="{{item.time_status==3}}">
+                    <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+                    <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+                  </block>
+                  <!-- 活动已结束 -->
+                  <block wx:if="{{item.time_status==2}}">
+                    <text class="btn end">已结束</text>
+                  </block>
                 </view>
                 <view class="fuli-item-bottom">
                   <text class="desc">{{item.magic_goods_name}}</text>
@@ -109,6 +119,9 @@
                 </view>
               </view>
             </view>
+          </view>
+          <view wx:if="{{shopData.length == 0}}">
+            <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
           </view>
         </scroll-view> 
         <scroll-view scroll-y="true" class="shop-data" hidden="{{ currentTabsIndex != 1 }}">
@@ -147,6 +160,9 @@
                 </view>
               </view>
             </view>
+          </view>
+          <view wx:if="{{nearbyData.length == 0}}">
+            <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
           </view>
         </scroll-view>
       </view>
@@ -451,15 +467,11 @@
         ShopModel.getShopIndexData(this.pageNum.shopPage,(Resdata)=>{
           if(Resdata.code == 1){
             if(this.shopData.length >= Resdata.total_num){
-              wx.showLoading({
+              wx.showToast({
                 title: '已经到底了',
+                icon:'loading'
               })
-              let timer = setTimeout(()=>{
-                wx.hideLoading()
-                this.shopRepeatReuqest = false
-                clearTimeout(timer)
-                this.$apply()
-              },2000)
+              this.shopRepeatReuqest = false
               this.$apply()
               return false
             }
@@ -503,6 +515,7 @@
   }
 </script>
 <style lang="less">
+  @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   @import '../tpls/loading/loading.wxss';
   .shopClassify{
     width: 100%;
@@ -843,7 +856,7 @@
       margin-left: auto;
       margin-right: auto;
       border-radius: 11rpx;
-      border: 1px solid #c5c079;
+      border: 1px solid #e5c079;
       display: flex;
       justify-content: center;
       flex-direction: column;

@@ -27,10 +27,16 @@
         </view>
         <view class="content-wrapper">
           <text class="content">{{item.magic_goods_title}}</text>
-          <text class="btn" wx:if="{{item.get_status == 1 && item.time_status==3}}">领取</text>
-          <text class="btn" wx:if="{{item.time_status==1}}">未开始</text>
-          <text class="btn end" wx:if="{{item.time_status==2}}">已结束</text>
-          <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+          <block wx:if="{{item.time_status==3}}">
+            <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+            <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+          </block>
+          <block wx:if="{{item.time_status==1}}">
+            <text class="btn">未开始</text>
+          </block>
+          <block wx:if="{{item.time_status==2}}">
+            <text class="btn end">已结束</text>
+          </block>
         </view>
         <view class="footer">
           <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
@@ -319,10 +325,11 @@
       padding: 0 20rpx;
       .wxParse-p{
         width: 100%;
-        color: #888;
       }
       .wxParse-p image{
         width: 100%;
+        margin-bottom: 10rpx;
+        box-shadow: 0 0 20rpx rgba(129,129,126,.3);
       }
     }
   }

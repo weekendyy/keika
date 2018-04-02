@@ -901,11 +901,12 @@
       align-items: center;
       justify-content: center;
       image{
-        width: 90rpx;
-        height: 90rpx;
+        width:40rpx;
+        height:40rpx;
+        margin-right:20rpx;
       }
       text{
-        font-size: 34rpx;
+        font-size: 30rpx;
         color: #888888;
       }
     }

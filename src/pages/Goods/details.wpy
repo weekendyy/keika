@@ -10,17 +10,49 @@
       </repeat>
     </swiper>
     <view class="goods-header">
-      <view class="goods-header-title"><text>限时折扣</text></view>
-      <view class="goods-header-main w704">
-        <view class="price-wrapper">
-          <text class="Activity-price">¥{{DetailsData.discount_price}}</text>
-          <text class="Original-price">¥{{DetailsData.original_price}}</text>
-        </view>
-        <view class="right">
-          <text class="num">共{{DetailsData.num}}份/剩{{DetailsData.residue}}份</text>
+      <view class="goods-header-title">
+        <text class="goods-header-title_left">共{{DetailsData.num}}份/剩{{DetailsData.residue}}份</text>
+        <view class="goods-header-title_right">
+          <image src="img/look.png" mode="widthFix" class="lookIcon"></image>
           <text class="follow">{{DetailsData.click_count}}人关注</text>
         </view>
       </view>
+      <view class="goods-header-main">
+        <view class="price-wrapper">
+          <view class="price-wrapper_left">
+            <text class="Activity-price"><text>¥</text>{{DetailsData.discount_price}}</text>
+            <text class="Original-price">原价{{DetailsData.original_price}}</text>
+          </view>
+          <view class="price-wrapper_right">
+            <view class="vipBox">
+              <image src="img/huiyuan.png" class="vipIcon" mode="widthFix"></image>
+              <text>会员专享</text>
+            </view>
+            <text class="vip-price"><text>¥</text>{{DetailsData.magic_vip_price == 0?DetailsData.discount_price:DetailsData.magic_vip_price}}</text>
+          </view>
+        </view>
+        <bock wx:if="{{DetailsData.time_status}}">
+          <view class="right">
+            <text class="right_txt">{{DetailsData.residue_str}}</text>
+            <view class="timeLeftBox">
+              <text style="width:{{clock.day<100?35:45}}rpx">{{clock.day}}</text>天
+              <text>{{clock.hour}}</text>时
+              <text>{{clock.min}}</text>分
+              <text>{{clock.second}}</text>秒
+            </view>
+          </view>
+        </bock>
+        <block wx:else>
+          <view class="activity_end">活动已结束</view>
+        </block>
+      </view>
+    </view>
+    <view class="openVipBox" wx:if="{{DetailsData.magic_vip_status == 2}}" @tap="gotoOpenVip">
+      <view class="openVipBox_left">
+        <image class="vipIcon" mode="widthFix" src="img/viptime.png"></image>
+        <text>开通VIP享受更多特权</text>
+      </view>
+      <text class="gotoOpen">去开通 ></text>
     </view>
     <view class="goods-wrapper">
       <view class="goods-name-wrapper">
@@ -31,14 +63,8 @@
         </view>
       </view>
       <view class="Activity-date">
-        <view>
-          <text>活动时间</text>
-          <text>{{DetailsData.from_time}} 至 {{DetailsData.to_time}}</text>
-        </view>
-        <view>
-          <text>截至时间</text>
-          <text>{{DetailsData.deadline}}</text>
-        </view>
+        <text class="Activity-date_txt">消费有效期截至：</text>
+        <text class="Activity-date_num">{{DetailsData.end_time}}</text>
       </view>
       <view class="goods-rule"  wx:if="{{DetailsData.rule_list.length > 0}}">
         <repeat for="{{DetailsData.rule_list}}" wx:key="index" wx:for-item="item">
@@ -91,6 +117,10 @@
               </view>
             </view>
           </repeat>
+          <view class="no-EvaluateData" wx:if="{{EvaluateData.length == 0}}">
+            <image class="no-EvaluateData-pic" src="./img/Evaluate.png"></image>
+            <text class="no-EvaluateData-text">暂时还没有评论哦~</text>
+          </view>
         </view>
       </view>
     </view>
@@ -115,12 +145,32 @@
         <image src="./img/icon_index.png"></image>
         <text>首页</text>
       </navigator>
-      <view wx:if="{{DetailsData.time_status}}" class="Buy {{buy_log == 1 ? '' : (buy_log == 2 ? 'disabled':'')}}" @tap="buyGoods()">
-         {{buy_log == 2?'已经购买过了':'立即抢购'}}
+      <view class="gotoOpenVip" @tap="gotoOpenVip" wx:if="{{DetailsData.magic_vip_status == 2}}">
+        <image src="img/vipopen.png" mode="widthFix" class="openVipIcon"></image>
+        <text>开通会员</text>
       </view>
-      <view wx:else class="Buy disabled">
-        活动已结束
+      
+      <!--aqing 临时修改开始  -->
+      <!-- 未开始 -->
+      <view wx:if="{{DetailsData.new_time_status == 0}}" class="Buy disabled " bindtap="buyGoods" data-wpybuygoods-a="">
+        活动未开始
       </view>
+      <!--进行中  -->
+      <block wx:if="{{DetailsData.new_time_status == 1}}">
+        <view wx:if="{{buy_log == 1}}" class="Buy" bindtap="buyGoods" data-wpybuygoods-a="">
+          立即抢购
+        </view> 
+        <view wx:if="{{buy_log == 2}}" class="Buy" bindtap="gotoUse" data-wpybuygoods-a="">
+          立即使用
+        </view>
+        <view wx:if="{{buy_log == 3}}" class="Buy" data-wpybuygoods-a="">
+          已使用
+        </view>
+      </block>
+      <!--已经结束  -->
+      <view wx:if="{{DetailsData.new_time_status == 2}}" class="Buy disabled " bindtap="buyGoods" data-wpybuygoods-a="">
+         活动已经结束
+      </view> 
     </view>
     <view class="Customer-wrapper">
       <button open-type="contact">
@@ -143,6 +193,75 @@
 </template>
 
 <script>
+  let timer = null
+  function countdown(that) {
+    let total_micro_second = that.end_time;
+    that.clock = dateformat(total_micro_second)
+    if (total_micro_second <= 0) {
+      clearInterval(timer)
+      //如果倒计时到活动开始，请求数据，继续倒计时，return false
+      let query = {}
+      query.goods_id = that.goods_id
+      query.magic_formID = that.formID
+      DetailsModel.getGoodsDetails(query,ResData =>{
+        if (ResData.code == 1) {
+          that.DetailsData = ResData.promotion[0]
+          that.buy_log = that.DetailsData.buy_log;
+          that.end_time = that.DetailsData.residue_time*1000
+          if(!that.DetailsData.time_status){
+            clearInterval(timer)
+          }else{
+            countdown(that)
+          }
+          that.$apply()
+        }
+      })
+      that.$apply()
+      return false
+      // 如果倒计时到活动结束，改变参数 活动结束
+      // if(that.DetailData.status == 1){
+      //   clearInterval(timer)
+      //   that.DetailData.status = 3
+      //   that.$apply()
+      //   return false
+      // }
+    }
+    timer = setInterval(function() {
+      total_micro_second -= 1000;
+      that.end_time -= 1000
+      clearInterval(timer)
+      countdown(that)
+    }, 1000)
+    that.$apply()
+  }
+  // 时间格式化输出，如11:03 25:19 每1s都会调用一次
+  function dateformat(micro_second) {
+    // 总秒数
+    let second = Math.floor(micro_second / 1000);
+    // 天数
+    let day = Math.floor(second/3600/24);
+    // 小时
+    let hr = Math.floor(second/3600%24);
+    if(hr.toString().length == 1){
+      hr = '0' + hr
+    }
+    // 分钟
+    let min = Math.floor(second /60%60);
+    if(min.toString().length == 1){
+      min = '0' + min
+    }
+    // 秒
+    let sec = Math.floor(second%60);
+    if(sec.toString().length == 1){
+      sec = '0' + sec
+    }
+    return {
+      day: day,
+      hour: hr,
+      min: min,
+      second: sec
+    }
+  }
   const ERR_OK = 1
   const IS_VIP = 1
   const items =['发送给朋友', '生成卡片保存分享']
@@ -169,7 +288,9 @@
       actionSheetItems: items,
       Geography: null,
       userInfo: null,
-      buy_log:null
+      buy_log:null,
+      end_time:'',
+      clock:''
     }
     methods= {
       /* tab切换 */
@@ -316,28 +437,27 @@
             res && res(data)
           })
         });
-      }.bind(this)
+      }.bind(this),
+      gotoOpenVip(){
+        wx.navigateTo({
+          url: '../Vip/Index'
+        })
+      },
+      gotoUse(){
+        wx.navigateTo({
+          url: '../My/order/coupon?id='+this.DetailsData.order_id
+        })
+      }
     }
     onLoad(options){
-      let query = {}
-      query.goods_id = options.id
-      query.magic_formID = options.formID
-      this.goods_id = options.id
-      DetailsModel.getGoodsDetails(query,ResData =>{
-        if (ResData.code == 1) {
-          this.DetailsData = ResData.promotion[0]
-          const article = this.DetailsData.detail;
-          this.buy_log = this.DetailsData.buy_log;
-          wxParse.wxParse('article', 'html', article, this, 0);
-          this.$apply()
-        }
-      })
       DetailsModel.getMorePromotion( ResData=>{
         if (ResData.code == 1) {
           this.SeckillData = ResData.data
           this.$apply()
         }
       })
+      this.goods_id = options.id
+      this.formID = options.formID
     }
     onShow(){
       let Geography = wx.getStorageSync('GeographyData')
@@ -413,6 +533,26 @@
         }
         this.$apply()
       })
+      let query = {}
+      query.goods_id = this.goods_id
+      query.magic_formID = this.formID
+      DetailsModel.getGoodsDetails(query,ResData =>{
+        if (ResData.code == 1) {
+          this.DetailsData = ResData.promotion[0]
+          const article = this.DetailsData.detail;
+          wxParse.wxParse('article', 'html', article, this, 0);
+          this.buy_log = this.DetailsData.buy_log;
+          this.end_time = this.DetailsData.residue_time*1000
+          countdown(this)
+          this.$apply()
+        }
+      })
+    }
+    onHide(){
+      clearInterval(timer)
+    }
+    onUnload(){
+      clearInterval(timer)
     }
   }
 </script>
@@ -438,10 +578,6 @@
     background-color: #f9f9f8;
     overflow: hidden;
   }
-  .w704{
-    padding-left:24rpx;
-    padding-right:24rpx;
-  }
   .swiper{
     width: 100%;
     height:530rpx;
@@ -451,18 +587,34 @@
     }
   }
   .goods-header{
-    margin-top:-50rpx;
+    margin-top:-60rpx;
     position: relative;
     .goods-header-title{
-      width: 142rpx;
-      background-image: linear-gradient(to right,#ff4f11,#ff5610);
-      border-top-right-radius: 10rpx;
-      text-align: center;
-      font-size:0;
-      text {
-        font-size:24rpx;
-        color:#fff;
-        line-height:200%;
+      width: 100%;
+      height: 60rpx;
+      background:rgba(0,0,0,.4);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .goods-header-title_left{
+        display: flex;
+        align-items: center;
+        font-size: 25rpx;
+        margin-left: 20rpx;
+      }
+      .goods-header-title_right{
+        display: flex;
+        align-items: center;
+        .lookIcon{
+          width: 30rpx;
+          height: 30rpx;
+          margin-right: 10rpx;
+        }
+        .follow{
+          font-size: 25rpx;
+          margin-right: 20rpx;
+        }
       }
     }
   }
@@ -473,52 +625,131 @@
     background-image: linear-gradient(to right,#ff4f11,#ff8c0c);
     .price-wrapper {
       display: flex;
-      height:100%;
       align-items: center;
-      .Activity-price{
-        &:first-letter {
-          font-size:40rpx;
-          margin-right:2rpx;
+      height: 100%;
+      .price-wrapper_left{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #fff;
+        margin: 0 55rpx 0 20rpx;
+        .Activity-price{
+          font-size: 36rpx;
+          font-weight: 600;
+          text{
+            font-size: 22rpx;
+            margin-right: 5rpx;
+          }
         }
-        font-size:74rpx;
-        color: #fff;
-        margin-right:12rpx;
+        .Original-price{
+          font-size: 24rpx;
+          text-decoration: line-through;
+          margin-top: 3rpx;
+        }
       }
-      .Original-price{
-        font-size:30rpx;
-        color:#fff;
-        text-decoration:line-through;
-        padding-top:34rpx
-      }
-      .Vip-wrapper{
-        height:40rpx;
-        line-height:40rpx;
-        color: #fff;
-        font-size:24rpx;
-        padding-left: 12rpx;
-        padding-right: 12rpx;
-        border:1rpx solid #fff;
-        margin-bottom:8rpx;
-        .Vip-price{
-          margin-left:12rpx;
+      .price-wrapper_right{
+        border-left: 1px dashed #fff;
+        height: 75rpx;
+        padding-left: 35rpx;
+        display: flex;
+        flex-direction: column;
+        .vipBox{
+          width: 130rpx;
+          height: 40rpx;
+          position: relative;
+          .vipIcon{
+            width: 100%;
+            height: 100%;
+          }
+          text{
+            position: absolute;
+            top: 4rpx;
+            left: 20rpx;
+            color: #FBEF6A;
+            font-size: 25rpx;
+          }
+        }
+        .vip-price{
+            font-size: 37rpx;
+            color: #fff;
+            text{
+              font-size: 22rpx;
+              margin-right: 10rpx;
+            }
         }
       }
 
     }
     .right{
+      width: 320rpx;
+      height: 100%;
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: center;
-      text-align: center;
-      color: #fff;
-      .num {
-        font-size: 26rpx;
-        margin-bottom:8rpx;
-      }
-      .follow{
+      border-left: 1px solid #FF5111;
+      .right_txt{
         font-size: 24rpx;
-        text-align: right;
+        color: #fff;
       }
+      .timeLeftBox{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 23rpx;
+        width: 100%;
+        margin-top: 10rpx;
+        text{
+          display: block;
+          width: 35rpx;
+          height: 33rpx;
+          background-color: #fff;
+          border-radius: 5rpx;
+          color: #FF4243;
+          text-align: center;
+          line-height: 33rpx;
+          margin: 0 7rpx;
+        }
+      }
+    }
+    .activity_end{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:30rpx;
+      width:200rpx;
+      background:linear-gradient(to left,#9D9D9D,#FF7D0D);
+    }
+  }
+  .openVipBox{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 86rpx;
+    background-color: #fff;
+    margin-bottom: 20rpx;
+    .openVipBox_left{
+      display: flex;
+      align-items: center;
+      margin-left: 20rpx;
+      .vipIcon{
+        width: 30rpx;
+        height: 30rpx;
+        margin-right: 12rpx;
+      }
+      text{
+        font-size: 25rpx;
+        color: #2F2F2F;
+      }
+    }
+    .gotoOpen{
+      color: #FF5011;
+      font-size: 25rpx;
+      margin-right: 20rpx;
     }
   }
   .Open-vip{
@@ -594,16 +825,20 @@
       }
     }
     .Activity-date{
-      height:106rpx;
+      width: 100%;
+      height: 88rpx;
       display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
-      justify-content:center;
-      font-size:24rpx;
-      color:#242424;
-      text:first-child{
-        color: #848589;
-        margin-right:32rpx;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      .Activity-date_txt{
+        font-size: 27rpx;
+        color:#848589;
+      }
+      .Activity-date_num{
+        color: #242424;
+        font-size: 27rpx;
+        margin-right: 20rpx;
       }
     }
     .goods-rule{
@@ -678,11 +913,30 @@
       }
     }
     .main-details {
+      box-sizing: border-box;
+      padding: 10rpx 20rpx;
       &:last-child{
         background-color: #f5f5f7;
       }
       .wxParse-p image{
         width: 100%;
+      }
+      .no-EvaluateData{
+        width: 100%;
+        height: 490rpx;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        image{
+          width:40rpx;
+          height:40rpx;
+          margin-right:20rpx;
+        }
+        text{
+          font-size: 30rpx;
+          color: #888888;
+        }
       }
     }
     .Evaluate-item{
@@ -824,9 +1078,11 @@
     position: fixed;
     bottom: 0;
     display: flex;
+    box-sizing: border-box;
     .btn{
       background-color: #fff;
       width: 139rpx;
+      flex: 0 0 139rpx;
       height:98rpx;
       display: flex;
       flex-direction: column;
@@ -844,6 +1100,26 @@
     }
     .btn ~ .btn{
       border-left:1rpx solid #efefee;
+    }
+    .gotoOpenVip{
+      flex: 0 0  140rpx;
+      height: 98rpx;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid #EFEFEE;
+      .openVipIcon{
+        width: 40rpx;
+        height: 40rpx;
+      }
+      text{
+        font-size: 20rpx;
+        color: #505050;
+        margin-top: 5rpx;
+
+      }
     }
     .Buy{
       flex: 1;

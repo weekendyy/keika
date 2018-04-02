@@ -84,7 +84,7 @@ class Bargain extends Base {
     let param = {
       url: "v7/bargain/forward",
       data: {
-        activity_id: queryData.activity_id,
+        activity_id: queryData.activity_id
       },
       sCallback(ResData) {
         callback && callback(ResData)

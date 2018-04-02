@@ -1,0 +1,527 @@
+<template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="index-container" hidden="{{!loadingHidden}}">
+    <view class="topImgBox">
+      <image src="{{subjectImg}}" mode="aspectFill" class="topPic"></image>
+      <view class="backBome" @tap="backToHome">
+        <image src="./images/home.png" mode="widthFix" class="homeIcon"></image>
+        <text class="backhometxt">返回首页</text>
+      </view>
+    </view>
+    <view class="searchBox">
+      <view class="searchBoxCenter">
+        <image src="images/search.png" mode="widthFix" class="searchIcon"></image>
+        <input type="text" confirm-type="search" @input="searchInp" bindconfirm="searchGetData" placeholder="输入您喜欢的餐馆" value="{{searchValue}}">
+      </view>
+    </view>
+    <view class="tab-box">
+      <view class="tab-content">
+        <scroll-view scroll-y="true" class="shop-data">
+          <view class="shop-data-item" wx:for="{{shopData}}" wx:for-item="item" wx:key="index" @tap="gotoShop({{index}})">
+            <view class="top">
+              <view class="pic-wrapper">
+                <image class="pic" src="{{item.main_img}}"></image>
+              </view>
+              <view class="top-content">
+                <text class="shop-name">{{item.magic_shop_name}}</text>
+                <view class="type-wrapper">
+                  <view>{{item.classify_magic_goods}}</view>
+                  <view>{{item.per_consume}}</view>
+                </view>
+                <view class="type-wrapper">
+                  <view>{{item.address}}</view>
+                  <view>{{item.distance}}km</view>
+                </view>
+                <view class="top-fb">
+                  <image src="./images/zan.png"></image>
+                  <view>"{{item.brief_describe}}"</view>
+                </view>
+              </view>
+            </view>
+            <view class="bottom">
+              <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}})">
+                <view class="fuli-item-top">
+                  <text class="type">{{item.one_str}}</text>
+                  <text class="name">{{item.magic_goods_title}}</text>
+                  <!-- <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==3}}">领取</text>
+                  <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==1}}">未开始</text>
+                  <text class="btn end" wx:if="{{item.magicgetlog == null && item.time_status==2}}">已结束</text>
+                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text> -->
+                  <!-- 活动未开始 -->
+                  <block wx:if="{{item.time_status==1}}">
+                    <text class="btn">未开始</text>
+                  </block>
+                  <!-- 活动进行中 -->
+                  <block wx:if="{{item.time_status==3}}">
+                    <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+                    <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+                  </block>
+                  <!-- 活动已结束 -->
+                  <block wx:if="{{item.time_status==2}}">
+                    <text class="btn end">已结束</text>
+                  </block>
+                </view>
+                <view class="fuli-item-bottom">
+                  <text class="desc">{{item.magic_goods_name}}</text>
+                  <text class="num">已领 {{item.get_num}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+          <view wx:if="{{shopData.length == 0}}">
+            <template is="emptyGoodsTips" data="{{tipsTxt:'暂无商铺'}}"></template>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import ShopModel from '../pages/Shop/shop-model'
+  import MyModel from '@/pages/My/index-model'
+  import TimeLimitActivityDetailModel from './TimeLimitActivityDetail-model'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '推荐店铺',
+    }
+    data = {
+      loadingHidden: false,
+      GeographyData: null,
+      userInfo: null,
+      shopData: '',
+      shopRepeatReuqest: true,
+      pageNum:1,
+      subject_id:'',
+      subjectImg:'',
+      where_like:'',
+      status:'',
+      formId:''
+    }
+    computed = {
+        
+    }
+    methods = {
+      gotoShop(index){
+        const i = this.shopData[index].id
+        this.$navigate('../pages/Shop/shopDetails',{id:i})
+      },
+      gotoWelfare(index){
+        this.$navigate('../pages/Shop/welfareDetails',{id:index})
+      },
+      _loadData:function (successcallback) {
+        MyModel.getUserInfo((data)=> {
+          successcallback && successcallback(data)
+        }, (res)=>{
+          MyModel._setUserinfo((data)=>{
+            this.loadingHidden = true
+            this.$apply()
+            res && res(data)
+          })
+        });
+      }.bind(this),
+      backToHome(){
+        wx.switchTab({
+          url:'/pages/Index/index'
+        })
+      },
+      searchInp(e){
+        this.where_like = e.detail.value
+      },
+      searchGetData(){
+        this.pageNum = 1
+        this.shopRepeatReuqest = true
+        this._getData(false,true)
+
+      }
+    }
+    onLoad(e){
+      this.subject_id = e.id
+      this.status = e.status
+      this.formId = e.formId
+      this.subjectImg = wx.getStorageSync('subJectImg')
+      this.$apply()
+      wx.setNavigationBarTitle({
+        title: e.subTitle
+      })
+      console.log(this.formId)
+    }
+    onShow(){
+      let Geography = wx.getStorageSync('GeographyData')
+      if(Geography){
+        this.GeographyData = Geography
+        let user = wx.getStorageSync('user')
+        if(user){
+          this.userInfo = user
+          this.loadingHidden = true
+          this.$apply()
+        }
+        if(!this.userInfo){
+          this.methods._loadData((data)=>{
+            this.userInfo = data
+            wx.setStorage({
+              key:"user",
+              data:this.userInfo
+            })
+            let postdata = {
+              wechat_name: this.userInfo.userInfo.nickName,
+              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+              portrait: this.userInfo.userInfo.avatarUrl,
+              encryptedData:this.userInfo.encryptedData,
+              iv:this.userInfo.iv,
+              versions: "vip5",
+            }
+            MyModel.postUserInfo(postdata)
+            wepy.$instance.globalData.isGetInfo = true
+            this.loadingHidden = true
+            this.$apply()
+          })
+        }
+      }
+      if(!this.GeographyData){
+        MyModel.getCityName((ResData)=>{
+          wx.setStorage({
+            key:"GeographyData",
+            data: ResData
+          })
+          let user = wx.getStorageSync('user')
+          if(user){
+            this.userInfo = user
+            this.loadingHidden = true
+          }
+          if(!this.userInfo){
+            this.methods._loadData((data)=>{
+              this.userInfo = data
+              wx.setStorage({
+                key:"user",
+                data:this.userInfo
+              })
+              let postdata = {
+                wechat_name: this.userInfo.userInfo.nickName,
+                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
+                portrait: this.userInfo.userInfo.avatarUrl,
+                encryptedData:this.userInfo.encryptedData,
+                iv:this.userInfo.iv,
+                versions: "vip5",
+              }
+              MyModel.postUserInfo(postdata)
+              this.loadingHidden = true
+              this.$apply()
+            })
+          }
+        },()=>{
+          MyModel.twoGetCityName((res)=>{
+            console.log(res)
+          })
+        })
+      }
+      this.pageNum = 1
+      this.shopRepeatReuqest = true
+      this._getData(false,false)
+    }
+    onReachBottom(){
+      if (!this.shopRepeatReuqest) {
+        return false
+      } else {
+        ++this.pageNum
+        this._getData(true)
+      }
+    }
+    _getData(isReachBottom,showLoading){
+      if(showLoading){
+        wx.showLoading({
+          title: '加载中',
+        })
+      }
+      let query = {}
+      query.subject_id = this.subject_id
+      query.page_num = this.pageNum
+      query.where_like = this.where_like
+      if(this.GeographyData){
+        query.lng = this.GeographyData.latitude
+        query.lat = this.GeographyData.longitude 
+      }
+      if(this.formId){
+        query.formId = this.formId
+      }
+      TimeLimitActivityDetailModel.getActivityData(query,(resData)=>{
+        if(resData.code == 1){
+          wx.hideLoading()
+          this.loadingHidden = true
+          if(isReachBottom){
+            this.shopData = [...this.shopData,...resData.data]
+          }else{
+            this.shopData = resData.data
+          }
+          if(!resData.data.length && isReachBottom){
+            this.shopRepeatReuqest = false
+            this.$apply()
+            wx.showToast({
+              title: '已经到底了',
+              icon: 'loading',
+              duration: 1500
+            })
+          }
+        }
+        this.$apply()
+      })
+    }
+    components = {
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  @import '../pages/tpls/loading/loading.wxss';
+  .topImgBox{
+    width: 100%;
+    height: 375rpx;
+    position: relative;
+    margin-bottom: 50rpx;
+    .topPic{
+      width: 100%;
+      height: 100%;
+    }
+    .backBome{
+      position: absolute;
+      top: 30rpx;
+      left: 30rpx;
+      width: 160rpx;
+      height: 55rpx;
+      border-radius: 40rpx;
+      background:rgba(0,0,0,.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .homeIcon{
+        width: 30rpx;
+        height: 30rpx;
+        margin-right: 10rpx;
+      } 
+      .backhometxt{
+        font-size: 23rpx;
+        color: #fff;
+      }
+    }
+  }
+  .searchBox{
+    width:100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20rpx;
+    .searchBoxCenter{
+      width: 600rpx;
+      height: 80rpx;
+      border-radius: 50rpx;
+      box-shadow: 0 0rpx 20rpx 0rpx rgba(173,167,167,.5);
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 0 40rpx;
+      .searchIcon{
+        flex: 0 0 33rpx;
+        height: 33rpx;
+      }
+      input{
+        font-size: 27rpx;
+        flex: 1;
+        text-align: center;
+      }
+    }
+  }
+  .tab-box{
+    position: relative;
+    z-index:2;
+    .tab-list{
+      width: 100%;
+      padding-left: 40rpx;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      border-bottom:1rpx solid #e4e4e4;
+      background-color: #fff;
+      .teb-item{
+        padding: 0;
+        margin: 0;
+        background-color: transparent;
+        width: 136rpx;
+        text-align: center;
+        line-height: 90rpx;
+        font-size: 28rpx;
+        color: #4c4c4c;
+        border-bottom: 6rpx solid transparent;
+        border-radius: 0;
+        &::after{
+          content:none;
+        }
+        ~ .teb-item{
+          margin-left: 46rpx;
+        }
+        &.active{
+          pointer-events:none;
+          color: #e5c079;
+          border-bottom: 6rpx solid #e5c079;
+        }
+      }
+    }
+  }
+  .tab-content{
+    .shop-data{
+      padding-bottom: 60rpx;
+    }
+    .shop-data-item{
+      width: 688rpx;
+      margin-top: 30rpx;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 11rpx;
+      border: 1px solid #e5c079;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+    .top{
+      width: 626rpx;
+      display: flex;
+      margin-top: 24rpx;
+      margin-bottom: 31rpx;
+      .pic-wrapper{
+        overflow: hidden;
+        margin-right: 28rpx;
+        .pic{
+          width: 189rpx;
+          height: 189rpx;
+          border-radius: 7px;
+        }
+      }
+      .top-content{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        .shop-name{
+          width: 100%;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          padding-top:10rpx;
+          font-size:34rpx;
+          color: #000;
+          font-weight: bold;
+        }
+        .type-wrapper{
+          margin-top: 14rpx;
+          font-size: 0;
+          display: flex;
+          align-items: center;
+          view{
+            max-width: 8em;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            font-size: 26rpx;
+            color: #888888;
+            &:first-child{
+              margin-right: 26rpx;
+            }
+          }
+        }
+      }
+      .top-fb{
+        margin-top:22rpx;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        image{
+          width: 30rpx;
+          height: 30rpx;
+          margin-right: 13rpx;
+        }
+        view{
+          font-size:26rpx;
+          color: #888888;
+          flex:1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+    .bottom{
+      width: 626rpx;
+      .fuli-item{
+        width: 100%;
+        padding-top:18rpx;
+        padding-bottom:18rpx;
+        border-top: 1px solid #dedede;
+        .fuli-item-top{
+          display: flex;
+          align-items: center;
+          .type{
+            border: 1rpx solid #f3dddd;
+            width: 34rpx;
+            line-height:34rpx;
+            text-align: center;
+            font-size: 24rpx;
+            color: #dd8084;
+            border-radius: 4rpx;
+            background-color: #fdf0ef;
+          }
+          .name{
+            font-size: 28rpx;
+            color: #000000;
+            margin-left:22rpx;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .btn{
+            margin-left:auto;
+            width: 120rpx;
+            line-height: 58rpx;
+            text-align: center;
+            border-radius: 50rpx;
+            background-color: #ff6068;
+            font-size:24rpx;
+            color: #fff;
+            letter-spacing: 2rpx;
+            &.end{
+              background-color:#ccc;
+            }
+          }
+        }
+        .fuli-item-bottom{
+          margin-top:8rpx;
+          font-size:0;
+          display: flex;
+          .desc{
+            flex: 1;
+            font-size:26rpx;
+            color: #fa6564;
+            margin-left:56rpx;
+            margin-right: 59rpx;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .num{
+            width: 120rpx;
+            text-align: center;
+            margin-top: 19rpx;
+            font-size:24rpx;
+            color: #9d9d9d;
+          }
+        }
+      }
+    }
+  }
+</style>
+

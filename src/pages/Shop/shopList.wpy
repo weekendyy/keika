@@ -45,8 +45,21 @@
               <view class="fuli-item-top">
                 <text class="type">{{item.one_str}}</text>
                 <text class="name">{{item.magic_goods_title}}</text>
-                <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
-                <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+                <!-- <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
+                <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text> -->
+                <!-- 活动未开始 -->
+                <block wx:if="{{item.time_status==1}}">
+                  <text class="btn">未开始</text>
+                </block>
+                <!-- 活动进行中 -->
+                <block wx:if="{{item.time_status==3}}">
+                  <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+                  <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+                </block>
+                <!-- 活动已结束 -->
+                <block wx:if="{{item.time_status==2}}">
+                  <text class="btn end">已结束</text>
+                </block>
               </view>
               <view class="fuli-item-bottom">
                 <text class="desc">{{item.magic_goods_name}}</text>
@@ -77,7 +90,6 @@
     }
     data = {
       loadingHidden:false,
-      bannerpics:[{banner_url:'http://oyu2qzx2v.bkt.clouddn.com/2018-03-16_142156.png'},{banner_url:'http://oyu2qzx2v.bkt.clouddn.com/2018-03-16_142156.png'}],
       shopClassifys:[],
       shopClassifys_son:[],
       shopData:[1],
@@ -87,7 +99,8 @@
       sonId:'',
       isLoadAll:false,
       headerinfo:null,
-      userInfo:null
+      userInfo:null,
+      GeographyData:''
     }
     computed = {
         shopClassifyNum () {
@@ -135,9 +148,9 @@
       cheaderModel.getBannerInfo(query,(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data
+          this.loadingHidden = true
           this.$apply()
         }
-        this.loadingHidden = true
       })
       let user = wx.getStorageSync('user')
       if(user){
@@ -151,14 +164,20 @@
     onShow(){
       this.pageNum = 1
       this.isLoadAll = false
+      this.GeographyData = wx.getStorageSync('GeographyData') 
       let query = {}
       query.page_num = this.pageNum
       query.choose_type = 1
       query.parent_classify_id = this.parent_id
       query.son_classify_id = ''
+      if(this.GeographyData){
+        query.lng = this.GeographyData.latitude 
+        query.lat = this.GeographyData.longitude
+      }
       ShopModel.getShopListInfo(query,(ResData)=>{
         if(ResData.code == 1){
           this.shopClassifys = ResData.son_classify_data
+          this.loadingHidden = true
           this.shopData = ResData.data
         }
         this.$apply()
@@ -279,7 +298,7 @@
       margin-left: auto;
       margin-right: auto;
       border-radius: 11rpx;
-      border: 1px solid #c5c079;
+      border: 1px solid #e5c079;
       display: flex;
       justify-content: center;
       flex-direction: column;

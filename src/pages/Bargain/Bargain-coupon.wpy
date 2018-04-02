@@ -65,14 +65,6 @@
           launch_id: this.launch_id,
         }
         BargainModel.end_cancel(param, ResData=>{
-          if(ResData.code == 0) {
-            wx.showToast({
-              title: "密码错误",
-              icon:'loading',
-              duration: 1000
-            })
-            return false
-          }
           if(ResData.code == 1) {
             wx.showToast({
               title: "核销成功",
@@ -93,6 +85,13 @@
                 },2400)
               }
             })
+          }else{
+            wx.showToast({
+              title: ResData.message,
+              icon:'loading',
+              duration: 1000
+            })
+            return false
           }
         })
       }

@@ -42,7 +42,7 @@
         </button>
       </form>
     </view>
-    <view class="desc-wrapper">
+    <view class="desc-wrapper" @longpress="showVersion" @touchend="hideVersion">
       <view class="title-wrapper">
         <view class="h11"></view>
         <view class="h16 left"></view>
@@ -84,6 +84,9 @@
           <image src="{{vipInfo.supplier_data.provide_qr_code}}"></image>
         </view>
       </view>
+      <view class="version {{isVersionShow?'show-version':''}}">
+        <text>V 1.13.4</text>
+      </view>
     </view>
   </view>
   <view hidden="{{loadingHidden}}">
@@ -107,7 +110,8 @@
       loadingHidden: false,
       center_index_str: null,
       magic_auth_str: null,
-      formId:''
+      formId:'',
+      isVersionShow: false
     }
     methods = {
       gotowelfare(e){
@@ -135,6 +139,14 @@
       gotoOpenVipFormId(e){
         this.formId = e.detail.formId
         this.$navigate('../Vip/Index?formId='+this.formId)
+      },
+      showVersion(){
+        this.isVersionShow = true
+        this.$apply()
+      },
+      hideVersion(){
+        this.isVersionShow = false
+        this.$apply()
       }
     }
     onShow(){
@@ -309,7 +321,7 @@
           font-size: 28rpx;
           color: #e7c375;
           line-height: 70rpx;
-          border: 1rpx solid #e3c289;
+          border: 1px solid #e3c289;
           border-radius: 10rpx;
           background-color: #412d2e;
           background-color: transparent;
@@ -390,6 +402,7 @@
     background-color: #ffffff;
     box-shadow: 0rpx 0rpx 16rpx 0rpx rgba(0, 0, 0, 0.15);
     border-radius: 15rpx;
+    position: relative;
     .title-wrapper{
       display: flex;
       align-items: center;
@@ -483,6 +496,33 @@
           height:166rpx;
         }
       }
+    }
+    .version{
+      width: 100%;
+      height: 35rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      bottom: -35rpx;
+      left: 0;
+      transition: .3s;
+      transform: translateY(-40rpx);
+      opacity: 0;
+      text{
+        font-size: 27rpx;
+        line-height: 35rpx;
+        color: #EDC291;
+        display: block;
+        height: 35rpx;
+        padding: 0 20rpx;
+        box-shadow: 0 0 20rpx rgba(234,194,124,.1);
+        border:1px solid #EDC291;
+      }
+    }
+    .show-version{
+      transform: translateY(3rpx);
+      opacity: 1;
     }
   }
 </style>

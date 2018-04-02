@@ -3,138 +3,183 @@
   <import src="../../wxParse/wxParse.wxml"/>
   <view class="container" hidden="{{!loadingHidden}}">
     <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
-    <view class="likeNum">
-      <image src="images/loverico.png" mode="widthFix" class="loveIcon"></image>
-      <text>{{likeNum}}人喜欢</text>
+    <view class="banner-info">
+      <view class="banner-info-item">
+        <text class="banner-info-itemNum">{{DetailData.see_num}}</text><text>人查看</text>
+      </view>
+      <view class="banner-info-item">
+        <text class="banner-info-itemNum">{{DetailData.share_num}}</text><text>人分享</text>
+      </view>
+      <view class="banner-info-item">
+        <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
+      </view>
     </view>
-  	<view class="mainBox">
-      <text class="title">{{DetailData.title}}</text>
-      <view class="starttime" wx:if="{{DetailData.status == 2}}">
- 			  <view class="starttimetxt">距开始</view>
-   			<view class="timenumber">
-          <text>{{clock.day}}</text>:<text>{{clock.hour}}</text>:<text>{{clock.min}}</text>:<text>{{clock.second}}</text>
-   			</view>
-      </view>
-      <view class="starttime" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 }}">
-        <view class="starttimetxt">距结束</view>
-        <view class="timenumber">
-          <text>{{clock.day}}</text>:<text>{{clock.hour}}</text>:<text>{{clock.min}}</text>:<text>{{clock.second}}</text>
+    <view class="mainBoxB">
+      <view class="mainBoxB-top">
+        <text class="title">{{DetailData.title}}</text>
+        <swiper indicator-dots="{{false}}" class="league-swiper" circular
+        autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}" wx:if="{{floor_data.length}}">
+          <block wx:for="{{floor_data}}">
+            <swiper-item>
+              <view class="bargainTips">
+                <text class="bargainTips-name">{{item.name}}</text>
+                <text class="bargainTips-txt">{{item.content_str}}</text>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+
+        <view class="starttime" wx:if="{{DetailData.status == 2}}">
+          <view class="starttimetxt">活动开始倒计时</view>
+          <view class="timenumber">
+            <text>{{clock.day}}</text>天<text>{{clock.hour}}</text>时<text>{{clock.min}}</text>分<text>{{clock.second}}</text>秒
+          </view>
+        </view>
+        <view class="starttime" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 }}">
+          <view class="starttimetxt">活动结束倒计时</view>
+          <view class="timenumber">
+            <text>{{clock.day}}</text>天<text>{{clock.hour}}</text>时<text>{{clock.min}}</text>分<text>{{clock.second}}</text>秒
+          </view>
         </view>
       </view>
-      <view class="starttime" wx:if="{{DetailData.last_num == 0}}">
-        <view class="starttimetxt">已售罄</view>
+      <view class="mainBoxB-bottom">
+        <!-- <view class="priceNow">
+          <text class="textPriceNow"><text>现价</text> {{DetailData.current_price}} <text>元</text></text>
+        </view> -->
+        <view class="mainBoxB-bottom-info">
+          <view class="mainBoxB-bottom-info_left" wx:if="{{bargain.launch}}">
+            <text class="username">{{bargain.launch.nickname}}</text>
+            <view class="userbj">
+              <text>帮减人数：</text>
+              <text class="userbjNum">{{bargain.launch.help_count}}</text>
+            </view>
+          </view>
+          <view class="mainBoxB-bottom-info_right">
+            <view class="banjian xianj">
+              <text class="banjianTxt">现价:</text>
+              <text class="banjianNum">{{DetailData.current_price}}元</text>
+            </view>
+            <view class="banjian">
+              <text class="banjianTxt">底价:</text>
+              <text class="banjianNum">{{DetailData.floor_price}}元</text>
+            </view>
+            <view class="banjian">
+              <text class="banjianTxt">原价:</text>
+              <text class="banjianNum">{{DetailData.price}}元</text>
+            </view>
+          </view>
+        </view>
+        <view class="mainBoxB-bottom-options">
+          <block wx:if="{{bargain.is_own == 1}}">
+              <view class="menpiaobtn success" wx:if="{{isOne == 0 && DetailData.status != 4 && DetailData.status != 3 &&  DetailData.status != 2 && DetailData.status != 3}}" @tap="myadd()">
+                <view class="kanyidao">我也要参加</view>
+              </view>
+              <view class="menpiaobtn" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 && bargain.launch.is_minimum !=1 && isOne != 0}}">
+                <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
+                <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">邀请好友帮我砍</button>
+                <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
+              </view>
+              <view class="menpiaobtn success" wx:if="{{DetailData.status == 3 && DetailData.last_num != 0 && bargain.launch.receive_status != 1}}">
+                <view class="kanyidao">已结束</view>
+              </view>
+              <view class="menpiaobtn success"  wx:if="{{DetailData.status == 2}}">
+                <view class="kanyidao">未开始</view>
+              </view>
+              <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 2 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
+                <view class="kanyidao">减价成功,立即购买</view>
+              </view>
+              <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
+                <view class="kanyidao">减价成功,立即兑换</view>
+              </view>
+              <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && DetailData.status != 4 && bargain.launch.use_status == 0}}">
+                <view class="kanyidao">去使用</view>
+              </view>
+              <view class="menpiaobtn success" wx:if="{{DetailData.status == 4 && bargain.launch.use_status == 0}}">
+                <view class="kanyidao">已过期</view>
+              </view>
+              <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1 && DetailData.status != 2}}">
+                <view class="kanyidao">已使用</view>
+              </view>
+          </block>
+          <block wx:if="{{bargain.is_own == 0}}">
+              <view class="menpiaobtn success">
+                <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">返回我的首页</view>
+              </view>
+          </block>
+          <view class="starttime" wx:if="{{DetailData.last_num == 0}}">
+            <view class="starttimetxt">已售罄</view>
+          </view>
+        </view>
+        <text class="mainBoxB-bottom-txt">{{DetailData.loss_str}}</text>
       </view>
-      <view class="starttime" wx:if="{{DetailData.status == 3 && DetailData.last_num != 0}}">
-        <view class="starttimetxt">已结束</view>
+    </view>
+    <view class="jpdescbox">
+      <view class="jpdescbox_title">
+        <view class="cut"></view>
+        <text class="jpdescbox_txt">奖品描述</text>
+        <view class="cut"></view>
       </view>
-      <view class="starttime" wx:if="{{DetailData.status == 4 && DetailData.last_num != 0}}">
-        <view class="starttimetxt">已过期</view>
+      <view class="giftnumber">
+        <view class="gifttxt">本期奖品<text>{{DetailData.num}}</text>份</view>
+        <view class="gifttxt">剩余<text>{{DetailData.last_num}}</text>份</view>
       </view>
-   		<view class="juzishuju" wx:if="{{bargain.launch}}">
-   			<view class="juzishuju_left">
-   				<image src="{{bargain.launch.headimgurl}}" mode="aspectFill" class="juziPic"></image>
-   				<text>{{bargain.launch.nickname}}</text>
-   			</view>
-   			<view class="banjian">
-   				<text>帮减人数：</text>
-   				<text>{{bargain.launch.help_count}}</text>
-   			</view>
-   		</view>
-   		<view class="priceBar">
-   			<view class="pricepro" style="width:{{(DetailData.current_price/DetailData.price)* 100}}%;"></view>
-   			<text class="pricenow">现价:{{DetailData.current_price}}元</text>
-   		</view>
-   		<view class="juzishuju">
-   			<view class="banjian">
-   				<text>底价：</text>
-   				<text>{{DetailData.floor_price}}元</text>
-   			</view>
-   			<view class="banjian">
-   				<text>原价：</text>
-   				<text>{{DetailData.price}}元</text>
-   			</view>
-   		</view>
-      <block wx:if="{{bargain.is_own == 1}}">
-        <view class="menpiaobtn success" wx:if="{{isOne == 0 && DetailData.status != 4 && DetailData.status != 2 && DetailData.status != 3}}" @tap="myadd()">
-          <view class="kanyidao">我也要参加</view>
-        </view>
-        <view class="menpiaobtn" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 && bargain.launch.is_minimum !=1 && isOne != 0}}">
-          <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
-          <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</button>
-          <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
-        </view>
-        <view class="menpiaobtn success" wx:if="{{DetailData.status == 3 && DetailData.last_num != 0 && bargain.launch.receive_status != 1}}">
-          <view class="kanyidao">已结束</view>
-        </view>
-        <view class="menpiaobtn success"  wx:if="{{DetailData.status == 2}}">
-          <view class="kanyidao">未开始</view>
-        </view>
-        <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 2 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
-          <view class="kanyidao">减价成功,立即购买</view>
-        </view>
-        <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
-          <view class="kanyidao">减价成功,立即兑换</view>
-        </view>
-        <view class="menpiaobtn success" @tap="gotoUse()" wx:if="{{bargain.launch.receive_status == 1 && DetailData.status != 4 && bargain.launch.use_status == 0}}">
-          <view class="kanyidao">去使用</view>
-        </view>
-        <view class="menpiaobtn success" wx:if="{{DetailData.status == 4 && bargain.launch.use_status == 0}}">
-          <view class="kanyidao">已过期</view>
-        </view>
-        <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1}}">
-          <view class="kanyidao">已使用</view>
-        </view>
-      </block>
-      <block wx:if="{{bargain.is_own == 0}}">
-        <view class="menpiaobtn success">
-          <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">返回我的首页</view>
-        </view>
-      </block>
-  	</view>
-  	<view class="jpdescbox">
-  		<view class="jpdescbox_title">
-  			<text class="jpdescbox_txt">奖品描述</text>
-  		</view>
-  		<view class="giftnumber">
-  			<view class="gifttxt">本期奖品<text>{{DetailData.num}}</text>份</view>
-  			<view class="gifttxt">剩余<text>{{DetailData.last_num}}</text>份</view>
-  		</view>
       <view class="rulesbox">
         <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
       </view>
-  	</view>
+    </view>
     <view class="giftintroducebox">
       <view class="jpdescbox_title">
+        <view class="cut"></view>
         <text class="jpdescbox_txt">{{rules.title}}</text>
+        <view class="cut"></view>
       </view>
       <view class="desc-wrapper">
         <view wx:for="{{rules.content}}">
           {{item}}
         </view>
-        
+      </view>
+    </view>
+    <view class="jpdescbox shopDesc">
+      <view class="jpdescbox_title">
+        <view class="cut"></view>
+        <text class="jpdescbox_txt">{{DetailData.merchants_str}}</text>
+        <view class="cut"></view>
+      </view>
+      <view class="rulesbox shopDesctxt">
+        <template is="wxParse" data="{{wxParseData:article2.nodes}}"/>
       </view>
     </view>
     <view class="giftintroducebox">
-      <view class="jpdescbox_title">
+      <view class="jpdescbox_title bangkan">
+        <view class="cut"></view>
         <text class="jpdescbox_txt">帮砍名单</text>
+        <view class="cut"></view>
       </view>
       <view class="helpbargain">
         <view class="titleitem">
-          <text class="titleitemname">排名</text>
-          <text class="titleitemname">姓名</text>
-          <text class="titleitemname">当前价格</text>
+          <text class="titleitemname" style="flex: 4">排名</text>
+          <text class="titleitemname" style="flex: 4">姓名</text>
+          <text class="titleitemname" style="flex: 6">当前价格</text>
         </view>
         <repeat for="{{RankingData}}" wx:for-item="item" key:index="index" wx:if="{{RankingData.length}}">
           <view class="titleitem people">
-              <view class="titleitemname peopleitem">{{index+1}}</view>
-              <view class="titleitemname peopleitem">{{item.nickname}}</view>
-              <view class="titleitemname peopleitem">
+              <view class="titleitemname peopleitem" style="flex: 4">{{index+1}}</view>
+              <view class="titleitemname peopleitem" style="flex: 4">{{item.nickname}}</view>
+              <view class="titleitemname peopleitem" style="flex: 6">
                 <text class="peopleitemtxt1">{{item.msg}}</text>
                 <text class="peopleitemtxt2" wx:if="{{item.is_minimum==1}}">{{item.minimum_time}}</text>
               </view>
           </view>
         </repeat>
       </view>
+    </view>
+  </view>
+  <view class="bargain_success" >
+    <view class="bargain_success_cover" wx:if="{{showBarginSuccess}}"></view>
+    <view class="bargain_success_content {{showBarginSuccess?'show_bargain_success_content':''}}">
+      <image src="http://applet.czsjcrm.cn/images/templete_show_image/guandage.png" mode="widthFix" class="bargain_successPic"></image>
+      <text class="bargain_success_txt">恭喜您!成功砍掉<text>{{bargain_price}}</text></text>
+      <view class="iknow" @tap="closeBarginSuccess">我知道了</view>
     </view>
   </view>
   <view hidden="{{loadingHidden}}">
@@ -153,13 +198,11 @@
         BargainModel.getLuckyDetail(that.param,(ResData)=>{
           that.DetailData = ResData.activity_attr
           that.bargain = ResData.bargain
-          that.likeNum = ResData.activity_attr.see_num
-          that.rules = ResData.rule_str
-          that.isOne = ResData.bargain.launch.help_count
+          that.floor_data = ResData.floor_data
           that.end_time = that.DetailData.residue_time * 1000
           countdown(that)
           wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5);
-          // wxParse.wxParse('article2', 'html', that.DetailData.prize_details, that, 5);
+          wxParse.wxParse('article2', 'html', that.DetailData.details, that, 5);
 
         })
         that.$apply()
@@ -188,10 +231,19 @@
     let day = Math.floor(second/3600/24);
     // 小时
     let hr = Math.floor(second/3600%24);
+    if(hr.toString().length == 1){
+      hr = '0' + hr
+    }
     // 分钟
     let min = Math.floor(second /60%60);
+    if(min.toString().length == 1){
+      min = '0' + min
+    }
     // 秒
     let sec = Math.floor(second%60);
+    if(sec.toString().length == 1){
+      sec = '0' + sec
+    }
     return {
       day: day,
       hour: hr,
@@ -216,17 +268,19 @@
       DetailData: null,
       bargain: null,
       end_time: null,
-      clock: null,
+      clock: '',
       RankingData: null,
       isOne: 0,
       LaunchState: true,
       exchangeState: true,
       shareState: true,
       likeNum:'',
-      rules:null
+      rules:'',
+      bargain_price:'',
+      showBarginSuccess:false,
+      floor_data:''
     }
     onLoad(options){
-      let that = this
       if(options.launch_id){
         this.param = {
           launch_id: options.launch_id,
@@ -238,34 +292,10 @@
       this.param.activity_id = options.id || 24
     }
     methods = {
-      onShareAppMessage(){
-        let that = this;
-        let shareTitle = null;
-        let path = null;
-        that.userInfo = wx.getStorageSync('user')
-        if(that.DetailData){
-          path = 'pages/Bargain/details?launch_id='+that.bargain.launch.id+"&"+'id='+that.DetailData.id
-          if(that.userInfo){
-            shareTitle = that.userInfo.userInfo.nickName + that.DetailData.title
-          }
-          if(!that.userInfo){
-            shareTitle = that.DetailData.title
-          }
-        }
-        if(!that.DetailData){
-          path = 'pages/Bargain/details?launch_id='+that.param.launch_id+"&"+'activity_id='+that.param.activity_id
-          shareTitle = wepy.$instance.globalData.name
-        }
-        let shareObj = {
-          title: shareTitle,
-          path: path
-        }
-        return shareObj
-      },
       gotoBuy(){
         this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
       },
-      gotoUse(){
+      gotoMy(){
         this.$navigate('/pages/Bargain/Bargain-coupon',{id:this.bargain.launch.id});
       },
       gotoIndex(){
@@ -295,6 +325,13 @@
           }
         })
       },
+      gotoBuy(){
+        this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
+      },
+      closeBarginSuccess(){
+        this.showBarginSuccess = false
+        this.$apply()
+      },
       openLaunch(){
 //        自己手动砍价
         let param = {
@@ -303,8 +340,9 @@
         }
         this.LaunchState = false
         BargainModel.bargainDetail(param, (ResData)=>{
-          let bargain_price = ResData.bargain.bargain_price
+          this.bargain_price = ResData.bargain.bargain_price
           if(ResData.bargain.code == 1){
+            this.DetailData.join_num++
             if(ResData.bargain.launch.is_minimum == 1){
               wx.showToast({
                 title: '已经到底价了',
@@ -318,14 +356,10 @@
               this.$apply()
               return false
             }
-            wx.showToast({
-              title: '成功砍了'+bargain_price,
-              icon: 'success',
-              duration: 2000
-            })
             this.DetailData.current_price = ResData.bargain.launch.now_price
             --this.bargain.launch.frequency
             this.LaunchState = true
+            this.showBarginSuccess = true
             this.$apply()
           }
         })
@@ -358,9 +392,10 @@
             res && res(data)
           })
         });
-      }.bind(this),
+      }.bind(this)
     }
     onShow(){
+      clearInterval(timer)
       let that = this
       if(wx.getStorageSync('launch_id')){
         this.param.launch_id = wx.getStorageSync('launch_id')
@@ -377,47 +412,7 @@
           this.userInfo = user
           this.loadingHidden = true
           this.$apply()
-          BargainModel.getLuckyDetail(this.param,(ResData)=>{
-            this.DetailData = ResData.activity_attr
-            this.bargain = ResData.bargain
-            this.likeNum = ResData.activity_attr.see_num
-            this.rules = ResData.rule_str
-            this.isOne = ResData.bargain.launch.help_count
-            wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
-            if(wx.getStorageSync('launch_id')){
-              wx.removeStorage({
-                key: 'launch_id'
-              })
-            }
-            if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
-              that.end_time = ResData.activity_attr.residue_time * 1000
-              countdown(that)
-            }
-            if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
-              // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
-              if(ResData.bargain.launch.is_minimum == 1){
-                wx.showToast({
-                  title: '已经是底价了',
-                  icon: 'success',
-                  duration: 2000
-                })
-                this.$apply()
-                return false
-              }
-              if(ResData.bargain.launch.is_minimum == 0){
-                wx.showToast({
-                  title: '帮忙砍价成功了',
-                  icon: 'success',
-                  duration: 2000
-                })
-                this.$apply()
-                return false
-              }
-            }
-            
-            this.$apply()
-          })
-          
+          this.loadBarginData(this)
         }
         if(!this.userInfo){
           this.methods._loadData((data)=>{
@@ -435,45 +430,7 @@
               versions: "vip5",
             }
             MyModel.postUserInfo(postdata)
-            BargainModel.getLuckyDetail(this.param,(ResData)=>{
-              this.DetailData = ResData.activity_attr
-              this.bargain = ResData.bargain
-              this.likeNum = ResData.activity_attr.see_num
-              this.rules = ResData.rule_str
-              this.isOne = ResData.bargain.launch.help_count
-              wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
-              if(wx.getStorageSync('launch_id')){
-                wx.removeStorage({
-                  key: 'launch_id'
-                })
-              }
-              if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
-                that.end_time = ResData.activity_attr.residue_time * 1000
-                 countdown(that)
-              }
-              if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
-                // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
-                if(ResData.bargain.launch.is_minimum == 1){
-                  wx.showToast({
-                    title: '已经是底价了',
-                    icon: 'success',
-                    duration: 2000
-                  })
-                  this.$apply()
-                  return false
-                }
-                if(ResData.bargain.launch.is_minimum == 0){
-                  wx.showToast({
-                    title: '帮忙砍价成功了',
-                    icon: 'success',
-                    duration: 2000
-                  })
-                  this.$apply()
-                  return false
-                }
-              }
-              this.$apply()
-            })
+            this.loadBarginData(this)
             this.loadingHidden = true
             this.$apply()
           })
@@ -490,45 +447,7 @@
             this.userInfo = user
             this.loadingHidden = true
             wepy.$instance.globalData.isGetInfo = true
-            BargainModel.getLuckyDetail(this.param,(ResData)=>{
-              this.DetailData = ResData.activity_attr
-              this.bargain = ResData.bargain
-              this.likeNum = ResData.activity_attr.see_num
-              this.rules = ResData.rule_str
-              this.isOne = ResData.bargain.launch.help_count
-              wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5);
-              if(wx.getStorageSync('launch_id')){
-                wx.removeStorage({
-                  key: 'launch_id'
-                })
-              }
-              if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
-                that.end_time = ResData.activity_attr.residue_time * 1000
-                 countdown(that)
-              }
-              if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
-                // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
-                if(ResData.bargain.launch.is_minimum == 1){
-                  wx.showToast({
-                    title: '已经是底价了',
-                    icon: 'success',
-                    duration: 2000
-                  })
-                  this.$apply()
-                  return false
-                }
-                if(ResData.bargain.launch.is_minimum == 0){
-                  wx.showToast({
-                    title: '帮忙砍价成功了',
-                    icon: 'success',
-                    duration: 2000
-                  })
-                  this.$apply()
-                  return false
-                }
-              }
-              this.$apply()
-            })
+            this.loadBarginData(this)
             this.$apply()
           }
           if(!this.userInfo){
@@ -550,45 +469,7 @@
               wepy.$instance.globalData.isGetInfo = true
               that.loadingHidden = true
               // 从转发进来的时候,判断需要提示砍价
-              BargainModel.getLuckyDetail(this.param,(ResData)=>{
-                this.DetailData = ResData.activity_attr
-                this.bargain = ResData.bargain
-                this.likeNum = ResData.activity_attr.see_num
-                this.rules = ResData.rule_str
-                this.isOne = ResData.bargain.launch.help_count
-                wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
-                if(wx.getStorageSync('launch_id')){
-                  wx.removeStorage({
-                    key: 'launch_id'
-                  })
-                }
-                if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
-                  that.end_time = ResData.activity_attr.residue_time * 1000
-                  countdown(that)
-                }
-                if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
-                  // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
-                  if(ResData.bargain.launch.is_minimum == 1){
-                    wx.showToast({
-                      title: '已经是底价了',
-                      icon: 'success',
-                      duration: 2000
-                    })
-                    this.$apply()
-                    return false
-                  }
-                  if(ResData.bargain.launch.is_minimum == 0){
-                    wx.showToast({
-                      title: '帮忙砍价成功了',
-                      icon: 'success',
-                      duration: 2000
-                    })
-                    this.$apply()
-                    return false
-                  }
-                }
-                this.$apply()
-              })
+              this.loadBarginData(this)
             })
           }
         },()=>{
@@ -603,6 +484,82 @@
         this.$apply()
       })
     }
+    loadBarginData(that){
+      BargainModel.getLuckyDetail(that.param,(ResData)=>{
+        that.DetailData = ResData.activity_attr
+        that.bargain = ResData.bargain
+        that.floor_data = ResData.floor_data
+        that.likeNum = ResData.activity_attr.see_num
+        that.rules = ResData.rule_str
+        that.isOne = ResData.bargain.launch.help_count
+        wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5)
+        wxParse.wxParse('article2', 'html', that.DetailData.details, that, 5)
+        if(wx.getStorageSync('launch_id')){
+          wx.removeStorage({
+            key: 'launch_id'
+          })
+        }
+        if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
+          that.end_time = ResData.activity_attr.residue_time * 1000
+           countdown(that)
+        }
+        if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
+          // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
+          if(ResData.bargain.launch.is_minimum == 1){
+            wx.showToast({
+              title: '已经是底价了',
+              icon: 'success',
+              duration: 2000
+            })
+            that.$apply()
+            return false
+          }
+          if(ResData.bargain.launch.is_minimum == 0){
+            wx.showToast({
+              title: '帮忙砍价成功了',
+              icon: 'success',
+              duration: 2000
+            })
+            that.$apply()
+            return false
+          }
+        }
+        that.$apply()
+      })
+    }
+    onShareAppMessage(){
+      let that = this;
+      let shareTitle = null;
+      let path = null;
+      that.userInfo = wx.getStorageSync('user')
+      if(that.DetailData){
+        path = 'pages/Bargain/details?launch_id='+that.bargain.launch.id+"&"+'id='+that.DetailData.id
+        if(that.userInfo){
+          shareTitle = that.userInfo.userInfo.nickName + that.DetailData.title
+        }
+        if(!that.userInfo){
+          shareTitle = that.DetailData.title
+        }
+      }
+      if(!that.DetailData){
+        path = 'pages/Bargain/details?launch_id='+that.param.launch_id+"&"+'activity_id='+that.param.activity_id
+        shareTitle = wepy.$instance.globalData.name
+      }
+      let shareObj = {
+        title: shareTitle,
+        path: path,
+        success: function(){
+          BargainModel.transmit_num({activity_id:that.param.activity_id},()=>{
+            wx.showToast({
+              title: '转发成功',
+              icon: 'success',
+              duration: 1500
+            })
+          })
+        }
+      }
+      return shareObj
+    }
     onHide(){
       clearInterval(timer)
     }
@@ -612,37 +569,38 @@
   }
 </script>
 <style lang="less">
-  @import '../tpls/loading/loading.wxss';
+ @import '../tpls/loading/loading.wxss';
   Page{
     width: 100%;
-    background-color: #F7F9F9;
+    background-color: #F0F0F0;
   }
   .bannerpic{
     width:750rpx;
-    height: 424rpx;
+    height: 550rpx;
   }
-  .likeNum{
+  .banner-info{
     position: absolute;
-    top: 25rpx;
-    right: 0;
-    background:rgba(0,0,0,.5);
-    padding:0 35rpx 0 26rpx;
-    z-index: 44444;
-    color: #fff;
-    height: 54rpx;
-    font-size: 24rpx;
-    box-sizing: border-box;
-    border-top-left-radius: 30rpx;
-    border-bottom-left-radius: 30rpx;
+    top: 0;
+    left: 0;
     display: flex;
     align-items: center;
-    line-height: 1;
-    z-index: 8888;
-    .loveIcon{
-      width: 26rpx;
-      height: 26rpx;
-      margin-right: 10rpx;
-    }
+    padding: 19rpx 21rpx;
+    width: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(to top,rgba(0,0,0,0),rgba(0,0,0,.6));
+      .banner-info-item{
+        display: flex;
+        align-items: center;
+        margin-right: 39rpx;
+        text{
+          font-size: 26rpx;
+          color: #fff;
+          font-weight: 600;
+        }
+        .banner-info-itemNum{
+          color: rgb(255,121,3);
+        }
+      }
   }
   .container{
     display: flex;
@@ -650,170 +608,298 @@
     align-items: center;
     justify-content: space-between;
     box-sizing: border-box;
-    .mainBox{
-      width: 690rpx;
-      margin: 0 auto;
-      height:459rpx;
-      background-color: #ffffff;
-      box-shadow: 0rpx 0rpx 24rpx 0rpx rgba(0, 0, 0, 0.1);
-      border-radius: 8rpx;
-      margin-top:-60rpx;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-around;
-      padding:30rpx 0;
-      z-index: 99999;
-      .title{
-        font-size: 35rpx;
-        color:#0e0e0e;
-        width: 90%;
-        text-align: center;
-      }
-      .starttime{
+    .mainBoxB{
+      width: 100%;
+      padding: 0 20rpx 20rpx;
+      box-sizing: border-box;
+      .mainBoxB-top{
+        width: 750rpx;
+        margin-left: -20rpx;
+        padding: 30rpx 0 50rpx;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        .starttimetxt{
-          font-size: 25rpx;
-          color:#474747;
-          margin-right: 10rpx;
+        background-image: url("http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_004.png");
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+        .title{
+          width: 600rpx;
+          text-align: center;
+          font-size: 35rpx;
+          line-height: 55rpx;
+          color: rgb(53,53,53);
+          font-weight: 600;
         }
-        .timenumber{
+        .league-swiper{
+          flex: 1;
+          padding: 0 20rpx;
+          background-color: #615D5A;  
+          border-radius: 10rpx;
+          line-height: 50rpx;
+          max-width: 500rpx;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           font-size: 25rpx;
-          text{
-            display: inline-block;
-            width: 34rpx;
-            height: 34rpx;
-            line-height:34rpx;
-            text-align: center;
-            background-color: #fbce88;
-            color: #fff;
-            border-radius: 6rpx;
-            margin:0 6rpx;
+          width: 500rpx;
+          height: 50rpx;
+          margin-top: 40rpx;
+          display: flex;
+          .bargainTips{
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            align-items: center;
+            height: 100%;
+            .bargainTips-name{
+              color: #CC651D;
+            }
+            .bargainTips-txt{ 
+              color: #F1BC4D;
+            }
           }
         }
-      }
-      .juzishuju{
-        width:570rpx;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        .juzishuju_left{
+        .starttime{
           display: flex;
           align-items: center;
-          font-size: 26rpx;
-          color: #000;
-          .juziPic{
-            width: 57rpx;
-            height: 57rpx;
-            border-radius: 100%;
-            border:4rpx solid #E7C373;
-            margin-right:18rpx;
-            box-sizing: border-box;
+          font-size: 30rpx;
+          margin-top: 50rpx;
+          .starttimetxt{
+            color: rgb(70,70,69);
+          }
+          .timenumber{
+            display: flex;
+            align-items: center;
+            text{
+              background-color: #558329;
+              width: 53rpx;
+              height: 55rpx;
+              color: #fff;
+              text-align: center;
+              box-sizing: border-box;
+              border:1px solid #fff;
+              line-height: 51rpx;
+              border-radius: 7rpx;
+              box-shadow: 0 3rpx 5rpx rgba(84,132,37,1);
+              margin: 0 12rpx;
+              font-size: 24rpx; 
+            }
           }
         }
-        .banjian{
-          font-size: 26rpx;
-          color: #000;
-        }
       }
-      .priceBar{
-        width:570rpx;
-        background-color: #E8E8E8;
-        border-radius: 30rpx;
-        height: 40rpx;
+      .mainBoxB-bottom{
+        border-radius: 10rpx;
+        background-color: #fff;
+        box-sizing: border-box;
+        padding: 30rpx;
         position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        .pricepro{
+        .priceNow{
           position: absolute;
+          top: -45rpx;
           left: 0;
-          top:0;
-          height: 100%;
-          border-radius:40rpx 0 0 40rpx;
-          background:linear-gradient(to top,#EC2916,#FC8175);
-        }
-        .pricenow{
-          color: #585858;
-          font-size: 22rpx;
-          z-index: 1000;
-          line-height: 32rpx;
-        }
-      }
-      .menpiaobtn{
-        width: 570rpx;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        &.success{
+          width: 100%;
+          height: 90rpx;
+          display: flex;
+          align-items: center;
           justify-content: center;
-          .kanyidao{
-            width: 562px;
-            margin: 0 auto;
+          .textPriceNow{
+            display: block;
+            border-radius: 50rpx;
+            padding:10rpx 40rpx;
+            box-shadow: 0 0rpx 20rpx rgba(121,121,121,0.4);
+            font-size: 40rpx;
+            color: #669C9E;
+            background:#fff;
+            font-weight: 500;
+            text{
+              font-size: 23rpx;
+            }
           }
         }
-        &.payState {
-          pointer-events: none;
-        }
-        .kanyidao{
-          width: 345rpx;
-          height: 70rpx;
-          border-radius: 40rpx;
-          color: #fff;
-          font-size: 26rpx;
-          line-height: 70rpx;
-          text-align: center;
-          background-color: #ef494d;
-          &.No{
-            pointer-events: none;
+        .mainBoxB-bottom-info{
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          .mainBoxB-bottom-info_left{
+            display: flex;
+            flex-direction: column;
+            .username{
+              font-size:34rpx;
+              line-height:51rpx;
+              color:#2a2a2a;
+              width:350rpx;
+              overflow:hidden;
+              text-overflow:ellipsis;
+              white-space:nowrap;
+            }
+            .userbj{
+              font-size: 27rpx;
+              line-height: 51rpx;
+              color: rgb(42,42,42); 
+              .userbjNum{
+                color: rgb(255,143,53);
+              }
+            }
+          }
+          .mainBoxB-bottom-info_right{
+            display: flex;
+            flex-direction: column;
+            .banjian{
+              font-size: 29rpx;
+              line-height: 40rpx;
+              margin-bottom: 10rpx;
+              display: flex;
+              align-items: center;
+              .banjianNum{
+                color: rgb(255,121,3);
+                margin-left: 10rpx;
+                font-size: 32rpx;
+                font-weight: 400;
+                margin-left: 10rpx;
+              }
+              .banjianTxt{
+                display: block;
+              }
+            }
+            .xianj{
+              line-height: 51rpx;
+              font-size: 32rpx;
+              color: rgb(42,42,42);
+              margin-bottom: 18rpx;
+            }
           }
         }
-        .qiuzu{
-          width: 210rpx;
-          height: 70rpx;
-          border-radius: 40rpx;
-          color: #fff;
-          font-size: 26rpx;
-          line-height: 70rpx;
+        .mainBoxB-bottom-options{
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: space-around;
+          padding:20rpx 0 12rpx;
+          .menpiaobtn{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            &.success{
+              justify-content: center;
+              .kanyidao{
+                width: 562px;
+                margin: 0 auto;
+              }
+            }
+            &.payState {
+              pointer-events: none;
+            }
+            .kanyidao{
+              width: 400rpx;
+              height: 75rpx;
+              border-radius: 10rpx;
+              color: #fff;
+              font-size: 32rpx;
+              line-height: 75rpx;
+              text-align: center;
+              background-color: #558329;
+              margin: 0;
+              &::after{
+              content:none;
+              }
+              &.No{
+                pointer-events: none;
+              }
+            }
+            .qiuzu{
+              width: 210rpx;
+              height: 75rpx;
+              border-radius: 10rpx;
+              color: #fff;
+              font-size: 32rpx;
+              line-height: 75rpx;
+              text-align: center;
+              background-color: #548425;
+            }
+          }
+          .starttime{
+            display: flex;
+            align-items: center;
+            .starttimetxt{
+              font-size: 25rpx;
+              width:600rpx;
+              height:70rpx;
+              border-radius:40rpx;
+              color:#fff;
+              line-height:70rpx;
+              text-align:center;
+              background-color:#548425;
+              margin:0;
+              box-shadow:0 10rpx 20rpx rgba(144,144,144,0.5);
+            }
+            .timenumber{
+              font-size: 25rpx;
+              text{
+                display: inline-block;
+                width: 34rpx;
+                height: 34rpx;
+                line-height:34rpx;
+                text-align: center;
+                background-color: #fbce88;
+                color: #fff;
+                border-radius: 6rpx;
+                margin:0 6rpx;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+        .mainBoxB-bottom-txt{
+          font-size: 24rpx;
+          line-height: 51rpx;
+          color: rgb(136,136,136);
+          width: 100%;
           text-align: center;
-          background-color: #ef494d;
+          display: block;
         }
       }
     }
     .jpdescbox{
-      width: 691rpx;
-      margin-top:30rpx;
-      padding-bottom:30rpx;
-      background-color: #ffffff;
-      box-shadow: 0rpx 0rpx 24rpx 0rpx
-      rgba(0, 0, 0, 0.1);
-      border-radius: 8rpx;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow: hidden;
+      width:710rpx;
+      padding-bottom:80rpx;
+      background-color:#ffffff;
+      border-radius:10rpx;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      overflow:hidden;
+      background-image: url("http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_001.png"),url("http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_003.png");
+      background-repeat: no-repeat,no-repeat;
+      background-size: 40rpx 55rpx,26rpx 50rpx;;
+      background-position: 20rpx 20rpx,bottom 20rpx right 20rpx;
       .jpdescbox_title{
-        width:315rpx;
-        margin-top:73rpx;
-        height: 1rpx;
-        border-top: 1rpx solid #a0a0a0;
-        text-align: center;
+        width:750rpx;
+        margin-top:50rpx;
+        height:1rpx;
+        text-align:center;
+        display:flex;
+        align-items:center;
+        justify-content:center;
         .jpdescbox_txt{
-          position: relative;
-          font-size: 36rpx;
-          top: -14px;
-          background-color: #fff;
-          color: #2d1311;
-          padding: 0 20px;
-          letter-spacing: 2rpx;
+          position:relative;
+          font-size:36rpx;
+          color:#2d1311;
+          padding:0 20px;
+          letter-spacing:2rpx;
+        }
+        .cut{
+          width: 40rpx;
+          height: 1px;
+          background-color: #a0a0a0;
         }
       }
       .giftnumber{
         display: flex;
         align-items: center;
-        margin-top: 57rpx;
+        margin-top: 40rpx;
         .gifttxt{
           font-size: 34rpx;
           color: #353535;
@@ -821,6 +907,7 @@
           text{
             color: #FF7903;
             margin:0 10rpx;
+            font-weight: 600;
           }
         }
       }
@@ -830,27 +917,40 @@
         height:460rpx;
       }
       .rulesbox{
-        margin-top: 22rpx;
-        width: 634rpx;
+        margin-top: 30rpx;
+        width: 670rpx;
         display: flex;
         flex-direction: column;
         .wxParse-p view,.wxParse-p image{
           width: 100%;
-          color: #888;
+          font-size: 28rpx;
+        }
+        image{
+          margin-bottom: 10rpx;
         }
       }
+      .shopDesctxt{
+        margin-top: 50rpx;
+        width: 643rpx;
+      }
+    }
+    .shopDesc{
+      margin-top: 20rpx;
     }
     .giftintroducebox{
-      margin-top: 30rpx;
-      width: 691rpx;
+      margin-top: 20rpx;
+      width: 710rpx;
       padding-bottom:30rpx;
-      background-color: #ffffff;
-      box-shadow: 0rpx 0rpx 24rpx 0rpx rgba(0, 0, 0, 0.1);
-      border-radius: 8rpx;
+      border-radius: 10rpx;
       display: flex;
       flex-direction: column;
       align-items: center;
       overflow: hidden;
+      background-color: #fff;
+      background-image: url("http://p55e536k6.bkt.clouddn.com/bg11.png"),url("http://p55e536k6.bkt.clouddn.com/bg12.png");
+      background-repeat: no-repeat,no-repeat;
+      background-size: 40rpx 55rpx,26rpx 50rpx;
+      background-position: 20rpx 20rpx,bottom 20rpx right 20rpx;
       &:last-child{
         margin-bottom:100rpx;
       }
@@ -866,21 +966,29 @@
         }
       }
       .jpdescbox_title{
-        margin-top:72rpx;
-        margin-bottom: 60rpx;
-        width:314rpx;
-        height: 1rpx;
-        border-top: 1rpx solid #a0a0a0;
-        text-align: center;
+        width:750rpx;
+        margin-top:40rpx;
+        text-align:center;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        margin-bottom: 30rpx;
         .jpdescbox_txt{
-          position: relative;
-          font-size: 36rpx;
-          top: -14px;
-          background-color: #fff;
-          color: #2d1311;
-          padding: 0 20px;
-          letter-spacing: 2rpx;
+          position:relative;
+          font-size:36rpx;
+          color:#2d1311;
+          padding:0 10px;
+          letter-spacing:2rpx;
+          font-weight: 600;
         }
+        .cut{
+          width: 40rpx;
+          height: 1px;
+          background-color: #a0a0a0;
+        }
+      }
+      .bangkan{
+        margin-bottom: 50rpx;
       }
       .introducepic{
         width:100%;
@@ -893,12 +1001,13 @@
         .titleitem{
           width:100%;
           display: flex;
+          align-items: flex-start;
           .titleitemname{
-            flex:1;
             display: flex;
             justify-content: center;
             color: #ff7903;
             font-size: 32rpx;
+            font-weight: 600;
           }
         }
         .people{
@@ -909,17 +1018,86 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            font-weight: 400;
             .peopleitemtxt1{
               font-size: 28rpx;
               line-height: 30rpx;
             }
             .peopleitemtxt2{
               line-height: 20rpx;
-              font-size: 19rpx;
+              font-size: 23rpx;
+              margin-top: 10rpx;
             }
           }
         }
       }
     }
+  }
+  .bargain_success{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    .bargain_success_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .bargain_success_content{
+      width: 475rpx;
+      border-radius: 20rpx;
+      background-color: #fff;
+      padding: 85rpx 0 40rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 0 60rpx rgba(255,255,255,0.2);
+      pointer-events: none;
+      transform: translateY(-100rpx);
+      opacity: 0;
+      transition: .3s;
+      .bargain_successPic{
+        position: absolute;
+        width: 287rpx;
+        height: 316rpx;
+        top: -253rpx;
+        left: 94rpx;
+      }
+      .bargain_success_txt{
+        font-size: 38rpx;
+        color: rgb(119,156,22);
+        text{
+          color: rgb(249,19,40);
+        }
+      }
+      .iknow{
+        font-size: 38rpx;
+        margin-top: 40rpx;
+        color: #fff;
+        background-color: #83EA1F;
+        padding: 16rpx 50rpx;
+        line-height: 1;
+        box-shadow: 0 20rpx 20rpx -10rpx rgba(96,96,96,0.6);
+        border-radius: 50rpx;
+      }
+    }
+    .show_bargain_success_content{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+  }
+  Page{
+    background:url('http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_002.jpg');
   }
 </style>

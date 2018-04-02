@@ -14,7 +14,7 @@
       </view>
       <view class="main">
         <textarea placeholder="请对商品进行评价,最少需要10个字" maxlength="120" @input="contentEvent"/>
-        <text>{{120 - content}}</text>
+        <text>{{120 - content.length}}</text>
       </view>
       <view class="evaluate-pic">
         <view class="pic-list">
@@ -115,8 +115,7 @@
           this.$apply()
         }
       }.bind(this),
-      delIndexImg($event){
-        let index = orderModel.getDataSet($event,'wpydelindeximgA');
+      delIndexImg(index){
         this.evaluateImgs.splice(index,1)
         this.$apply()
       },

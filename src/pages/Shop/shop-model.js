@@ -134,10 +134,12 @@ class Shop extends Base {
     let param = {
       url: 'v5/magic_shop/magic_shop_classify',
       data: {
-        page_num:queryData.page_num,
-        choose_type:queryData.choose_type,
-        parent_classify_id:queryData.parent_classify_id,
-        son_classify_id:queryData.son_classify_id
+        page_num: queryData.page_num,
+        choose_type: queryData.choose_type,
+        parent_classify_id: queryData.parent_classify_id,
+        son_classify_id: queryData.son_classify_id,
+        lng: queryData.lng,
+        lat: queryData.lat
       },
       sCallback(ResData) {
         callback && callback(ResData)

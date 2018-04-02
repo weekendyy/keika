@@ -302,10 +302,10 @@
       padding-bottom: 80rpx;
       .wxParse-p{
         width: 100%;
-        color: #888;
       }
       .wxParse-p image{
         width: 100%;
+        margin-bottom: 10rpx;
       }
     }
   }

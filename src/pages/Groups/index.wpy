@@ -119,7 +119,7 @@
               title: data.header_title
             })
             //商品加载完的情况
-            if(data.goods_data.length<5 && data.goods_data.length>0){
+            if(data.goods_data.length<=5 && data.goods_data.length>0){
               this.isLoadedAll.NowIsLoadedAll=true
             }
             this.loadingHidden = true

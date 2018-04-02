@@ -67,13 +67,12 @@ export default class extends wepy.app {
       'pages/Groups/Groups-order-details', // 拼团订单详情页面
       'pages/Groups/Groups-coupon', // 拼团 核销页面
       'pages/Shop/shopList', //好店推荐 好店列表
-      
     ],
     "subPackages": [
       {
-        "root": "bargainB",
+        "root": "TimeLimitActivity",
         "pages": [
-          "barginDetailB"
+          "TimeLimitActivityDetail"
         ]
       }
     ],
@@ -125,6 +124,15 @@ export default class extends wepy.app {
     *   先判断 token有没有存在 然后在去判断 token有没有过期
     * */
     TokenModel.verify()
+    wx.onNetworkStatusChange(function(res){
+      if(res.networkType == "none"){  
+        wx.showModal({
+          title: '已断开网络'
+        })
+      }else{  
+        console.log('有网络') 
+      }
+    })
   }
   constructor () {
     super()

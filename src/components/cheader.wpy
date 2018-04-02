@@ -13,10 +13,10 @@
       <view class="user-info">
         <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
         <text class="name">{{userInfo.userInfo.nickName}}</text>
-        <button class="open" form-type="submit">
+        <view class="open">
           <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
-          <text class="btn">{{headerinfo.magic_auth_str[1]}}</text>
-        </button>
+          <button class="btn" form-type="submit">{{headerinfo.magic_auth_str[1]}}</button>
+        </view>
       </view>
     </view>
     <image class="open-bg" src="./images/open-vip-bg.jpg"></image>
@@ -114,6 +114,8 @@
             color: #e7c375;
           }
           .btn{
+            padding: 0;
+            margin:0;
             margin-top:10rpx;
             width: 190rpx;
             margin-right: 32rpx;
@@ -121,10 +123,13 @@
             font-size: 28rpx;
             color: #e7c375;
             line-height: 70rpx;
-            border: 1rpx solid #e3c289;
+            border: 1px solid #e3c289;
             border-radius: 8rpx;
             background-color: #412d2e;
             letter-spacing: 6rpx;
+            &::after{
+              content:none;
+            }
           }
         }
       }
