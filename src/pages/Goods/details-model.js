@@ -103,7 +103,7 @@ class Details extends Base{
    * @param PostData 商品ID 用户名称 用户头像
    * @param callback 图片地址保存到本地
    */
-  createPoster(PostData, callback){
+  createPoster(PostData, callback,fcallback){
     let param = {
       url: 'v2/poster/create_poster',
       data:{
@@ -114,6 +114,9 @@ class Details extends Base{
       },
       sCallback(resData) {
         callback && callback(resData)
+      },
+      fCallback(resData) {
+        fcallback && fcallback(resData)
       }
     }
     this.request(param)
@@ -138,6 +141,19 @@ class Details extends Base{
       data: {
         time_status:'2',
         page_num:PageNum || '1',
+      },
+      sCallback: function(data) {
+        callback && callback(data)
+      }
+    }
+    this.request(param)
+  }
+  //预约活动
+  orderTime(query,callback){
+    let param = {
+      url: 'v2/promotion/order_time',
+      data: {
+        goods_id: query.goodId
       },
       sCallback: function(data) {
         callback && callback(data)

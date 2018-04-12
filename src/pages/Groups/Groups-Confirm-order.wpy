@@ -199,6 +199,14 @@
                 this.$apply()
               }
             })
+          } else {
+            wx.showToast({
+              title: ResData.message,
+              icon:'loading',
+              duration: 1500
+            })
+            this.payState = true
+            this.$apply()
           }
         })
       },

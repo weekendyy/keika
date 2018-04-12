@@ -50,7 +50,7 @@
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
           </button>
           <button class="help" @tap="gotoIndex()">
-            <text>更多福利</text>
+            <text>分享</text>
           </button>
         </view>
         <view class="card-box success" wx:if="{{goodsInfo.check_collect_status == 1 || goodsInfo.check_exchange_statu == 1  && goodsInfo.first_join == 2 && goodsInfo.status == 1}}">
@@ -103,6 +103,30 @@
         <view class="Luck-btn" @tap="closeLuck()">确定</view>
       </view>
     </view>
+    <view class="shareBox">
+      <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
+      <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
+        <button class="shareItem" open-type="share">
+          <image src="http://p55e536k6.bkt.clouddn.com/weixin.png" mode="widthFix" class="shareIcon"></image>
+          <text>微信好友</text>
+        </button>
+
+        <button class="shareItem" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+          <image src="http://p55e536k6.bkt.clouddn.com/share.png" mode="widthFix" class="shareIcon"></image>
+          <text>生成卡片</text>
+        </button>
+      </view>
+    </view>
+    <view class="posterBox">
+      <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+      <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="luckyCanvas"></canvas>
+        <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+          <text>保存图片</text>
+        </view>
+      </view>
+    </view>
   </view>
   <view hidden="{{loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -128,7 +152,10 @@
       queryData: {},
       LuckStatus: true,
       target: '',
-      likeNum:''
+      likeNum:'',
+      actionSheetHidden: true,
+      showPosterBox: false,
+      pricePre:''
     }
     methods = {
       onShareAppMessage(){
@@ -144,7 +171,16 @@
         }
         let shareObj = {
           title: shareTitle,
-          path: path
+          path: path,
+          success: ()=>{
+            wx.showToast({
+              title:'转发成功',
+              icon:'success ',
+              duration:1500
+            })
+            this.actionSheetHidden = true
+            this.$apply()
+          }
         }
         return shareObj
       },
@@ -152,7 +188,33 @@
         this.$switch('/pages/My/index');
       },
       gotoIndex(){
-        this.$switch('/pages/Index/index');
+        this.actionSheetHidden =  false
+        this.$apply()
+      },
+      closeShareBox(){
+        this.actionSheetHidden =  true
+        this.$apply()
+      },
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let param = {}
+        param.id = this.goodsInfo.id
+        param.type = 4
+        this.actionSheetHidden =  true
+        CardModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            CardModel.creatPoster(this, 'luckyCanvas', ResData.data, this.goodsInfo.activity_name, '0.00', this.pricePre,'集卡','../../images/posterTy.png')
+          }
+        })
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        CardModel.savePoste(this,'luckyCanvas')
       },
       open(){
         this.cardStatus = true
@@ -193,6 +255,12 @@
               duration: 2000,
             })
             this.goodsInfo.check_exchange_statu = 1
+          } else {
+            wx.showToast({
+              title: ResData.data.message,
+              icon: 'loading',
+              duration: 1500
+            })
           }
           this.$apply()
         })
@@ -209,6 +277,7 @@
       }.bind(this)
     }
     onLoad(options){
+      this.pricePre = options.pricePre
       if(options.employer_user_id){
         this.queryData.employer_user_id = options.employer_user_id
       }
@@ -676,6 +745,124 @@
       text-align: center;
       letter-spacing: 1rpx;
       color: #ffffff;
+    }
+  }
+  .shareBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .shareBox_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .shareBox_content{
+      width: 100%;
+      height: 200rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      position: absolute;
+      bottom: -200rpx;
+      left: 0;
+      background-color: #fff;
+      transform: translateY(0);
+      transition: .4s;
+      pointer-events: auto;
+      .shareItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        &::after{
+          content:none;
+        }
+        .shareIcon{
+          width: 80rpx;
+          height: 80rpx;
+          margin-bottom: 20rpx;
+        }
+        text{
+          font-size: 25rpx;
+          color: #222;
+        }
+      }
+    }
+    .show_shareBox{
+      transform: translateY(-200rpx);
+    }
+  }
+  .posterBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .poster_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .poster_content{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotateY(0deg);
+      transition: .4s;
+      .posterImg{
+        width: 650rpx;
+        height: 1080rpx;
+        margin-bottom: 20rpx;
+      }
+      .canvas{
+        box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+        background-color: #fff;
+      }
+      .saveImg{
+        width: 650rpx;
+        height: 80rpx;
+        background-color: #FE6420;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 28rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        pointer-events: none;
+        margin-top: 20rpx;
+        .downPic{
+          width: 35rpx;
+          height: 35rpx;
+          margin-right: 20rpx;
+        }
+      }
+      .canSave{
+        pointer-events: auto;
+      }
+    }
+    .showPosterBox{
+      opacity: 1;
+      transform: rotateY(0);
+      transition: 1s;
     }
   }
 </style>

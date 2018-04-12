@@ -79,7 +79,17 @@
               </view>
               <view class="goods-Price">
                   <text class="old">{{item.original_price}}</text>
-                  <text class="new">{{item.pay_price}}</text>
+                  <block wx:if="{{item.goods_order_type == 1}}">
+                    <text class="new" wx:if="{{vipStatue == 1}}">{{item.magic_vip_price}}</text>
+                    <text class="new" wx:if="{{vipStatue == 2}}">{{item.discount_price}}</text>
+                  </block>
+                  <block wx:elif="{{item.goods_order_type == 2}}">
+                    <text class="new" wx:if="{{item.check_pay_type == 1}}">{{item.new_discount_price}}</text>
+                    <text class="new" wx:if="{{item.check_pay_type == 2}}">{{item.new_group_price}}</text>
+                  </block>
+                  <block wx:else>
+                    <text class="new">{{item.pay_price}}</text>
+                  </block>
                   <text class="num">x1</text>
               </view>
             </view>
@@ -87,7 +97,17 @@
               <!-- 等待付款||交易关闭，未在时间之内，付款，自己取消掉订单付款 -->
               <view class="Payment" wx:if="{{item.status == 1 || item.status == 0}}">
                 <text>共1件商品 需付款：</text>
-                <text>¥{{item.pay_price}}</text>
+                <block wx:if="{{item.goods_order_type == 1}}">
+                  <text class="new" wx:if="{{vipStatue == 1}}">{{item.magic_vip_price}}</text>
+                  <text class="new" wx:if="{{vipStatue == 2}}">{{item.discount_price}}</text>
+                </block>
+                <block wx:elif="{{item.goods_order_type == 2}}">
+                  <text class="new" wx:if="{{item.check_pay_type == 1}}">{{item.new_discount_price}}</text>
+                  <text class="new" wx:if="{{item.check_pay_type == 2}}">{{item.new_group_price}}</text>
+                </block>
+                <block wx:else>
+                  <text class="new">{{item.pay_price}}</text>
+                </block>
               </view>
               <!--等待使用-->
               <view class="use" wx:if="{{item.status == 2 && item.goods_order_type == 1}}">
@@ -170,9 +190,11 @@
               <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
               <!--秒杀未付款-->
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
-              <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">
-                <block wx:if="{{item.use_status == 0}}">去使用</block>
-                <block wx:if="{{item.use_status == 1}}">已使用</block>
+              <text wx:if="{{item.status == 2 && item.use_status == 0}}" @tap.stop="orderUse({{index}})">
+                <block>去使用</block>
+              </text>
+              <text wx:if="{{item.status == 2 && item.use_status == 1}}">
+                <block>已使用</block>
               </text>
               <!--交易完成-->
               <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
@@ -213,7 +235,8 @@
       currentTabsIndex: 0,
       tabHeaderTitles: ['全部','拼团中','待付款','待使用','待评价'],
       orderAllData: [],
-      formId:''
+      formId:'',
+      vipStatue:2
     }
     methods={
       onTabsItemTap(index){
@@ -402,6 +425,7 @@
       OrderModel.getOrderList(param, ResData=> {
         if(ResData.code == 1) {
           this.orderAllData.length = 0;
+          this.vipStatue = ResData.magic_vip_status
           this.orderAllData = ResData.data
           this.$apply()
         }

@@ -68,7 +68,7 @@
           <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
         </view>
         <view class="main-details" hidden="{{ currentTabsIndex != 1 }}">
-          <repeat wx:if="{{EvaluateData.length != 0}}" for="{{EvaluateData}}" wx:for-item="item" key="index">
+          <block wx:if="{{EvaluateData.length != 0}}" wx:for="{{EvaluateData}}" wx:for-item="item" wx:for-index="idx" key="index">
             <view class="Evaluate-item">
               <view class="Evaluate-head">
                 <image class="Avatar" src="{{item.portrait_img}}"></image>
@@ -79,9 +79,9 @@
                 <text>{{item.content}}</text>
               </view>
               <view class="pic-list" wx:if="{{item.image.length > 0}}">
-                <repeat for="{{item.image}}" wx:for-item="item" key="index">
-                  <image src="{{item}}"></image>
-                </repeat>
+                <block wx:for="{{item.image}}" wx:for-item="item" key="index">
+                  <image src="{{item}}" @tap="bigPic({{idx}},{{index}})"></image>
+                </block>
               </view>
               <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent" data-index="{{index}}">
                 <image src="./images/Fabulous@selecd.png" wx:if="{{item.like}}"></image>
@@ -89,7 +89,7 @@
                 <text class="Fabulous">{{item.like_count}}</text>
               </view>
             </view>
-          </repeat>
+          </block>
           <view class="no-EvaluateData" wx:if="{{EvaluateData.length == 0}}">
             <image class="no-EvaluateData-pic" src="./images/Evaluate.png"></image>
             <text class="no-EvaluateData-text">暂时还没有评论哦~</text>
@@ -155,15 +155,30 @@
         <text class="buy-text">{{DetailData.group_person}}人拼团</text>
       </view>
     </view>
-    <action-sheet hidden="{{actionSheetHidden}}" bindchange="actionSheetChange">
-      <block wx:for-items="{{actionSheetItems}}" wx:key="index">
-        <action-sheet-item class="item">
-          <button wx:if="{{index == 0}}" class="resetBtn" open-type="share" hover-stop-propagation="true" hover-class="none">{{item}}</button>
-          <button wx:if="{{index == 1}}" class="resetBtn" hover-class="none" hover-stop-propagation="true" bindgetuserinfo="getUserInfo" open-type="getUserInfo">{{item}}</button>
-        </action-sheet-item>
-      </block>
-      <action-sheet-cancel class="cancel">取消</action-sheet-cancel>
-    </action-sheet>
+    <view class="shareBox">
+      <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
+      <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
+        <button class="shareItem" open-type="share">
+          <image src="http://p55e536k6.bkt.clouddn.com/weixin.png" mode="widthFix" class="shareIcon"></image>
+          <text>微信好友</text>
+        </button>
+
+        <button class="shareItem" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+          <image src="http://p55e536k6.bkt.clouddn.com/share.png" mode="widthFix" class="shareIcon"></image>
+          <text>生成卡片</text>
+        </button>
+      </view>
+    </view>
+    <view class="posterBox">
+      <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+      <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="groupcCanvas"></canvas>
+        <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+          <text>保存图片</text>
+        </view>
+      </view>
+    </view>
   </view>
   <view hidden="{{loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -241,7 +256,8 @@
       end_time: '',
       start_time:'',
       userInfo: null,
-      GeographyData: null
+      GeographyData: null,
+      showPosterBox: false
     }
     methods = {
       onTabsItemTap(i){
@@ -286,22 +302,13 @@
         wx.showLoading({
           title: '生成卡片中',
         })
-        let param = {
-          promotionID: this.goodsId,
-        }
-        if(res.detail.userInfo){
-          let userInfo = res.detail.userInfo
-          Object.assign(param,{wechat_name: userInfo.nickName,wechat_portrait: userInfo.avatarUrl})
-        }else {
-          Object.assign(param,{wechat_name: '我的',wechat_portrait: Groups.defaultImg})
-        }
+        let param = {}
+        param.id = this.goodsId
+        param.type = 2
         this.actionSheetHidden =  !this.actionSheetHidden
-        Groups.createPoster(param, ResData=>{
-          if(ResData.code === 1) {
-            wx.hideLoading()
-            wx.previewImage({
-              urls: [ResData.data]
-            })
+        Groups.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            Groups.creatPoster(this, 'groupcCanvas', ResData.data, this.DetailData.goods_name, this.DetailData.discount_price,this.DetailData.original_price,'拼团','../../images/posterTy.png')
           }
         })
       },
@@ -397,10 +404,21 @@
         })
       },
       onShareAppMessage(){
-        let desc = this.DetailData.goods_name
+        let that = this;
+        that.userInfo = wx.getStorageSync('user')
+        let shareTitle = that.userInfo.userInfo.nickName + this.DetailData.goods_name
         let shareObj = {
-          title: desc,
-          path: '/pages/Groups/Groups-details?id='+ this.goodsId
+          title: shareTitle,
+          path: '/pages/Groups/Groups-details?id='+ this.goodsId,
+          success: ()=>{
+            wx.showToast({
+              title:'转发成功',
+              icon:'success',
+              duration:1500
+            })
+            that.actionSheetHidden = true
+            that.$apply()
+          }
         }
         return shareObj
       },
@@ -414,7 +432,24 @@
             res && res(data)
           })
         });
-      }.bind(this)
+      }.bind(this),
+      bigPic(idx,index){
+        wx.previewImage({
+          current: this.EvaluateData[idx].image[index], // 当前显示图片的http链接
+          urls: this.EvaluateData[idx].image // 需要预览的图片http链接列表
+        })
+      },
+      closeShareBox(){
+        this.actionSheetHidden = true
+        this.$apply()
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        Groups.savePoste(this,'groupcCanvas')
+      }
     }
     onLoad(options){
       this.goodsId = options.id
@@ -1174,6 +1209,124 @@
         }
         font-size:24rpx;
       }
+    }
+  }
+  .shareBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .shareBox_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .shareBox_content{
+      width: 100%;
+      height: 200rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      position: absolute;
+      bottom: -200rpx;
+      left: 0;
+      background-color: #fff;
+      transform: translateY(0);
+      transition: .4s;
+      pointer-events: auto;
+      .shareItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        &::after{
+          content:none;
+        }
+        .shareIcon{
+          width: 80rpx;
+          height: 80rpx;
+          margin-bottom: 20rpx;
+        }
+        text{
+          font-size: 25rpx;
+          color: #222;
+        }
+      }
+    }
+    .show_shareBox{
+      transform: translateY(-200rpx);
+    }
+  }
+  .posterBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .poster_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .poster_content{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotateY(0deg);
+      transition: .4s;
+      .posterImg{
+        width: 650rpx;
+        height: 1080rpx;
+        margin-bottom: 20rpx;
+      }
+      .canvas{
+        box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+        background-color: #fff;
+      }
+      .saveImg{
+        width: 650rpx;
+        height: 80rpx;
+        background-color: #FE6420;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 28rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        pointer-events: none;
+        margin-top: 20rpx;
+        .downPic{
+          width: 35rpx;
+          height: 35rpx;
+          margin-right: 20rpx;
+        }
+      }
+      .canSave{
+        pointer-events: auto;
+      }
+    }
+    .showPosterBox{
+      opacity: 1;
+      transform: rotateY(0);
+      transition: 1s;
     }
   }
 </style>

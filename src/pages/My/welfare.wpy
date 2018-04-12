@@ -23,7 +23,7 @@
         <view class="welfare-box">
           <image class="left" src="{{item.main_img}}"></image>
           <view class="right">
-            <text class="title">{{item.magic_goods_title}}</text>
+            <text class="title">{{item.magic_goods_name}}</text>
             <view class="wrapper">
               <text class="name">店铺名称:</text>
               <text class="content">{{item.brand}}</text>

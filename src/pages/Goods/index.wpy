@@ -98,10 +98,6 @@
             wx.setNavigationBarTitle({
               title: data.header_title
             })
-            //商品加载完的情况
-            if(data.goods_data.length<=5 && data.goods_data.length>0){
-              this.isLoadedAll.NowIsLoadedAll=true
-            }
             this.loadingHidden = true
           }
           this.$apply()
@@ -112,32 +108,25 @@
         this.activeitem=index
         this.$apply()
         if(this.OldActivityData.length == 0 && index==1){
-          DetailsModel.getIndexOldActivity(this.pageNum[this.activeitem],ResData=>{
+          DetailsModel.getIndexOldActivity('1',ResData=>{
             if (ResData.code == 1){
+              this.isGoodsEmpty.OldIsGoodsEmpty=false
               this.OldActivityData = ResData.goods_data
               //无商品的情况
-              this.isGoodsEmpty.OldIsGoodsEmpty=false
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.OldIsGoodsEmpty=true
-              }
-              //商品加载完的情况
-              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
-                this.isLoadedAll.OldIsLoadedAll=true
               }
             }
             this.$apply()
           })
         }else if(this.NowActivityData.length == 0 && index==0){
-          DetailsModel.getIndexNowActivity(this.pageNum[this.activeitem],ResData=>{
+          DetailsModel.getIndexNowActivity('1',ResData=>{
             if (ResData.code == 1){
+              this.isGoodsEmpty.NowIsGoodsEmpty = false
               this.NowActivityData = ResData.goods_data
               //无商品的情况
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.NowIsGoodsEmpty=true
-              }
-              //商品加载完的情况
-              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
-                this.isLoadedAll.NowIsGoodsEmpty=true
               }
             }
             this.$apply()
@@ -170,7 +159,7 @@
                 wx.showToast({
                   title: '已经到底了',
                   icon: 'loading',
-                  duration: 2000
+                  duration: 1500
                 })
               }
             }
@@ -181,16 +170,16 @@
 
         case 1:
         if(!this.isLoadedAll.OldIsLoadedAll){
-          this.pageNum.OldIsLoadedAll++
+          this.pageNum.OldActivityPage++
           DetailsModel.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
             if (ResData.code == 1){
-              this.OldIsLoadedAll = [...this.OldIsLoadedAll,...ResData.goods_data]
-              if(ResData.goods_data.length==0){
+              this.OldActivityData = [...this.OldActivityData,...ResData.goods_data]
+              if(ResData.goods_data.length == 0){
                 this.isLoadedAll.OldIsLoadedAll=true
                 wx.showToast({
                   title: '已经到底了',
                   icon: 'loading',
-                  duration: 2000
+                  duration: 1500
                 })
               }
             }

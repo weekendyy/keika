@@ -39,9 +39,11 @@
     <view class="open-vip" wx:if="{{card_status == 2}}" @tap="openVip()">
       <text>开通会员即可获赠</text>
     </view>
-    <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 3}}" @tap="addWelfare">
-      <text>马上领取</text>
-    </view>
+    <form report-submit="magicFormId" bindsubmit="addWelfare">
+      <button class="open-vip receiveBtn" form-type="submit" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 3}}">
+        <text>马上领取</text>
+      </button>
+    </form>
     <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 1}}">
       <text>活动未开始</text>
     </view>
@@ -92,9 +94,10 @@
       openVip(){
         this.$navigate('../Vip/Index')
       },
-      addWelfare(){
+      addWelfare(e){
         let param = {
-          goods_id: this.id
+          goods_id: this.id,
+          magic_form_id: e.detail.formId
         }
         ShopModel.addWelfare(param, (ResData)=>{
           if(ResData.code == 1){
@@ -324,6 +327,14 @@
       line-height: 110rpx;
       font-size: 38rpx;
       color: #fefefe;
+    }
+  }
+  .receiveBtn{
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    &::after{
+      content:none;
     }
   }
 </style>

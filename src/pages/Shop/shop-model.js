@@ -94,7 +94,8 @@ class Shop extends Base {
     let param = {
       url: 'v5/magic_goods/get_goods',
       data: {
-        goods_id: queryData.goods_id
+        goods_id: queryData.goods_id,
+        magic_form_id: queryData.magic_form_id
       },
       sCallback(ResData) {
         callback && callback(ResData)

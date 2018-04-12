@@ -65,11 +65,11 @@
         </view>
         <view  wx:if="{{vip_status == 0}}">
           <text>优惠折扣</text>
-          <text>-￥{{((original_price * 100) - (DetailsData.discount_price *  100))/100}}</text>
+          <text>-￥{{DetailsData.magic_diff_price}}</text>
         </view>
         <view  wx:if="{{vip_status == 1}}">
           <text>会员折扣</text>
-          <text>-￥{{((original_price * 100) - (DetailsData.vip_price *  100))/100}}</text>
+          <text>-￥{{DetailsData.magic_diff_price}}</text>
         </view>
         <view>
           <text>订单总价</text>

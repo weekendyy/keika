@@ -2,12 +2,12 @@
 <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
   <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1}}" wx:if="{{headerinfo.home_banner.length}}">
     <repeat for="{{headerinfo.home_banner}}" key="index">
-      <swiper-item class="swiper-item">
+      <swiper-item class="swiper-item" @tap="gotoBannerUrl({{item.banner_path}})">
         <image class="swiper-image" src="{{item.banner_url}}"></image>
       </swiper-item>
     </repeat>
   </swiper>
-  <view class="open-vip" @tap="gotoOpenVip()" wx:if="{{headerinfo.open_status == 2}}">
+  <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
     <view class="open-wrapper">
       <image src="{{headerinfo.card_img}}" class="logo"></image>
       <view class="user-info">
@@ -40,6 +40,11 @@
           this.formId = e.detail.formId
           wx.navigateTo({
             url: '../Vip/Index?formId='+this.formId
+          })
+        },
+        gotoBannerUrl(url){
+          wx.navigateTo({
+            url: url
           })
         }
       }

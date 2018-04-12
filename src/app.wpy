@@ -79,7 +79,9 @@ export default class extends wepy.app {
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
-      navigationBarTextStyle: 'black'
+      navigationBarTextStyle: 'black',
+      backgroundColorTop: '#fff',
+      backgroundColorBottom: '#fff'
     },
     'tabBar': {
       'borderStyle': 'black',
@@ -118,21 +120,19 @@ export default class extends wepy.app {
     name: null,
     isGetInfo: null,
     viptitle: null,
+    phoneWidth:'',
+    phoneHeight:'',
+    pxRadio:''
   }
   onLaunch () {
     /*
     *   先判断 token有没有存在 然后在去判断 token有没有过期
     * */
     TokenModel.verify()
-    wx.onNetworkStatusChange(function(res){
-      if(res.networkType == "none"){  
-        wx.showModal({
-          title: '已断开网络'
-        })
-      }else{  
-        console.log('有网络') 
-      }
-    })
+    const res = wx.getSystemInfoSync()
+    this.globalData.phoneWidth = res.windowWidth
+    this.globalData.phoneHeight = res.windowHeight
+    this.globalData.pxRadio = this.globalData.phoneWidth/750
   }
   constructor () {
     super()

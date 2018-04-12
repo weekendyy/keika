@@ -10,8 +10,8 @@
         <image src="{{goodsInfo.main_img}}"></image>
       </view>
       <view class="goods-info">
-        <text>{{goodsInfo.magic_goods_title}}</text>
         <text>{{goodsInfo.magic_shop_name}}</text>
+        <text>{{goodsInfo.magic_goods_title}}</text>
       </view>
     </view>
     <view class="Verification-wrapper">

@@ -109,10 +109,6 @@
             if(data.goods_data.length==0){
               this.isGoodsEmpty.NowIsGoodsEmpty=true
             }
-            //商品加载完的情况
-            if(data.goods_data.length<=5 && data.goods_data.length>0){
-              this.isLoadedAll.NowIsLoadedAll=true
-            }
             wx.setNavigationBarTitle({
               title: data.header_title
             })
@@ -125,32 +121,25 @@
       itemTap(index){
         this.activeitem=index
         this.$apply()
-        if(this.OldActivityData.length == 0 && index==1){
-          CardModel.getIndexOldActivity(this.pageNum[this.activeitem],ResData=>{
+        if(this.OldActivityData.length == 0 && index == 1){
+          CardModel.getIndexOldActivity('1',ResData=>{
             if (ResData.code == 1){
+              this.isGoodsEmpty.OldIsGoodsEmpty=false
               this.OldActivityData = ResData.goods_data
               //无商品的情况
-              this.isGoodsEmpty.OldIsGoodsEmpty=false
-              if(ResData.goods_data.length==0){
+              if(ResData.goods_data.length == 0){
                 this.isGoodsEmpty.OldIsGoodsEmpty=true
-              }
-              //商品已经加载完的情况
-              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
-                this.isLoadedAll.OldIsLoadedAll=true
               }
             }
             this.$apply()
           })
-        }else if(this.NowActivityData.length == 0 && index==0){
-          CardModel.getIndexNowActivity(this.pageNum[this.activeitem],ResData=>{
+        }else if(this.NowActivityData.length == 0 && index == 0){
+          CardModel.getIndexNowActivity('1',ResData=>{
             if (ResData.code == 1){
+              this.isGoodsEmpty.NowIsGoodsEmpty = false
               this.NowActivityData = ResData.goods_data
               if(ResData.goods_data.length==0){
-                this.isGoodsEmpty.NowIsGoodsEmpty=true
-              }
-              //商品加载完的情况
-              if(ResData.goods_data.length<5 && ResData.goods_data.length>0){
-                this.isLoadedAll.NowIsLoadedAll=true
+                this.isGoodsEmpty.NowIsGoodsEmpty = true
               }
             }
             this.$apply()
@@ -158,14 +147,16 @@
         }
       },
       gotoDetails(index){
-        let id = null
+        let id, pricePre = null
         if (this.activeitem == 0) {
           id = this.NowActivityData[index].id
+          pricePre = this.NowActivityData[index].price
         }
         if(this.activeitem == 1){
           id = this.OldActivityData[index].id
+          pricePre = this.OldActivityData[index].price
         }
-        this.$navigate('../Card/details',{id:id})
+        this.$navigate('../Card/details',{id:id, pricePre:pricePre})
       }
     }
     components = {
@@ -176,7 +167,7 @@
         case 0:
         if(!this.isLoadedAll.NowIsLoadedAll){
           this.pageNum.NowActivityPage++
-          BargainModel.getIndexNowActivity(this.pageNum.NowActivityPage,ResData=>{
+          CardModel.getIndexNowActivity(this.pageNum.NowActivityPage,ResData=>{
             if (ResData.code == 1){
               this.NowActivityData = [...this.NowActivityData,...ResData.goods_data]
               if(ResData.goods_data.length==0){
@@ -195,10 +186,10 @@
 
         case 1:
         if(!this.isLoadedAll.OldIsLoadedAll){
-          this.pageNum.OldIsLoadedAll++
-          BargainModel.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
+          this.pageNum.OldActivityPage++
+          CardModel.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
             if (ResData.code == 1){
-              this.OldIsLoadedAll = [...this.OldIsLoadedAll,...ResData.goods_data]
+              this.OldActivityData = [...this.OldActivityData,...ResData.goods_data]
               if(ResData.goods_data.length==0){
                 this.isLoadedAll.OldIsLoadedAll=true
                 wx.showToast({

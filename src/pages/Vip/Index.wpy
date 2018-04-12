@@ -17,14 +17,23 @@
             <text class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 1}}" @tap="vip({{index}})">续费</text>
           </view>
         </repeat>
+        <view class="phoneBox">
+          <view class="phoneTitleBox">
+            <text>手机</text>
+          </view>
+          <input placeholder="请输入开通手机号码(必填)" type="number" value="{{phoneNumber}}" @input="phoneInp" />
+        </view>
       </view>
       <view class="right-content" wx:if="{{ currentTabsIndex == 1 }}">
         <view class="content">
           <text class="title">激活码</text>
           <input type="number" maxlength="15" @input="PasswordInput" placeholder="请输入激活码"/>
         </view>
+        <view class="phoneBox" style="margin-top:30rpx;">
+          <input placeholder="请输入开通手机号码(必填)" type="number" value="{{phoneNumberPassWord}}" @input="phoneInpPassWord" />
+        </view>
         <text class="btn {{numOpenState == true? '': 'active'}}" @tap="Verification()">立即激活</text>
-      </view>
+      </view> 
     </view>
   </view>
 </template>
@@ -45,7 +54,9 @@
       vipOpenState: true,
       numOpenState: true,
       card_id: '',
-      formID:''
+      formID:'',
+      phoneNumber:'',
+      phoneNumberPassWord: ''
     }
     methods = {
       onTabsItemTap(index){
@@ -54,7 +65,14 @@
       PasswordInput($event){
         this.activate_num = $event.detail.value.trim()
       },
+      phoneInpPassWord(e){
+        this.phoneNumberPassWord = e.detail.value
+      },
       Verification(){
+        let isPhoneNumberOk = VipModel.verifyPhoneNumber(this.phoneNumberPassWord)
+        if(!isPhoneNumberOk){
+          return false
+        }
         if(Number(this.activate_num.length) === 0){
           wx.showToast({
             title: '请输入激活码',
@@ -83,7 +101,10 @@
           return false
         }
         this.numOpenState  = false
-        VipModel.numOpen({activate_num: this.activate_num},(ResData)=>{
+        let query = {}
+        query.activate_num = this.activate_num
+        query.link_tel = this.phoneNumberPassWord
+        VipModel.numOpen(query, (ResData)=>{
           if(ResData == 1){
             wx.showToast({
               title: '开通会员成功',
@@ -118,11 +139,19 @@
           }
         })
       },
+      phoneInp(e){
+        this.phoneNumber = e.detail.value
+      },
       vip(index){
+        let isPhoneNumberOk = VipModel.verifyPhoneNumber(this.phoneNumber)
+        if(!isPhoneNumberOk){
+          return false
+        }
         this.vipOpenState  = false
         let param = {
           time_type: index,
           card_id: this.card_id,
+          link_tel: this.phoneNumber
         }
         VipModel.VipExecPay(param, (ResData)=>{
           if(ResData.code == 1) {
@@ -164,6 +193,8 @@
           this.open_status = ResData.data.open_status
           this.card_id =  ResData.data.card_id
           this.TitleData = ResData.data.open_magic_card
+          this.phoneNumber = ResData.data.link_tel
+          this.phoneNumberPassWord = ResData.data.link_tel
           this.$apply()
         }
       })
@@ -287,6 +318,30 @@ page{
         &.active{
           pointer-events: none;
         }
+      }
+    }
+    .phoneBox{
+      width: 100%;
+      .phoneTitleBox{
+        width: 100%;
+        height: 90rpx;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        padding-left: 30rpx;
+        background-color: #F6F5F5;
+        text{
+          font-size: 32rpx;
+          color: #000;
+        }
+      }
+      input{
+        background-color: #fff;
+        font-size: 30rpx;
+        width: 100%;
+        height: 100rpx;
+        box-sizing: border-box;
+        padding: 30rpx;
       }
     }
   }

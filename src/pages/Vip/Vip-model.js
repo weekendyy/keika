@@ -26,7 +26,8 @@ class Vip extends Base {
       data: {
         time_type: orderInfo.time_type,
         card_id: orderInfo.card_id,
-        versions: 'vip5'
+        versions: 'vip5',
+        link_tel: orderInfo.link_tel
       },
       sCallback(data) {
         callback && callback(data)
@@ -69,7 +70,8 @@ class Vip extends Base {
     let param = {
       url: 'v5/magic_card/activate_num_open',
       data: {
-        activate_num: queryData.activate_num
+        activate_num: queryData.activate_num,
+        link_tel: queryData.link_tel
       },
       sCallback(data) {
         callback && callback(data)

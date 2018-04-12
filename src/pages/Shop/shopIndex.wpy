@@ -94,7 +94,7 @@
               <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}})">
                 <view class="fuli-item-top">
                   <text class="type">{{item.one_str}}</text>
-                  <text class="name">{{item.magic_goods_title}}</text>
+                  <text class="name">{{item.magic_goods_name}}</text>
                   <!-- <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==3}}">领取</text>
                   <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==1}}">未开始</text>
                   <text class="btn end" wx:if="{{item.magicgetlog == null && item.time_status==2}}">已结束</text>
@@ -114,7 +114,7 @@
                   </block>
                 </view>
                 <view class="fuli-item-bottom">
-                  <text class="desc">{{item.magic_goods_name}}</text>
+                  <text class="desc">{{item.magic_goods_title}}</text>
                   <text class="num">已领 {{item.get_num}}</text>
                 </view>
               </view>
@@ -150,12 +150,23 @@
               <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index"  @tap.stop="gotoWelfare({{item.id}})">
                 <view class="fuli-item-top">
                   <text class="type">{{item.one_str}}</text>
-                  <text class="name">{{item.magic_goods_title}}</text>
-                  <text class="btn" wx:if="{{item.magicgetlog == null}}">领取</text>
-                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text>
+                  <text class="name">{{item.magic_goods_name}}</text>
+                  <!-- 活动未开始 -->
+                  <block wx:if="{{item.time_status==1}}">
+                    <text class="btn">未开始</text>
+                  </block>
+                  <!-- 活动进行中 -->
+                  <block wx:if="{{item.time_status==3}}">
+                    <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+                    <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
+                  </block>
+                  <!-- 活动已结束 -->
+                  <block wx:if="{{item.time_status==2}}">
+                    <text class="btn end">已结束</text>
+                  </block>
                 </view>
                 <view class="fuli-item-bottom">
-                  <text class="desc">{{item.magic_goods_name}}</text>
+                  <text class="desc">{{item.magic_goods_title}}</text>
                   <text class="num">已领 {{item.get_num}}</text>
                 </view>
               </view>
@@ -466,7 +477,7 @@
         ++this.pageNum.shopPage
         ShopModel.getShopIndexData(this.pageNum.shopPage,(Resdata)=>{
           if(Resdata.code == 1){
-            if(this.shopData.length >= Resdata.total_num){
+            if(Resdata.data.length == 0){
               wx.showToast({
                 title: '已经到底了',
                 icon:'loading'
@@ -481,32 +492,16 @@
         })
       }
       if (this.currentTabsIndex == 1){
-        if (!this.nearbyRepeatReuqest) {
+        if(!this.nearbyRepeatReuqest){
           return false
         }
-        if(this.nearbyData.length >= this.nearbyDataNum){
-          wx.showLoading({
-            title: '已经到底了',
-          })
-          let timer = setTimeout(()=>{
-            wx.hideLoading()
-            this.nearbyRepeatReuqest = false
-            clearTimeout(timer)
-            this.$apply()
-          },2000)
-          this.$apply()
-          return false
-        }
-        ++this.pageNum.nearPage
-        let query = {}
-        query.magic_form_id = this.formId
-        query.page_num = this.pageNum.nearPage
-        ShopModel.getNearbyData(query,(Resdata)=>{
-          if(Resdata.code == 1){
-            this.nearbyData = [...this.nearbyData, ...Resdata.data]
-            this.$apply()
-          }
+        wx.showToast({
+          title: '已经到底了',
+          icon:'loading',
+          duration: 1500
         })
+        this.nearbyRepeatReuqest = false
+        this.$apply()
       }
     }
     components = {

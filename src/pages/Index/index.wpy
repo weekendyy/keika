@@ -2,7 +2,33 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="index-container">
     <view class="cheader-index {{loadingHidden?'show-header':''}}">
-    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo" :formID.sync="formId"></cheader>
+    <!-- <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo" :formID.sync="formId"></cheader> -->
+
+    <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
+      <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1}}" wx:if="{{headerinfo.home_banner.length}}">
+        <repeat for="{{headerinfo.home_banner}}" key="index">
+          <swiper-item class="swiper-item" @tap="gotoBannerUrl({{item.banner_path}})">
+            <image class="swiper-image" src="{{item.banner_url}}"></image>
+          </swiper-item>
+        </repeat>
+      </swiper>
+      <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
+        <view class="open-wrapper">
+          <image src="{{headerinfo.card_img}}" class="logo"></image>
+          <view class="user-info">
+            <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
+            <text class="name">{{userInfo.userInfo.nickName}}</text>
+            <view class="open">
+              <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
+              <button class="btn" form-type="submit">{{headerinfo.magic_auth_str[1]}}</button>
+            </view>
+          </view>
+        </view>
+        <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
+      </view>
+    </form>
+
+
     </view>
     <form report-submit="magic-formID" bindsubmit="navClickFromID">
     <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}" >
@@ -104,7 +130,7 @@
               <image src="./images/end.png"></image>
             </view>
             <view class="vip-wrapper">
-              <text>会员免费</text>
+              <text>{{listtitle[3]}}</text>
             </view>
             <image class="item-pic" src="{{item.banner_img}}"></image>
             <view class="item-data">
@@ -133,7 +159,7 @@
 </template>
 <script>
   import wepy from 'wepy'
-  import cheader from '@/components/cheader'
+  // import cheader from '@/components/cheader'
   import cheaderModel from '@/components/cheader-model'
   import indexModel from './index-model'
   import MyModel from '@/pages/My/index-model'
@@ -196,15 +222,12 @@
         ++this.pageNum
         indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
           if(this.welfareData.length >= ResData.total_num){
-            wx.showLoading({
+            wx.showToast({
               title: '已经到底了',
+              icon:'loading',
+              duration:1500
             })
-            let timer = setTimeout(()=>{
-              wx.hideLoading()
-              this.preventRepeatReuqest = false
-              clearTimeout(timer)
-              this.$apply()
-            },1500)
+            this.preventRepeatReuqest = false
             return false
           }
           if(ResData.code == 1){
@@ -261,6 +284,17 @@
           url:'../../TimeLimitActivity/TimeLimitActivityDetail?id='+subjectItem.id+'&subTitle='+subjectItem.subject_name+'&status='+subjectItem.time_status+'&formId='+formId
         })
         wx.setStorageSync('subJectImg',this.subject_data[index].img_url)
+      },
+      gotoOpenVipFormId(e){
+        this.formId = e.detail.formId
+        wx.navigateTo({
+          url: '../Vip/Index?formId='+this.formId
+        })
+      },
+      gotoBannerUrl(url){
+        wx.navigateTo({
+          url: url
+        })
       }
     }
     onLoad(){
@@ -418,7 +452,7 @@
       },10000)
     }
     components = {
-      cheader: cheader
+      // cheader: cheader
     }
   }
 </script>
@@ -888,6 +922,103 @@
             }
           }
       }
+    }
+  }
+  .swiper-wrapper{
+    width: 100%;
+    height: 320rpx;
+    image{
+      width: 100%;
+      height: 100%
+    }
+  }
+  .open-vip{
+    padding-top: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #faf9f9;
+    overflow: hidden;
+    .open-wrapper{
+      width:  640rpx;
+      height: 390rpx;
+      background-color: #000000;
+      border-radius: 20rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .logo{
+        width: 335rpx;
+        height: 120rpx;
+        margin-top: 94rpx;
+      }
+      .user-info{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 37rpx;
+        .pic{
+          width: 64rpx;
+          height: 64rpx;
+          border: 4rpx solid #e6c17a;
+          border-radius: 50%;
+          margin-left: 30rpx;
+          overflow: hidden;
+        }
+        .name{
+          margin-left: 23rpx;
+          flex: 1;
+          overflow: hidden;
+          text-overflow:ellipsis;
+          white-space: nowrap;
+          font-size: 28rpx;
+          color: #e7c375;
+        }
+        .open{
+          margin-left:auto;
+          display: flex;
+          flex-direction: column;
+          background-color: transparent;
+          padding: 0;
+          margin: 0;
+          &::after{
+            content:none;
+          }
+          .no-vip{
+            width: 194rpx;
+            text-align: center;
+            font-size: 22rpx;
+            color: #e7c375;
+          }
+          .btn{
+            padding: 0;
+            margin:0;
+            margin-top:10rpx;
+            width: 190rpx;
+            margin-right: 32rpx;
+            text-align: center;
+            font-size: 28rpx;
+            color: #e7c375;
+            line-height: 70rpx;
+            border: 1px solid #e3c289;
+            border-radius: 8rpx;
+            background-color: #412d2e;
+            letter-spacing: 6rpx;
+            &::after{
+              content:none;
+            }
+          }
+        }
+      }
+
+    }
+    .open-bg{
+      width: 100%;
+      height: 59rpx;
+      margin-bottom:-20rpx;
+      position: relative;
+      z-index: 1;
     }
   }
 </style>

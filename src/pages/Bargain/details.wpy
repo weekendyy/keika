@@ -1,7 +1,8 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="container" hidden="{{!loadingHidden}}">
+  <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view>
+  <view class="container" hidden="{{!loadingHidden}}" wx:if="{{DetailData}}">
     <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
     <view class="banner-info">
       <view class="banner-info-item">
@@ -69,46 +70,79 @@
             </view>
           </view>
         </view>
-        <view class="mainBoxB-bottom-options">
+        <view class="mainBoxB-bottom-options" >
+          <!-- 我自己的砍价 -->
           <block wx:if="{{bargain.is_own == 1}}">
-              <view class="menpiaobtn success" wx:if="{{isOne == 0 && DetailData.status != 4 && DetailData.status != 3 &&  DetailData.status != 2 && DetailData.status != 3}}" @tap="myadd()">
-                <view class="kanyidao">我也要参加</view>
+            <!-- 活动进行中 -->
+            <block wx:if="{{DetailData.status == 1}}">
+              <!-- 商品还没卖完之前 -->
+              <block wx:if="{{DetailData.last_num != 0}}">
+                <view class="menpiaobtn success" wx:if="{{isOne == 0}}" @tap="myadd()">
+                  <view class="kanyidao">我也要参加</view>
+                </view>
+                
+                <block wx:if="{{isOne != 0}}">
+                  <view class="menpiaobtn" wx:if="{{DetailData.last_num != 0 && bargain.launch.is_minimum !=1}}">
+                    <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
+                    <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">邀请好友帮我砍</button>
+                    <view class="qiuzu"  @tap="gotoIndex()">分享</view>
+                  </view>
+                  <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
+                    <view class="kanyidao">减价成功,立即购买</view>
+                  </view>
+                  <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
+                    <view class="kanyidao">减价成功,立即兑换</view>
+                  </view>
+                  
+                  <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
+                    <view class="kanyidao">去使用</view>
+                  </view>
+                  <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1}}">
+                    <view class="kanyidao">已使用</view>
+                  </view>
+
+                </block>
+              </block>
+              <!-- 商品已经卖完 -->
+              <view class="starttime" wx:if="{{DetailData.last_num == 0}}">
+                <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
+                  <view class="kanyidao">去使用</view>
+                </view>
+                <view wx:else class="starttimetxt">已售罄</view>
               </view>
-              <view class="menpiaobtn" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 && bargain.launch.is_minimum !=1 && isOne != 0}}">
-                <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
-                <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">邀请好友帮我砍</button>
-                <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
-              </view>
-              <view class="menpiaobtn success" wx:if="{{DetailData.status == 3 && DetailData.last_num != 0 && bargain.launch.receive_status != 1}}">
+            </block>
+            <!-- 活动已经结束 -->
+            <block wx:if="{{DetailData.status == 3}}">
+              <view class="menpiaobtn success">
                 <view class="kanyidao">已结束</view>
               </view>
-              <view class="menpiaobtn success"  wx:if="{{DetailData.status == 2}}">
-                <view class="kanyidao">未开始</view>
-              </view>
-              <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 2 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
-                <view class="kanyidao">减价成功,立即购买</view>
-              </view>
-              <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.status != 3 && DetailData.status != 4 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
-                <view class="kanyidao">减价成功,立即兑换</view>
-              </view>
-              <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && DetailData.status != 4 && bargain.launch.use_status == 0}}">
+
+              <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 &&  bargain.launch.use_status == 0}}" style="margin-top: 20rpx;">
                 <view class="kanyidao">去使用</view>
               </view>
-              <view class="menpiaobtn success" wx:if="{{DetailData.status == 4 && bargain.launch.use_status == 0}}">
+            </block>
+            <!-- 活动未开始 -->
+            <block wx:if="{{DetailData.status == 2}}">
+              <view class="menpiaobtn success">
+                <view class="kanyidao">未开始</view>
+              </view>
+            </block>
+            <!-- 已过期 -->
+            <block wx:if="{{DetailData.status == 4}}">
+              <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 0}}">
                 <view class="kanyidao">已过期</view>
               </view>
-              <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1 && DetailData.status != 2}}">
-                <view class="kanyidao">已使用</view>
-              </view>
+            </block>
           </block>
+          <!-- 帮别人砍价 -->
           <block wx:if="{{bargain.is_own == 0}}">
-              <view class="menpiaobtn success">
-                <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">返回我的首页</view>
+            <view class="menpiaobtn success">
+              <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">
+                <text wx:if="{{isTakePartIn == 2}}">返回我的砍价首页</text>
+                <text wx:if="{{isTakePartIn == 1}}">我也要参加</text>
               </view>
+            </view>
           </block>
-          <view class="starttime" wx:if="{{DetailData.last_num == 0}}">
-            <view class="starttimetxt">已售罄</view>
-          </view>
         </view>
         <text class="mainBoxB-bottom-txt">{{DetailData.loss_str}}</text>
       </view>
@@ -173,6 +207,30 @@
         </repeat>
       </view>
     </view>
+    <view class="shareBox">
+      <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
+      <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
+        <button class="shareItem" open-type="share">
+          <image src="http://p55e536k6.bkt.clouddn.com/weixin.png" mode="widthFix" class="shareIcon"></image>
+          <text>微信好友</text>
+        </button>
+
+        <button class="shareItem" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+          <image src="http://p55e536k6.bkt.clouddn.com/share.png" mode="widthFix" class="shareIcon"></image>
+          <text>生成卡片</text>
+        </button>
+      </view>
+    </view>
+    <view class="posterBox">
+      <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+      <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="bargainCanvas"></canvas>
+        <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+          <text>保存图片</text>
+        </view>
+      </view>
+    </view>
   </view>
   <view class="bargain_success" >
     <view class="bargain_success_cover" wx:if="{{showBarginSuccess}}"></view>
@@ -201,6 +259,7 @@
           that.floor_data = ResData.floor_data
           that.end_time = that.DetailData.residue_time * 1000
           countdown(that)
+
           wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5);
           wxParse.wxParse('article2', 'html', that.DetailData.details, that, 5);
 
@@ -278,9 +337,14 @@
       rules:'',
       bargain_price:'',
       showBarginSuccess:false,
-      floor_data:''
+      floor_data:'',
+      isTakePartIn:1,
+      actionSheetHidden: true,
+      showPosterBox: false,
+      undercarriage: false
     }
     onLoad(options){
+      this.activity_id = options.id
       if(options.launch_id){
         this.param = {
           launch_id: options.launch_id,
@@ -290,6 +354,7 @@
         Object.assign(this.param, {magic_formID:options.formID})
       }
       this.param.activity_id = options.id || 24
+      console.log(this.param)
     }
     methods = {
       gotoBuy(){
@@ -299,11 +364,37 @@
         this.$navigate('/pages/Bargain/Bargain-coupon',{id:this.bargain.launch.id});
       },
       gotoIndex(){
-        this.$switch('/pages/Index/index');
+        this.actionSheetHidden =  false
+        this.$apply()
       },
       myadd(){
         this.isOne = 1
         this.$apply()
+      },
+      closeShareBox(){
+        this.actionSheetHidden = true
+        this.$apply()
+      },
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let param = {}
+        param.id = this.DetailData.id
+        param.type = 3
+        this.actionSheetHidden =  true
+        BargainModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            BargainModel.creatPoster(this, 'bargainCanvas', ResData.data, this.DetailData.title, this.DetailData.floor_price, this.DetailData.price,'砍价','../../images/posterTy.png')
+          }
+        })
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        BargainModel.savePoste(this,'bargainCanvas')
       },
       exchange(){
 //        砍到底价,去核销
@@ -343,6 +434,7 @@
           this.bargain_price = ResData.bargain.bargain_price
           if(ResData.bargain.code == 1){
             this.DetailData.join_num++
+            this.bargain.launch.help_count = ResData.bargain.launch.help_count
             if(ResData.bargain.launch.is_minimum == 1){
               wx.showToast({
                 title: '已经到底价了',
@@ -379,7 +471,6 @@
           })
           this.shareState = true
           this.$apply()
-
         })
       },
       _loadData:function (successcallback) {
@@ -487,11 +578,17 @@
     loadBarginData(that){
       BargainModel.getLuckyDetail(that.param,(ResData)=>{
         that.DetailData = ResData.activity_attr
+        if(!that.DetailData){
+          that.undercarriage = true
+          that.$apply()
+        }
         that.bargain = ResData.bargain
         that.floor_data = ResData.floor_data
         that.likeNum = ResData.activity_attr.see_num
         that.rules = ResData.rule_str
         that.isOne = ResData.bargain.launch.help_count
+        that.isTakePartIn = ResData.is_self_help
+        // that.DetailData.prize_details = that.DetailData.prize_details.replace(/&/g,'&')
         wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5)
         wxParse.wxParse('article2', 'html', that.DetailData.details, that, 5)
         if(wx.getStorageSync('launch_id')){
@@ -548,7 +645,7 @@
       let shareObj = {
         title: shareTitle,
         path: path,
-        success: function(){
+        success: ()=>{
           BargainModel.transmit_num({activity_id:that.param.activity_id},()=>{
             wx.showToast({
               title: '转发成功',
@@ -556,6 +653,8 @@
               duration: 1500
             })
           })
+          this.actionSheetHidden = true
+          this.$apply()
         }
       }
       return shareObj
@@ -576,7 +675,25 @@
   }
   .bannerpic{
     width:750rpx;
-    height: 550rpx;
+    height: 590rpx;
+  }
+  .undercarriage{
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 400rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text{
+      font-size:50rpx;
+      display:block;
+      padding:20rpx 40rpx;
+      background:rgba(252,252,247,1);
+      border-radius:10rpx;
+      box-shadow:0 10rpx 10rpx #C1C1C1;
+    }
   }
   .banner-info{
     position: absolute;
@@ -621,7 +738,7 @@
         align-items: center;
         background-image: url("http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_004.png");
         background-repeat: no-repeat;
-        background-size: contain;
+        background-size: 750rpx 287rpx;
         background-position: center;
         .title{
           width: 600rpx;
@@ -823,17 +940,18 @@
           .starttime{
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 100%;
             .starttimetxt{
               font-size: 25rpx;
               width:600rpx;
               height:70rpx;
-              border-radius:40rpx;
+              border-radius:10rpx;
               color:#fff;
               line-height:70rpx;
               text-align:center;
               background-color:#548425;
               margin:0;
-              box-shadow:0 10rpx 20rpx rgba(144,144,144,0.5);
             }
             .timenumber{
               font-size: 25rpx;
@@ -918,12 +1036,11 @@
       }
       .rulesbox{
         margin-top: 30rpx;
-        width: 670rpx;
+        width: 643rpx;
         display: flex;
         flex-direction: column;
         .wxParse-p view,.wxParse-p image{
           width: 100%;
-          font-size: 28rpx;
         }
         image{
           margin-bottom: 10rpx;
@@ -1030,6 +1147,124 @@
             }
           }
         }
+      }
+    }
+    .shareBox{
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      .shareBox_cover{
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,.6);
+        pointer-events: auto;
+      }
+      .shareBox_content{
+        width: 100%;
+        height: 200rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        position: absolute;
+        bottom: -200rpx;
+        left: 0;
+        background-color: #fff;
+        transform: translateY(0);
+        transition: .4s;
+        pointer-events: auto;
+        .shareItem{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin: 0;
+          padding: 0;
+          background-color: #fff;
+          &::after{
+            content:none;
+          }
+          .shareIcon{
+            width: 80rpx;
+            height: 80rpx;
+            margin-bottom: 20rpx;
+          }
+          text{
+            font-size: 25rpx;
+            color: #222;
+          }
+        }
+      }
+      .show_shareBox{
+        transform: translateY(-200rpx);
+      }
+    }
+    .posterBox{
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      .poster_cover{
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,.6);
+        pointer-events: auto;
+      }
+      .poster_content{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+        transform: rotateY(0deg);
+        transition: .4s;
+        .posterImg{
+          width: 650rpx;
+          height: 1080rpx;
+          margin-bottom: 20rpx;
+        }
+        .canvas{
+          box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+          background-color: #fff;
+        }
+        .saveImg{
+          width: 650rpx;
+          height: 80rpx;
+          background-color: #FE6420;
+          text-align: center;
+          line-height: 70rpx;
+          font-size: 28rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          pointer-events: none;
+          margin-top: 20rpx;
+          .downPic{
+            width: 35rpx;
+            height: 35rpx;
+            margin-right: 20rpx;
+          }
+        }
+        .canSave{
+          pointer-events: auto;
+        }
+      }
+      .showPosterBox{
+        opacity: 1;
+        transform: rotateY(0);
+        transition: 1s;
       }
     }
   }
