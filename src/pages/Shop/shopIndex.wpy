@@ -120,7 +120,7 @@
               </view>
             </view>
           </view>
-          <view wx:if="{{shopData.length == 0}}">
+          <view wx:if="{{isEmpty.isNowEmpty}}">
             <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
           </view>
         </scroll-view> 
@@ -172,7 +172,7 @@
               </view>
             </view>
           </view>
-          <view wx:if="{{nearbyData.length == 0}}">
+          <view wx:if="{{isEmpty.isNearbyEmpty}}">
             <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
           </view>
         </scroll-view>
@@ -217,7 +217,11 @@
       link_tel:'',
       link_shop_name:'',
       check_join:1,
-      formId:''
+      formId:'',
+      isEmpty: {
+        isNowEmpty: false,
+        isNearbyEmpty: false
+      }
     }
     computed = {
         shopClassifyNum () {
@@ -245,15 +249,23 @@
         if(this.currentTabsIndex == 1 && this.nearbyData.length == 0){
           ShopModel.getNearbyData(query,(ResData)=>{
             if(ResData.code == 1){
+              this.isEmpty.isNearbyEmpty = false
               this.nearbyDataNum = ResData.total_num
               this.nearbyData = ResData.data
+              if(this.nearbyData.length == 0){
+                this.isEmpty.isNearbyEmpty = true
+              }
               this.$apply()
             }
           })
         }else if(this.currentTabsIndex == 0 && this.shopData.length == 0){
           ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
             if(ResData.code == 1){
+              this.isEmpty.isNowEmpty = false
               this.shopData = ResData.data
+              if(this.shopData.length == 0){
+                this.isEmpty.isNowEmpty = true
+              }
               this.$apply()
             }
           })
@@ -447,7 +459,11 @@
       if(this.currentTabsIndex=='0'){
         ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
           if(ResData.code == 1){
+            this.isEmpty.isNowEmpty = false
             this.shopData = ResData.data
+            if(this.shopData.length == 0){
+              this.isEmpty.isNowEmpty = true
+            }
             this.TitleData = ResData.stores_recommend_str
             this.shopClassifys = ResData.classify_data
             this.from_in_shop_data = ResData.from_in_shop_data
@@ -463,6 +479,10 @@
         ShopModel.getNearbyData(query,(ResData)=>{
           if(ResData.code == 1){
             this.nearbyData = ResData.data
+            this.isEmpty.isNearbyEmpty = false
+            if(this.nearbyData.length == 0){
+              this.isEmpty.isNearbyEmpty = true
+            }
             this.$apply()
           }
         })

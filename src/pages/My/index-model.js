@@ -22,7 +22,7 @@ class My extends Base {
     wx.showModal({
       title: '是否要打开设置页面重新授权',
       content: '需要获取您的公开信息(昵称、头像等),请到小程序的设置中打开用户信息授权',
-      cancelText: '取消',
+      showCancel: false,
       confirmText: '去授权',
       success: function (res) {
         if (res.cancel) {

@@ -9,6 +9,12 @@
         </swiper-item>
       </repeat>
     </swiper>
+    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+      <view class="posterT">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </button>
     <view class="goods-header">
       <view class="goods-header-title">
         <text class="goods-header-title_left">共{{DetailsData.num}}份/剩{{DetailsData.residue}}份</text>
@@ -424,7 +430,7 @@
         let param = {}
         param.id = this.goods_id
         param.type = 1
-        this.actionSheetHidden =  !this.actionSheetHidden
+        this.actionSheetHidden =  true
         DetailsModel.getPostData(param,ResData=>{
           if(ResData.code == 1){
             MyModel.creatPoster(this, 'bargaincanvas', ResData.data, this.DetailsData.name, this.DetailsData.discount_price,this.DetailsData.original_price,'抢购','../../images/posterTy.png')
@@ -485,6 +491,10 @@
       },
       makeOrderTime(){
         DetailsModel.orderTime({goodId: this.DetailsData.id},(resData)=>{
+          if(resData.code == 1){
+            this.DetailsData.order_time_str = resData.change_str
+          }
+          this.$apply()
           wx.showToast({
             title: resData.message,
             icon: 'success'
@@ -629,6 +639,38 @@
     image{
       width:100%;
       height:100%;
+    }
+  }
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 320rpx;
+    right: 20rpx;
+    &::after{
+      content:none;
+    }
+    .posterT{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 65rpx;
+      height: 65rpx;
+      border:1rpx dashed #fff;
+      border-radius: 100%;
+      font-size: 20rpx;
+      color: #fff;
+      text{
+        margin: 3rpx 0;
+      }
     }
   }
   .goods-header{

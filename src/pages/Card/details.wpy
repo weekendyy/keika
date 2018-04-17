@@ -11,6 +11,12 @@
         <text>{{likeNum}}人喜欢</text>
       </view>
     </swiper>
+    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+      <view class="posterT">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </button>
     <view class="card-content">
       <view class="card-title">
         <view class="card-title-wrapper">
@@ -50,7 +56,7 @@
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
           </button>
           <button class="help" @tap="gotoIndex()">
-            <text>分享</text>
+            <text>更多福利</text>
           </button>
         </view>
         <view class="card-box success" wx:if="{{goodsInfo.check_collect_status == 1 || goodsInfo.check_exchange_statu == 1  && goodsInfo.first_join == 2 && goodsInfo.status == 1}}">
@@ -103,7 +109,7 @@
         <view class="Luck-btn" @tap="closeLuck()">确定</view>
       </view>
     </view>
-    <view class="shareBox">
+    <!-- <view class="shareBox">
       <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
       <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
         <button class="shareItem" open-type="share">
@@ -116,7 +122,7 @@
           <text>生成卡片</text>
         </button>
       </view>
-    </view>
+    </view> -->
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
@@ -188,8 +194,9 @@
         this.$switch('/pages/My/index');
       },
       gotoIndex(){
-        this.actionSheetHidden =  false
-        this.$apply()
+        wx.switchTab({
+          url: '/pages/Index/index'
+        })
       },
       closeShareBox(){
         this.actionSheetHidden =  true
@@ -258,7 +265,7 @@
           } else {
             wx.showToast({
               title: ResData.data.message,
-              icon: 'loading',
+              icon: 'none',
               duration: 1500
             })
           }
@@ -430,6 +437,38 @@
         width: 26rpx;
         height: 26rpx;
         margin-right: 10rpx;
+      }
+    }
+  }
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 200rpx;
+    right: 20rpx;
+    &::after{
+      content:none;
+    }
+    .posterT{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 65rpx;
+      height: 65rpx;
+      border:1rpx dashed #fff;
+      border-radius: 100%;
+      font-size: 20rpx;
+      color: #fff;
+      text{
+        margin: 3rpx 0;
       }
     }
   }

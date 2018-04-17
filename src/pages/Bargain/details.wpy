@@ -1,7 +1,7 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view>
+  <!-- <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view> -->
   <view class="container" hidden="{{!loadingHidden}}" wx:if="{{DetailData}}">
     <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
     <view class="banner-info">
@@ -15,6 +15,12 @@
         <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
       </view>
     </view>
+    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+      <view class="posterT">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </button>
     <view class="mainBoxB">
       <view class="mainBoxB-top">
         <text class="title">{{DetailData.title}}</text>
@@ -85,7 +91,7 @@
                   <view class="menpiaobtn" wx:if="{{DetailData.last_num != 0 && bargain.launch.is_minimum !=1}}">
                     <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
                     <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">邀请好友帮我砍</button>
-                    <view class="qiuzu"  @tap="gotoIndex()">分享</view>
+                    <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
                   </view>
                   <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
                     <view class="kanyidao">减价成功,立即购买</view>
@@ -207,6 +213,7 @@
         </repeat>
       </view>
     </view>
+    <view style="height:20rpx;"></view>
     <view class="shareBox">
       <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
       <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
@@ -341,7 +348,9 @@
       isTakePartIn:1,
       actionSheetHidden: true,
       showPosterBox: false,
-      undercarriage: false
+      page:1,
+      isLoadAll: false,
+      lastLoadList: []
     }
     onLoad(options){
       this.activity_id = options.id
@@ -364,8 +373,9 @@
         this.$navigate('/pages/Bargain/Bargain-coupon',{id:this.bargain.launch.id});
       },
       gotoIndex(){
-        this.actionSheetHidden =  false
-        this.$apply()
+        wx.switchTab({
+          url: '/pages/Index/index'
+        })
       },
       myadd(){
         this.isOne = 1
@@ -569,19 +579,16 @@
           })
         })
       }
-      BargainModel.getBargainLoad({activity_id: this.param.activity_id},(ResData)=>{
+      BargainModel.getBargainLoad({activity_id: this.param.activity_id, page: 1},(ResData)=>{
         // 砍价排行榜
         this.RankingData = ResData
+        this.lastLoadList = ResData
         this.$apply()
       })
     }
     loadBarginData(that){
       BargainModel.getLuckyDetail(that.param,(ResData)=>{
         that.DetailData = ResData.activity_attr
-        if(!that.DetailData){
-          that.undercarriage = true
-          that.$apply()
-        }
         that.bargain = ResData.bargain
         that.floor_data = ResData.floor_data
         that.likeNum = ResData.activity_attr.see_num
@@ -659,11 +666,42 @@
       }
       return shareObj
     }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        this.page++
+        wx.showLoading({
+          title:'加载中...'
+        })
+        BargainModel.getBargainLoad({activity_id: this.param.activity_id, page: this.page},(ResData)=>{
+          // 砍价排行榜
+          let isLoadAll = this._isLoadAll(this.lastLoadList,ResData)
+          if(isLoadAll){
+            this.isLoadAll = true
+            wx.hideLoading()
+            wx.showToast({
+              title: '已经到底了',
+              icon: 'loading',
+              duration: 1500
+            })
+          }else{
+            this.lastLoadList = ResData
+            this.RankingData = [...this.RankingData, ...ResData] 
+            this.$apply()
+          }
+        })
+      }
+    }
     onHide(){
       clearInterval(timer)
     }
     onUnload(){
       clearInterval(timer)
+    }
+    _isLoadAll(objA,objB){
+      if(objA[0].openid == objB[0].openid){
+        return true
+      }
+      return false
     }
   }
 </script>
@@ -671,6 +709,7 @@
  @import '../tpls/loading/loading.wxss';
   Page{
     width: 100%;
+    height: 100%;
     background-color: #F0F0F0;
   }
   .bannerpic{
@@ -718,6 +757,38 @@
           color: rgb(255,121,3);
         }
       }
+  }
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 430rpx;
+    right: 20rpx;
+    &::after{
+      content:none;
+    }
+    .posterT{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 65rpx;
+      height: 65rpx;
+      border:1rpx dashed #fff;
+      border-radius: 100%;
+      font-size: 20rpx;
+      color: #fff;
+      text{
+        margin: 3rpx 0;
+      }
+    }
   }
   .container{
     display: flex;

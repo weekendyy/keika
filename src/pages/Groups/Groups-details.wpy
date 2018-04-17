@@ -7,6 +7,12 @@
         <image class="swiper-image" src="{{item}}"></image>
       </swiper-item>
     </swiper>
+    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+      <view class="posterT">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </button>
     <view class="details-header">
       <text class="new-Price">¥{{DetailData.group_price}}</text>
       <view class="Price-warpper">
@@ -305,7 +311,7 @@
         let param = {}
         param.id = this.goodsId
         param.type = 2
-        this.actionSheetHidden =  !this.actionSheetHidden
+        this.actionSheetHidden =  true
         Groups.getPostData(param,ResData=>{
           if(ResData.code == 1){
             Groups.creatPoster(this, 'groupcCanvas', ResData.data, this.DetailData.goods_name, this.DetailData.discount_price,this.DetailData.original_price,'拼团','../../images/posterTy.png')
@@ -613,6 +619,38 @@
     image{
       width: 100%;
       height: 100%
+    }
+  }
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 320rpx;
+    right: 20rpx;
+    &::after{
+      content:none;
+    }
+    .posterT{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 65rpx;
+      height: 65rpx;
+      border:1rpx dashed #fff;
+      border-radius: 100%;
+      font-size: 20rpx;
+      color: #fff;
+      text{
+        margin: 3rpx 0;
+      }
     }
   }
   .details-header{

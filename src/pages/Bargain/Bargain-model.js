@@ -50,7 +50,7 @@ class Bargain extends Base {
    */
   getBargainLoad(queryData,callback){
     let param = {
-      url: "v7/bargain/load",
+      url: "v7/bargain/load?page="+queryData.page+'&per-page=50',
       data: {
         activity_id:queryData.activity_id
       },
