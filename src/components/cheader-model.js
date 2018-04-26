@@ -9,7 +9,7 @@ class cheader extends Base {
       data: {
         banner_type: queryData.banner_type,
         versions: 'vip4',
-        magic_form_id: queryData.magic_formID
+        magic_form_id: queryData.magic_formID || ''
       },
       sCallback(ResData) {
         callback && callback(ResData)

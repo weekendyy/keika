@@ -57,44 +57,75 @@
     }
     data = {
       currentTabsIndex: 0,
-      orderData: null,
+      orderData: [],
       TitleData: ['全部','未使用','已使用','已过期'],
-      formId:''
+      formId:'',
+      isLoadAll: false,
+      order_status: 4,
+      pageNum: 1
     }
     methods = {
       onTabsItemTap(index){
+        this.pageNum = 1
+        this.isLoadAll = false
         this.currentTabsIndex = index
-        if(this.currentTabsIndex == 0){
-          MyModel.getOrderDataList({order_status:'4'}, (ResData)=>{
-            if(ResData.code == 1){
-              this.orderData = ResData.data
-              this.$apply()
-              return false
-            }
-          })
+        if(index == 0){
+          this.order_status = 4
+        } else {
+          this.order_status = index
         }
-        MyModel.getOrderDataList({order_status:this.currentTabsIndex }, (ResData)=>{
-          if(ResData.code == 1){
-            this.orderData = ResData.data
-            this.$apply()
-            return false
-          }
-        })
+        this._loadOrderDataList()
       },
       gotoCoupon(index){
         this.$navigate("./coupon",{id:index})
       },
     }
     onLoad(e){
-      this.formId = e.formId
+      if(e.formId){
+        this.formId = e.formId
+      } else {
+        this.formId = ''
+      }
     }
     onShow(e){
-      MyModel.getOrderDataList({order_status:'4',magic_form_id:this.formId}, (ResData)=>{
-        if(ResData.code == 1){
-          this.orderData = ResData.data
-          this.$apply()
+      this.pageNum = 1
+      this.isLoadAll = false
+      this._loadOrderDataList()
+    }
+    onReachBottom(){
+      this._loadOrderDataList(true)
+    }
+    _loadOrderDataList(isReachBottom){
+      if(isReachBottom && !this.isLoadAll || !isReachBottom){
+        let query = {
+          order_status: this.order_status,
+          page_num: isReachBottom? ++this.pageNum : this.pageNum,
+          magic_form_id: this.formId
         }
-      })
+        MyModel.getOrderDataList(query, ResData=> {
+          if(ResData.code == 1) {
+            if(isReachBottom){  //触底的情况
+              if(ResData.data.length == 0){
+                this.isLoadAll = true
+                this.$apply()
+                wx.showToast({
+                  title: '已经到底了',
+                  icon: 'loading',
+                  duration: 1500
+                })
+              } else{
+                this.orderData = [...this.orderData,...ResData.data]
+                this.$apply()
+              }
+            } else{    //正常请求的情况
+                this.orderData = ResData.data
+                this.$apply()
+            }
+          } else{
+            MyModel.showTips(ResData.message)
+          }
+        })
+      }
     }
   }
 </script>

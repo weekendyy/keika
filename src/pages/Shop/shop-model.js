@@ -60,7 +60,7 @@ class Shop extends Base {
         lng: Geography.latitude,
         lat: Geography.longitude,
         choose_type: '2',
-        magic_form_id: queryData.magic_form_id
+        magic_form_id: queryData.magic_form_id || ''
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -95,7 +95,7 @@ class Shop extends Base {
       url: 'v5/magic_goods/get_goods',
       data: {
         goods_id: queryData.goods_id,
-        magic_form_id: queryData.magic_form_id
+        magic_form_id: queryData.magic_form_id || ''
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -117,7 +117,7 @@ class Shop extends Base {
         link_shop_name: queryData.link_shop_name,
         wechat_name: queryData.wechat_name,
         wechat_img: queryData.wechat_img,
-        magic_form_id: queryData.formId
+        magic_form_id: queryData.formId || ''
       },
       sCallback(ResData) {
         callback && callback(ResData)

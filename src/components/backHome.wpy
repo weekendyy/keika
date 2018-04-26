@@ -1,0 +1,50 @@
+<template>
+  <view class="backBome" @tap="backToHome" style="top:{{top+'rpx'}}">
+    <image src="./images/home.png" mode="widthFix" class="homeIcon"></image>
+    <text class="backhometxt">返回首页</text>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.component{
+      props = {
+        top: String
+      }
+      data = {
+        
+      }
+      methods = {
+        backToHome(){
+        console.log("返回首页")
+          wx.switchTab({
+            url:'/pages/Index/index'
+          })
+        }
+      }
+  }
+</script>
+<style lang="less">
+  .backBome{
+    position: absolute;
+    top: 70rpx;
+    left: 20rpx;
+    width: 160rpx;
+    height: 55rpx;
+    border-radius: 40rpx;
+    background:rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    .homeIcon{
+      width: 30rpx;
+      height: 30rpx;
+      margin-right: 10rpx;
+    } 
+    .backhometxt{
+      font-size: 23rpx;
+      color: #fff;
+    }
+  }
+</style>

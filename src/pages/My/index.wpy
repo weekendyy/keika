@@ -1,21 +1,21 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="My-container" hidden="{{!loadingHidden}}">
+  <view class="My-container" wx:if="{{loadingHidden}}">
     <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
     <view class="open-vip">
-      <view class="open-wrapper" >
+      <view class="open-wrapper" style="background-image: url({{vipInfo.background_img}});">
         <image src="{{vipInfo.card_img}}" class="logo"></image>
         <view class="user-info">
-          <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
+          <open-data type="userAvatarUrl" class="pic"></open-data>
           <view class="user-wrapper">
-            <text class="name">{{userInfo.userInfo.nickName}}</text>
+            <open-data type="userNickName" class="name"></open-data>
             <text class="date" wx:if="{{vipInfo.open_status == 1}}">{{vipInfo.end_time}}</text>
           </view>
           <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 2}}">{{magic_auth_str[1]}}</button>
           <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 1}}">{{magic_auth_str[2]}}</button>
         </view>
       </view>
-      <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
+      <image class="open-bg" src="../Index/images/open-vip-bg.jpg"></image>
     </view>
     </form>
     <view class="nav-wrapper">
@@ -85,17 +85,18 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.13.5</text>
+        <text>V 1.13.6</text>
       </view>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
 <script>
   import wepy from 'wepy'
   import MyModel from './index-model'
+  import cheaderModel from '@/components/cheader-model'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -105,7 +106,6 @@
       orderNum: null,
       welfareNum:null,
       vipInfo: null,
-      GeographyData: null,
       userInfo: null,
       loadingHidden: false,
       center_index_str: null,
@@ -149,12 +149,21 @@
         this.$apply()
       }
     }
+    onLoad(){
+      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        if(ResData.code == 1){
+          this.userInfo = ResData.data
+          this.$apply()
+        }
+      })
+    }
     onShow(){
       MyModel.getUserSpecialData(ResData=>{
         if(Number(ResData.code) === 1) {
           this.center_index_str = ResData.data.center_index_str
           this.orderNum = ResData.data.no_pay_num
           this.welfareNum = ResData.data.no_use_num
+          this.loadingHidden = true
           this.$apply()
         }
       })
@@ -162,77 +171,10 @@
         if(ResData.code == 1){
           this.vipInfo = ResData.data
           this.magic_auth_str = ResData.data.magic_auth_str
-          this.$apply()
-        }
-      })
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
           this.loadingHidden = true
           this.$apply()
         }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        },()=>{
-          MyModel.twoGetCityName((res)=>{
-            console.log(res)
-          })
-        })
-      }
+      })
     }
   }
 </script>
@@ -278,6 +220,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
       .logo{
         width: 351rpx;
         height: 125rpx;

@@ -19,7 +19,7 @@ class TimeLimitActivityDetail extends Base{
         lng:queryData.lng,
         lat:queryData.lat,
         where_like:queryData.where_like,
-        magic_form_id: queryData.formId
+        magic_form_id: queryData.formId || ''
       },
       sCallback(ResData) {
         callback && callback(ResData)

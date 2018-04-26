@@ -84,6 +84,10 @@
               icon:'loading',
               duration: 1000,
               success: function(){
+                let prevPage = getCurrentPages()[getCurrentPages().length-2]
+                prevPage.setData({
+                  buy_log: 3
+                })
                 setTimeout(()=>{
                   wx.showToast({
                     title: "正在返回上一页",
@@ -103,6 +107,7 @@
       }
     }
     onLoad(options){
+      console.log(options.id)
       this.orderId = options.id
       OrderModel.destory_goods(this.orderId, ResData=> {
         if(ResData.code == 1){

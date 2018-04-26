@@ -1,0 +1,434 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="lottery-container {{showLotteryStart?'noScroll':''}}" hidden="{{!loadingHidden}}">
+    <view class="header">
+      <text class="header_title" @tap="showPrize">每日福利</text>
+      <button class="header_right" open-type="share">
+        <text>分享给朋友</text>
+        <image src="./image/shareicon.png" mode="widthFix" class="shareIcon"></image>
+      </button>
+    </view>
+    <view class="lotteryDrawList">
+      <view class="lotteryDrawItem" wx:for="{{3}}" @tap="test">
+        <image src="http://p55e536k6.bkt.clouddn.com/choujian.png" mode="scaleToFill" class="lotteryPic"></image>
+        <view class="lotteryInfo">
+          <view class="lottery-info-top">
+            <text class="info-top-title">奖品：iphone 8 X1</text>
+            <text class="info-top-desc">橙子黑卡 赞助</text>
+          </view>
+          <view class="lottery-info-bottom">
+            <text>04月14日 12:00 自动开奖</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="runLotteryBox">
+      <view class="cover" wx:if="{{showLotteryStart}}"></view>
+      <view class="runLottery" wx:if="{{isSunLotteryShow}}">
+        <view class="contentBox {{showLotteryStart?'runLotteryStart':''}}">
+          <image src="image/lotterytop.png" class="lotteryTopPic {{showLotteryStart?'lotterytopStart':''}}" mode="scaleToFill"></image>
+          <view class="lotteryDetailBox">
+            <view class="lotteryDetail {{showLotteryStart?'showLotteryDetail':''}}">
+              <view class="lotteryDetailContent {{showLotteryStart?'showlotteryDetailContent':''}}">
+                <block wx:if="{{isPrize}}">
+                  <view class="prizeIconBox">
+                    <image class="prizeIcon" mode="aspectFill" src="image/gift.png"></image>
+                  </view>
+                  <text class="prizetxt">恭喜，你已中奖</text>
+                  <view class="prizeOpation">
+                    <view class="prizeAddress" >填写收货地址</view>
+                    <view class="shareTofriend">炫耀一下</view>
+                  </view>
+                </block>
+                <block wx:if="{{!isPrize}}">
+                  <image src="image/noprize.png" class="noPrizeicon" mode="widthFix"></image>
+                  <text class="noprizetxt">很遗憾，你未中奖</text>
+                </block>
+                <view class="prizePeoples">
+                  <view class="cut"></view>
+                  <text>中奖者名单</text>
+                  <view class="cut"></view>
+                </view>
+                <view class="prizePeopleDetails">
+                  <view class="prizePeopleItem">
+                    <image src="http://p55e536k6.bkt.clouddn.com/hygtfrdeswqa.png" mode="aspectFill" class="prizePeopleIcon"></image>
+                    <text>卤蛋</text>
+                  </view>
+                </view>
+                <view class="startAprize">再发起一个抽奖</view>
+                <image src="image/close.png" mode="aspectFill" class="closeIcon" @tap="closeLottery"></image>
+              </view>
+            </view>
+          </view>
+          <image src="image/lotterybottom.png" class="lotteryBottomPic {{showLotteryStart?'otterybttomStart':''}}" mode="scaleToFill"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '抽奖',
+    }
+    data = {
+      loadingHidden: true,
+      showLotteryStart: false,
+      isSunLotteryShow: true,
+      isPrize: true
+    }
+    computed = {
+        
+    }
+    methods = {
+      test(){
+        wx.navigateTo({
+          url:'lotteryDrawDetail'
+        })
+      },
+      closeLottery(){
+        this.isSunLotteryShow = false
+        this.showLotteryStart = false
+        this.$apply()
+      },
+      showPrize(){
+        this.showLotteryStart = true
+        this.isSunLotteryShow = true
+        this.$apply()
+      }
+    }
+    onLoad(e){
+      this.showLotteryStart = true
+      this.$apply()
+    }
+    onShow(){
+    }
+    onReachBottom(){
+      
+    }
+    onShareAppMessage(){
+      return {
+        title: '抽奖',
+        success: function(res) {
+          // 转发成功
+        }
+      }
+    }
+    components = {
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F1F1F1;
+  }
+  .lottery-container{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 20rpx;
+    .header{
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 0 10rpx;
+      height: 100rpx;
+      .header_title{
+        color: #DE3E33;
+        font-size: 38rpx;
+      }
+      .header_right{
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        color: #3E82BE;
+        font-size: 24rpx;
+        border-radius: 0;
+        background-color: #F1F1F1;
+        &::after{
+          content:none;
+        }
+        .shareIcon{
+          width: 20rpx;
+          height: 20rpx;
+          margin-left: 15rpx;
+        }
+      }
+    }
+    .lotteryDrawList{
+      width: 100%;
+      .lotteryDrawItem{
+        width: 100%;
+        margin-bottom: 30rpx;
+        border-radius: 20rpx;
+        background-color: #fff;
+        overflow: hidden;
+        box-shadow: 0 0 20rpx rgba(39,40,34,.2);
+        .lotteryPic{
+          width: 100%;
+          height: 375rpx;
+        }
+        .lotteryInfo{
+          width: 100%;
+          box-sizing: border-box;
+          padding: 30rpx 20rpx;
+          .lottery-info-top{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            line-height: 1;
+            .info-top-title{
+              font-size: 32rpx;
+              width: 400rpx;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .info-top-desc{
+              font-size: 26rpx;
+              line-height: 1;
+              padding: 12rpx 17rpx;
+              border:1px solid #575757;
+              color: #575757;
+            }
+          }
+          .lottery-info-bottom{
+            color: #808080;
+            font-size: 25rpx;
+            line-height: 1;
+            margin-top: 20rpx;
+          } 
+        }
+      }
+    }
+    .runLotteryBox{
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      .cover{
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,.7);
+      }
+      .runLottery{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        .contentBox{
+          transition: .6s .5s;
+          width: 545rpx;
+          height: 570rpx;
+          position: relative;
+          .lotteryTopPic{
+            width: 545rpx;
+            height: 220rpx;
+            transition: .5s;
+            transform: rotateX(180deg);
+            transform-origin: bottom;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+          }
+          .lotterytopStart{
+            opacity: 1;
+            transform: rotateX(0);
+          }
+          
+          .lotteryBottomPic{
+            width: 545rpx;
+            height: 350rpx;
+            transition: .5s;
+            opacity: 0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 300;
+          }
+          .otterybttomStart{
+            opacity: 1;
+          }
+          
+          .lotteryDetailBox{
+            width:531rpx;
+            position: absolute;
+            bottom: 0;
+            left: 8rpx;
+            height: 875rpx;
+            z-index: 200;
+            overflow: hidden;
+            .lotteryDetail{
+              width:531rpx;
+              height: 875rpx;
+              transform: translateY(525rpx);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 10rpx;
+              background-color: #fff;
+              .lotteryDetailContent{
+                width: 491rpx;
+                height: 837rpx;
+                border: 1px solid #CFCBA0;
+                text-align: center;
+                opacity: 0;
+                transition: .5s 1.1s;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                .prizeIconBox{
+                  padding: 10rpx;
+                  background-color: #E1453A;
+                  border-radius: 100%;
+                  margin: 30rpx 0;
+                  .prizeIcon{
+                    width: 40rpx;
+                    height: 40rpx;
+                    border-radius: 100%;
+                    border: 1px solid #F96559;
+                    padding: 20rpx;
+                  }
+                }
+                .prizetxt{
+                  font-size: 34rpx;
+                  font-weight: 600;
+                  color: #E1453A;
+                }
+                .prizeOpation{
+                  display: flex;
+                  margin-top: 30rpx;
+                  view{
+                    width: 190rpx;
+                    height: 55rpx;
+                    font-size: 23rpx;
+                    margin: 10rpx;
+                    box-sizing: border-box;
+                    line-height: 55rpx;
+                    text-align: center;
+                  }
+                  .prizeAddress{
+                    background-color: #575757;
+                    color: #fff;
+                  }
+                  .shareTofriend{
+                    color: #575757;
+                    border:2rpx solid #575757;
+                    line-height: 51rpx;
+                  }
+                }
+                .noPrizeicon{
+                  width: 100rpx;
+                  height: 100rpx;
+                  margin-top: 40rpx;
+                }
+                .noprizetxt{
+                  font-size: 34rpx;
+                  font-weight: 600;
+                  color: #808080;
+                  margin-top: 30rpx;
+                }
+                .prizePeoples{
+                  display: flex;
+                  align-items: center;
+                  margin-top: 50rpx;
+                  text{
+                    font-size: 23rpx;
+                    color: #787878;
+                    margin: 0 25rpx;
+                  }
+                  .cut{
+                    width: 130rpx;
+                    height: 1px;
+                    background-color: #E6E6E6;
+                  }
+                }
+                .prizePeopleDetails{
+                  width: 100%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-top: 40rpx;
+                  .prizePeopleItem{
+                      display: flex;
+                      flex-direction: column;
+                      align-items: center;
+                    .prizePeopleIcon{
+                      width: 50rpx;
+                      height: 50rpx;
+                      border-radius: 100%;
+                      border: 1rpx solid #F5F5F5;
+                    }
+                    text{
+                      color: #3D3D3D;
+                      font-size: 23rpx;
+                      margin-top: 20rpx;
+                    }
+                  }
+                }
+                .startAprize{
+                  width: 300rpx;
+                  height: 70rpx;
+                  background-color: #D35044;
+                  line-height: 70rpx;
+                  text-align: center;
+                  color: #fff;
+                  font-size: 23rpx;
+                  margin-top: 30rpx;
+                }
+                .closeIcon{
+                  width: 20rpx;
+                  height: 20rpx;
+                  position: absolute;
+                  right: 0rpx;
+                  top: 0rpx;
+                  padding: 15rpx;
+                  pointer-events: auto;
+                } 
+              }
+              .showlotteryDetailContent{
+                opacity: 1;
+              }
+            }
+            .showLotteryDetail{
+              transform: translateY(0);
+              transition: .6s .5s;
+            }
+          }
+        }
+      }
+      .runLotteryStart{
+        transform: scale(1.30) translateY(160rpx);
+      }
+    }
+  }
+  .noScroll{
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+</style>
+

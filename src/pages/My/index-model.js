@@ -25,25 +25,23 @@ class My extends Base {
       showCancel: false,
       confirmText: '去授权',
       success: function (res) {
-        if (res.cancel) {
-          infofail && infofail()
-        } else {
-          wx.openSetting({
-            success: function (res) {
-              if (res.authSetting['scope.userInfo']) {
-                wx.getUserInfo({
-                  lang: 'zh_CN',
-                  success: function (res) {
-                    typeof success === 'function' && success(res)
-                  },
-                  fail: function () {
-                    fail && fail()
-                  }
-                })
-              }
+        wx.openSetting({
+          success: function (res) {
+            if (res.authSetting['scope.userInfo']) {
+              wx.getUserInfo({
+                lang: 'zh_CN',
+                success: function (res) {
+                  typeof success === 'function' && success(res)
+                },
+                fail: function () {
+                  fail && fail()
+                }
+              })
+            } else{
+              infofail && infofail()
             }
-          })
-        }
+          }
+        })
       }
     })
   }
@@ -90,8 +88,8 @@ class My extends Base {
       url: 'v5/magic_order/magic_order_list',
       data: {
         order_status: queryData.order_status,
-        page_num: 1,
-        magic_form_id: queryData.magic_form_id
+        page_num: queryData.page_num || 1,
+        magic_form_id: queryData.magic_form_id || ''
       },
       sCallback(ResData){
         callback && callback(ResData)

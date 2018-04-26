@@ -1,6 +1,6 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="Order-details" hidden="{{!loadingHidden}}">
+  <view class="Order-details" wx:if="{{loadingHidden}}">
     <view class="order-state">
       <view class="state-wrapper" wx:if="{{DetailsData.use_status == 1}}">
         <text>交易成功</text>
@@ -93,7 +93,7 @@
       <text class="payment" wx:if="{{DetailsData.receive_status == 1 && DetailsData.status == 0 && DetailsData.use_status == 0}}" @tap="gotoDestory">去使用</text>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>

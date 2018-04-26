@@ -1,11 +1,12 @@
 <template>
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="Index-container">
+  <view class="Index-container {{showPosterBox?'noScroll':''}}">
     <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
         <swiper-item class="banner-item" wx:for="{{shopDetail.banner_img}}" wx:for-item="item" wx:key="index">
           <image src="{{item}}" mode="aspectFill"></image>
         </swiper-item>
     </swiper>
+    <BackHome top='20'></BackHome>
     <view class="item-wrapper">
       <view class="item">
         <view class="shop-info-header">
@@ -32,7 +33,10 @@
         <view class="content-wrapper">
           <text class="content">{{item.magic_goods_title}}</text>
           <block wx:if="{{item.time_status==3}}">
-            <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+            <block wx:if="{{item.get_status == 1}}">
+              <text class="btn" wx:if="{{item.repertory_num != item.get_num}}">领取</text>
+              <text class="btn end" wx:if="{{item.repertory_num == item.get_num}}">已领完</text>
+            </block>
             <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
           </block>
           <block wx:if="{{item.time_status==1}}">
@@ -74,7 +78,8 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="shopCanvas"></canvas>
+        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="shopCanvas"></canvas>
+        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
           <text>保存图片</text>
@@ -87,33 +92,34 @@
   import wepy from 'wepy'
   import wxParse from '../../wxParse/wxParse'
   import ShopModel from './shop-model'
+  import BackHome from '../../components/backHome'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '店铺详情',
     }
+    components = {
+      BackHome: BackHome
+    }
     data = {
       shopId: null,
       shopDetail: null,
       showPosterBox: false,
-      actionSheetHidden: true
+      actionSheetHidden: true,
+      posterImg: ''
     }
     methods = {
       onShareAppMessage(){
         return {
           title: this.shopDetail.magic_shop_name,
-          path: 'pages/Shop/shopDetails?id='+ this.shopId,
+          path: '/pages/Shop/shopDetails?id='+ this.shopId,
         }
       },
       openMap(data){
-        let latitude = data.split(",")[0]
-        let longitude = data.split(",")[1]
-        this.$navigate('./map',{latitude:latitude,longitude:longitude,shopName:this.shopDetail.magic_shop_name,shopAddress:this.shopDetail.address})
+        ShopModel.openMap(data,this.shopDetail.magic_shop_name,this.shopDetail.address)
       },
       tel(data){
-        wx.makePhoneCall({
-          phoneNumber: data
-        })
+        ShopModel.makePhoneCall(data)
       },
       gotoWelfare(index){
         this.$navigate('../Shop/welfareDetails',{id:index})
@@ -130,13 +136,22 @@
         wx.showLoading({
           title: '生成卡片中',
         })
+        let posterPic = wx.getStorageSync('posterPic_'+'shopCanvas'+'_'+this.shopId)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          this.actionSheetHidden =  true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
         let param = {}
         param.id = this.shopId
         param.type = 5
-        this.actionSheetHidden =  !this.actionSheetHidden
+        this.actionSheetHidden =  true
         ShopModel.getPostData(param,ResData=>{
           if(ResData.code == 1){
-            ShopModel.creatPoster(this, 'shopCanvas', ResData.data, this.shopDetail.magic_shop_name, '', '','','',this.shopDetail.address)
+            ShopModel.creatPoster(this, 'shopCanvas', ResData.data, this.shopDetail.magic_shop_name, '', '','','',this.shopDetail.address,this.shopId)
           }
         })
       },
@@ -145,7 +160,7 @@
         this.$apply()
       },
       savePostePic(){
-        ShopModel.savePoste(this,'shopCanvas')
+        ShopModel.savePoste(this,'shopCanvas',this.shopId)
       }
     }
     onLoad(options){
@@ -429,15 +444,14 @@
     .shareBox_content{
       width: 100%;
       height: 200rpx;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
       position: absolute;
       bottom: -200rpx;
       left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
       background-color: #fff;
       transform: translateY(0);
-      transition: .3s;
       pointer-events: auto;
       .shareItem{
         display: flex;
@@ -462,6 +476,7 @@
     }
     .show_shareBox{
       transform: translateY(-200rpx);
+      transition: .3s;
     }
   }
   .posterBox{
@@ -501,6 +516,10 @@
         box-shadow: 0 0 20rpx rgba(119,119,119,.4);
         background-color: #fff;
       }
+      .canvasImg{
+        width: 650rpx;
+        height: 1000rpx;
+      }
       .saveImg{
         width: 650rpx;
         height: 80rpx;
@@ -529,5 +548,9 @@
       transform: rotateY(0);
       transition: 1s;
     }
+  }
+  .noScroll{
+    height: 100%;
+    overflow: hidden;
   }
 </style>

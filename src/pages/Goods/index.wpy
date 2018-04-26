@@ -1,7 +1,7 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
-  <view class="indexBox" hidden="{{!loadingHidden}}">
+  <view class="indexBox" wx:if="{{loadingHidden}}">
     <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
       <block wx:for="{{bannerpics}}" wx:key="bannerpics">
         <swiper-item class="swiperitembox">
@@ -51,7 +51,7 @@
       </scroll-view>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>

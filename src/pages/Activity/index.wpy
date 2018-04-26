@@ -2,8 +2,8 @@
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
   <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
-    <view class="activity-wrapper" hidden="{{!loadingHidden}}">
-      <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <view class="activity-wrapper" wx:if="{{loadingHidden}}">
+      <cheader :headerinfo.sync="headerinfo"></cheader>
       <view class="activity-content">
         <view class="activity-tab">
             <repeat for="{{TitleData}}" wx:for-item="item" key="index">
@@ -99,7 +99,7 @@
       </view>
     </view>
   </form>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
@@ -116,8 +116,6 @@
     }
     data = {
       loadingHidden: false,
-      GeographyData: null,
-      userInfo: null,
       currentTabsIndex: 0,
       TitleData: [],
       headerinfo: null,
@@ -139,7 +137,7 @@
       onShareAppMessage(){
         return {
           title: "活动推荐",
-          path: 'pages/Activity/index',
+          path: '/pages/Activity/index',
         }
       },
       onTabsItemTapFormId(e){
@@ -200,17 +198,6 @@
           return false
         }
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this),
       onReachBottom(){
         if (this.currentTabsIndex == 0){
           if (!this.NowpreventRepeatReuqest) {
@@ -269,6 +256,7 @@
             this.isEmpty.nowIsEmpty = true
           }
           this.TitleData = Resdata.data.activity_recommend_str
+          this.loadingHidden = true
           this.$apply()
         }
       })
@@ -277,77 +265,10 @@
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data
-          this.$apply()
-        }
-      })
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
           this.loadingHidden = true
           this.$apply()
         }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        },()=>{
-          MyModel.twoGetCityName((res)=>{
-            console.log(res)
-          })
-        })
-      }
+      })
     }
     components = {
       cheader: cheader

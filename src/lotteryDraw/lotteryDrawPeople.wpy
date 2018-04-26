@@ -1,0 +1,78 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="lotteryDetail-peopleList" hidden="{{!loadingHidden}}">
+    <text class="takePartIn">25343位参与者</text>
+    <view class="peopleList">
+      <image wx:for="{{30}}" src="" mode="aspectFill" class="prizePeoples"></image>
+    </view>
+  </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '中奖名单',
+    }
+    data = {
+      loadingHidden: true,
+      
+    }
+    computed = {
+        
+    }
+    methods = {
+      
+    }
+    onLoad(e){
+     
+    }
+    onShow(){
+      this.showBottomTab = true
+      this.$apply()
+    }
+    onReachBottom(){
+      
+    }
+   
+    components = {
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F1F1F1;
+  }
+  .lotteryDetail-peopleList{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 20rpx;
+    .takePartIn{
+      color: #8F8F8F;
+      font-size: 30rpx;
+      height: 100rpx;
+      line-height: 100rpx;
+    }
+    .peopleList{
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      .prizePeoples{
+        width: 66rpx;
+        height: 66rpx;
+        background-color: #CECECE;
+        margin: 3rpx;
+      }
+    }
+  }
+
+</style>
+

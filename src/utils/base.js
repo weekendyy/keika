@@ -27,10 +27,10 @@ class Base {
     if (params.setUpUrl) {
       url = params.url
     }
-    if(!wx.getStorageSync('token')){
-      that._refetch(params)
-      return false
-    }
+    // if(!wx.getStorageSync('token')){
+    //   that._refetch(params)
+    //   return false
+    // }
     wx.request({
       url: url,
       data: params.data,
@@ -50,13 +50,23 @@ class Base {
           }
           if (Number(res.data.code) === 10) {
             TokenModel.goNot()
+            wx.showToast({
+              title: 'code==10',
+              icon: 'none'
+            })
+            this._toIndex()
             return false
           }
           params.sCallback && params.sCallback(res.data)
         } else {
           if (Number(res.data.code) === 10) {
             TokenModel.goNot()
-            return false
+            this._toIndex()
+            wx.showToast({
+              title: 'code==10',
+              icon: 'none'
+            })
+            this._toIndex()
           }
           params.sCallback && params.sCallback(res.data)
         }
@@ -69,11 +79,28 @@ class Base {
   }
 
   _processError (err) {
-    console.log(err)
+    wx.showToast({
+      title:'请求失败，请重试',
+      icon: 'none'
+    })
   }
   _refetch(param) {
     TokenModel.getTokenFromServer((token) => {
       this.request(param, true)
+    })
+  }
+  _toIndex(){
+    wx.showModal({
+      title: '访问超时',
+      content: '点击返回首页',
+      showCancel: false,
+      success: function(res) {
+        if (res.confirm) {
+          wx.switchTab({
+            url: '/pages/Index/index'
+          })
+        }
+      }
     })
   }
   /* 获得元素上的绑定的值 */
@@ -115,25 +142,23 @@ class Base {
     wx.showModal({
       title: '是否要打开设置页面重新授权',
       content: '需要获取您的地理位置,请到小程序的设置中打开地理位置授权',
-      cancelText: '取消',
+      showCancel: false,
       confirmText: '去授权',
       success: function (res) {
-        if (res.cancel) {
-          infofail && infofail()
-        } else {
-          wx.openSetting({
-            success: (res) => {
-              if (res.authSetting['scope.userLocation']) {
-                wx.getLocation({
-                  type: 'wgs84',
-                  success(res){
-                    success && success(res)
-                  }
-                })
-              }
+        wx.openSetting({
+          success: (res) => {
+            if (res.authSetting['scope.userLocation']) {
+              wx.getLocation({
+                type: 'wgs84',
+                success(res){
+                  success && success(res)
+                }
+              })
+            } else{
+              infofail && infofail()
             }
-          })
-        }
+          }
+        })
       }
     })
   }
@@ -169,45 +194,33 @@ class Base {
     this.request(param)
   }
   //保存海报
-  savePoste(that,canvasId){
+  savePoste(that,canvasId,postPicId){
     wx.showLoading({title:'保存中...'})
-    wx.canvasToTempFilePath({
-      x: 0,
-      y: 0,
-      width: that.$parent.globalData.pxRadio*650,
-      height: that.$parent.globalData.pxRadio*1000,
-      destWidth: 650,
-      destHeight: 1000,
-      canvasId: canvasId,
-      fileType: 'jpg',
-      quality: 1,
-      success: (res)=> {
-        wx.saveImageToPhotosAlbum({
-          filePath: res.tempFilePath, 
-          success:()=>{
-            wx.showToast({
-              title: '保存成功！',
-              icon: 'success',
-              duration: 1000
-            })
-            that.showPosterBox = false
-            that.$apply()
-          },
-          fail:(e)=>{
-            that.showPosterBox = false
-            that.$apply()
-            wx.showToast({
-              title: '保存失败！',
-              icon: 'success',
-              duration: 1000
-            })
-          }
+    let posterPic =  wx.getStorageSync('posterPic_'+canvasId+'_'+postPicId)
+    wx.saveImageToPhotosAlbum({
+      filePath: posterPic,
+      success:()=>{
+        wx.showToast({
+          title: '保存成功！',
+          icon: 'success',
+          duration: 1000
+        })
+        that.showPosterBox = false
+        that.$apply()
+      },
+      fail:(e)=>{
+        that.showPosterBox = false
+        that.$apply()
+        wx.showToast({
+          title: '保存失败！',
+          icon: 'success',
+          duration: 1000
         })
       }
     })
   }
   //生成海报
-  creatPoster(that,canvasId,resData,title,priceNow,pricePre,type,typeIcon,address){
+  creatPoster(that,canvasId,resData,title,priceNow,pricePre,type,typeIcon,address,postPicId){
     const posterWdith = that.$parent.globalData.pxRadio*650
     const poserHeight = that.$parent.globalData.pxRadio*1000
     const ctx = wx.createCanvasContext(canvasId)
@@ -249,7 +262,8 @@ class Base {
                 //绘制标题
                 ctx.setFillStyle('black')
                 ctx.setShadow(0, 0, 0, 'white')
-                ctx.setFontSize(posterWdith*0.05)
+                ctx.setFontSize(parseInt(posterWdith*0.05))
+
                 ctx.setTextAlign('center')
                 let shopName =  resData.shop_name?('【'+resData.shop_name+'】'):''
                 let posterTitle = shopName + title
@@ -267,13 +281,19 @@ class Base {
                 //绘制价格--现价
                 if(priceNow){
                   ctx.setFillStyle('#FF373E')
-                  ctx.setFontSize(posterWdith*0.06)
+                  ctx.setFontSize(parseInt(posterWdith*0.06))
                   ctx.fillText('¥'+priceNow, 0.5*posterWdith, 0.93*posterWdith)
+                }
+                //绘制专题的超值优惠
+                if(type == '专题'){
+                  ctx.setFillStyle('#FF363D')
+                  ctx.setFontSize(parseInt(posterWdith*0.07))
+                  ctx.fillText('超值优惠', 0.5*posterWdith, 0.93*posterWdith)
                 }
                 //绘制价格--原价
                 ctx.font = 'oblique'
                 ctx.setFillStyle('#A79E9F')
-                ctx.setFontSize(posterWdith*0.045)
+                ctx.setFontSize(parseInt(posterWdith*0.045))
                 ctx.setTextBaseline('middle')
                 if(pricePre){
                   ctx.fillText('¥'+pricePre, 0.5*posterWdith, 0.98*posterWdith)
@@ -282,27 +302,48 @@ class Base {
                 if(type){
                   ctx.drawImage(typeIcon, 0.7*posterWdith, 0.87*posterWdith, 0.14*posterWdith, 0.06*posterWdith)
                   ctx.setFillStyle('white')
-                  ctx.setFontSize(posterWdith*0.04)
+                  ctx.setFontSize(parseInt(posterWdith*0.04))
                   ctx.fillText(type, 0.76*posterWdith, 0.9*posterWdith)
                 }
                 //绘制小程序码
-                ctx.drawImage(qrCodePic, 0.35*posterWdith, 1.08*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
+                ctx.drawImage(qrCodePic, 0.35*posterWdith, 1.11*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
                 //绘制扫码提示
                 ctx.setFillStyle('#757575')
-                ctx.setFontSize(posterWdith*0.04)
+                ctx.setFontSize(parseInt(posterWdith*0.04))
                 ctx.fillText("长按扫码发现惊喜", 0.5*posterWdith, 1.48*posterWdith)
                 //绘制地址
                 if(address){
-                  ctx.setFontSize(posterWdith*0.05)
+                  ctx.setFontSize(parseInt(posterWdith*0.05))
                   ctx.fillText('地址：'+address, 0.5*posterWdith, 0.9*posterWdith)
                 }
                 ctx.draw(true)
                 wx.hideLoading()
                 that.showPosterBox = true
                 that.$apply()
+                setTimeout(()=>{
+                  wx.canvasToTempFilePath({
+                    x: 0,
+                    y: 0,
+                    width: that.$parent.globalData.pxRadio*650,
+                    height: that.$parent.globalData.pxRadio*1000,
+                    destWidth: 650,
+                    destHeight: 1000,
+                    canvasId: canvasId,
+                    fileType: 'jpg',
+                    quality: 1,
+                    success: (res)=> {
+                      wx.setStorage({
+                        key: 'posterPic_'+canvasId+'_'+postPicId,
+                        data: res.tempFilePath
+                      })
+                    },
+                    fail: (res)=>{
+                      console.log(res)
+                    }
+                  })
+                },300)
               }
             })
-
           }
         })
       }
@@ -340,7 +381,49 @@ class Base {
     }
     return true
   }
-  
+  //弹出提示信息
+  showTips(tips){
+    wx.showToast({
+      title: tips,
+      icon: 'loading',
+      duration: 1500
+    })
+  }
+  //打电话
+  makePhoneCall(phoneNumber){
+    if(phoneNumber){
+      wx.makePhoneCall({
+        phoneNumber: phoneNumber
+      })
+    } else {
+      wx.showToast({
+        title: '未设置电话号码',
+        icon: 'none',
+        duration: 1500
+      })
+    }
+  }
+  //打开地图
+  openMap(longitude,name,address){
+    if(longitude && longitude.split(",").length == 2){
+      let arr = longitude.split(",")
+      let lat = arr[0]
+      let lng = arr[1]
+      wx.openLocation({
+        latitude: Number(lat),
+        longitude: Number(lng),
+        scale: 18,
+        name: name,
+        address:address
+      })
+    } else{
+      wx.showToast({
+        title: '未设置地理坐标',
+        icon: 'none',
+        duration: 1500
+      })
+    }
+  }
 }
 
 export default Base

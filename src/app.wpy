@@ -48,7 +48,6 @@ export default class extends wepy.app {
       'pages/Shop/shopIndex', // 推荐店铺
       'pages/Shop/welfareDetails', // 福利活动详情
       'pages/Shop/shopDetails', // 店铺详情页面
-      'pages/Shop/map',  // 店铺地图页面
       'pages/Goods/Confirm-order', // 秒杀订单支付页面(立即购买)
       'pages/Goods/details',  // 秒杀活动商品详情页
       'pages/Goods/pay-result', // 秒杀支付成功结果页面
@@ -74,7 +73,14 @@ export default class extends wepy.app {
         "pages": [
           "TimeLimitActivityDetail"
         ]
-      }
+      }, {
+        "root": "lotteryDraw",
+        "pages": [
+          "lotteryDrawIndex",
+          "lotteryDrawDetail",
+          "lotteryDrawPeople"
+        ]
+    }
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -133,6 +139,7 @@ export default class extends wepy.app {
     this.globalData.phoneWidth = res.windowWidth
     this.globalData.phoneHeight = res.windowHeight
     this.globalData.pxRadio = this.globalData.phoneWidth/750
+    // AddressModel.getGeoAndUserInfo()
   }
   constructor () {
     super()

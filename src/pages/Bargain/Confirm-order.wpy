@@ -179,6 +179,7 @@
                 this.$apply()
               }
             })
+            return false
           }
           if(ResData.code == 0){
             wx.showToast({
@@ -250,6 +251,11 @@
             this.$apply()
             return false
           }
+          wx.showToast({
+            title: ResData.message,
+            icon: 'loading',
+            duration: 1500
+          })
         })
       },
     }

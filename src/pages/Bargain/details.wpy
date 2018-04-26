@@ -2,8 +2,9 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
   <!-- <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view> -->
-  <view class="container" hidden="{{!loadingHidden}}" wx:if="{{DetailData}}">
+  <view class="container {{showPosterBox?'noScroll':''}}" wx:if="{{loadingHidden}}">
     <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
+    <BackHome top='70'></BackHome>
     <view class="banner-info">
       <view class="banner-info-item">
         <text class="banner-info-itemNum">{{DetailData.see_num}}</text><text>人查看</text>
@@ -15,7 +16,7 @@
         <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
       </view>
     </view>
-    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo" lang="en">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
@@ -82,14 +83,14 @@
             <!-- 活动进行中 -->
             <block wx:if="{{DetailData.status == 1}}">
               <!-- 商品还没卖完之前 -->
-              <block wx:if="{{DetailData.last_num != 0}}">
-                <view class="menpiaobtn success" wx:if="{{isOne == 0}}" @tap="myadd()">
-                  <view class="kanyidao">我也要参加</view>
+              <block wx:if="{{DetailData.last_num > 0}}">
+                <view class="menpiaobtn success" wx:if="{{isOne == 0}}">
+                  <button class="kanyidao" open-type="getUserInfo" bindgetuserinfo="myadd">我也要参加</button>
                 </view>
                 
                 <block wx:if="{{isOne != 0}}">
-                  <view class="menpiaobtn" wx:if="{{DetailData.last_num != 0 && bargain.launch.is_minimum !=1}}">
-                    <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency}}次)</view>
+                  <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1}}">
+                    <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency||0}}次)</view>
                     <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">邀请好友帮我砍</button>
                     <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
                   </view>
@@ -110,7 +111,7 @@
                 </block>
               </block>
               <!-- 商品已经卖完 -->
-              <view class="starttime" wx:if="{{DetailData.last_num == 0}}">
+              <view class="starttime" wx:if="{{DetailData.last_num == 0 || DetailData.last_num < 0}}">
                 <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
                   <view class="kanyidao">去使用</view>
                 </view>
@@ -143,14 +144,24 @@
           <!-- 帮别人砍价 -->
           <block wx:if="{{bargain.is_own == 0}}">
             <view class="menpiaobtn success">
-              <view class="kanyidao  {{shareState == true ? '': 'No'}}" @tap="add()">
+              <button open-type="getUserInfo" bindgetuserinfo="addBargain" class="kanyidao  {{shareState == true ? '': 'No'}}">
                 <text wx:if="{{isTakePartIn == 2}}">返回我的砍价首页</text>
                 <text wx:if="{{isTakePartIn == 1}}">我也要参加</text>
-              </view>
+              </button>
             </view>
           </block>
         </view>
         <text class="mainBoxB-bottom-txt">{{DetailData.loss_str}}</text>
+      </view>
+    </view>
+    <view class="shop-address">
+      <view class="shop-address-txt">
+        <text wx:if="{{DetailData.name}}">{{DetailData.name}}</text>
+        <text wx:if="{{DetailData.address}}">{{DetailData.address}}</text>
+      </view>
+      <view class="shop-adress-right">
+        <image @tap="toMap" mode="aspectFill" class="locationIcon" src="../../images/location.png"></image>
+        <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
       </view>
     </view>
     <view class="jpdescbox">
@@ -214,24 +225,11 @@
       </view>
     </view>
     <view style="height:20rpx;"></view>
-    <view class="shareBox">
-      <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
-      <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
-        <button class="shareItem" open-type="share">
-          <image src="http://p55e536k6.bkt.clouddn.com/weixin.png" mode="widthFix" class="shareIcon"></image>
-          <text>微信好友</text>
-        </button>
-
-        <button class="shareItem" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
-          <image src="http://p55e536k6.bkt.clouddn.com/share.png" mode="widthFix" class="shareIcon"></image>
-          <text>生成卡片</text>
-        </button>
-      </view>
-    </view>
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="bargainCanvas"></canvas>
+        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="bargainCanvas"></canvas>
+        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
           <text>保存图片</text>
@@ -247,7 +245,7 @@
       <view class="iknow" @tap="closeBarginSuccess">我知道了</view>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
@@ -321,14 +319,19 @@
   import BargainModel from './Bargain-model'
   import MyModel from '@/pages/My/index-model'
   import wxParse from '../../wxParse/wxParse'
+  import BackHome from '../../components/backHome'
+  import cheaderModel from '@/components/cheader-model'
+  import Address from '../../utils/address.js'
   export default class jika extends wepy.page {
     config = {
       navigationBarTitleText: '活动详情'
     }
+    components = {
+      BackHome: BackHome
+    }
     data = {
       param: {},
       SupportData:null,
-      GeographyData: null,
       loadingHidden: false,
       userInfo: null,
       DetailData: null,
@@ -350,20 +353,9 @@
       showPosterBox: false,
       page:1,
       isLoadAll: false,
-      lastLoadList: []
-    }
-    onLoad(options){
-      this.activity_id = options.id
-      if(options.launch_id){
-        this.param = {
-          launch_id: options.launch_id,
-        }
-      }
-      if(options.formID){
-        Object.assign(this.param, {magic_formID:options.formID})
-      }
-      this.param.activity_id = options.id || 24
-      console.log(this.param)
+      lastLoadList: [],
+      activity_id: '',
+      posterImg:''
     }
     methods = {
       gotoBuy(){
@@ -377,9 +369,11 @@
           url: '/pages/Index/index'
         })
       },
-      myadd(){
-        this.isOne = 1
-        this.$apply()
+      myadd(res){
+        Address.getUser(res,()=>{
+          this.isOne = 1
+          this.$apply()
+        })
       },
       closeShareBox(){
         this.actionSheetHidden = true
@@ -389,13 +383,21 @@
         wx.showLoading({
           title: '生成卡片中',
         })
+        let posterPic = wx.getStorageSync('posterPic_'+'bargainCanvas'+'_'+this.DetailData.id)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
         let param = {}
         param.id = this.DetailData.id
         param.type = 3
         this.actionSheetHidden =  true
         BargainModel.getPostData(param,ResData=>{
           if(ResData.code == 1){
-            BargainModel.creatPoster(this, 'bargainCanvas', ResData.data, this.DetailData.title, this.DetailData.floor_price, this.DetailData.price,'砍价','../../images/posterTy.png')
+            BargainModel.creatPoster(this, 'bargainCanvas', ResData.data, this.DetailData.title, this.DetailData.floor_price, this.DetailData.price,'砍价','../../images/posterTy.png','',this.DetailData.id)
           }
         })
       },
@@ -404,10 +406,10 @@
         this.$apply()
       },
       savePostePic(){
-        BargainModel.savePoste(this,'bargainCanvas')
+        BargainModel.savePoste(this,'bargainCanvas',this.DetailData.id)
       },
       exchange(){
-//        砍到底价,去核销
+      //砍到底价,去核销
         this.exchangeState = false
         let param = {
           launch_id:this.bargain.launch.id,
@@ -434,15 +436,15 @@
         this.$apply()
       },
       openLaunch(){
-//        自己手动砍价
+        //自己手动砍价
         let param = {
           launch_id: this.bargain.launch.id,
           activity_id: this.DetailData.id
         }
-        this.LaunchState = false
         BargainModel.bargainDetail(param, (ResData)=>{
-          this.bargain_price = ResData.bargain.bargain_price
           if(ResData.bargain.code == 1){
+            this.bargain_price = ResData.bargain.bargain_price
+            this.LaunchState = false
             this.DetailData.join_num++
             this.bargain.launch.help_count = ResData.bargain.launch.help_count
             if(ResData.bargain.launch.is_minimum == 1){
@@ -456,6 +458,7 @@
               --this.bargain.launch.frequency
               this.LaunchState = true
               this.$apply()
+              this.showBarginSuccess = true
               return false
             }
             this.DetailData.current_price = ResData.bargain.launch.now_price
@@ -463,37 +466,47 @@
             this.LaunchState = true
             this.showBarginSuccess = true
             this.$apply()
+          } else{
+            wx.showToast({
+              title:ResData.bargain.message
+            })
           }
         })
       },
-      add(){
+      addBargain(res){
         // 转发以后 参加活动
-        this.shareState = false
-        let param = {
-          activity_id: this.DetailData.id,
-        }
-        BargainModel.bargainLaunch(param,(ResData)=>{
-          this.bargain = ResData
-          this.DetailData.current_price = ResData.launch.now_price
-          wx.setStorage({
-            key:"launch_id",
-            data: this.bargain.launch.id
+        Address.getUser(res,()=>{
+          this.shareState = false
+          let param = {
+            activity_id: this.DetailData.id,
+          }
+          BargainModel.bargainLaunch(param,(ResData)=>{
+            this.bargain = ResData
+            this.DetailData.current_price = ResData.launch.now_price
+            wx.setStorage({
+              key:"launch_id",
+              data: this.bargain.launch.id
+            })
+            this.shareState = true
+            this.$apply()
           })
-          this.shareState = true
-          this.$apply()
         })
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this)
+      makePhoneCall(){
+        BargainModel.makePhoneCall(this.DetailData.phone)
+      },
+      toMap(){
+        BargainModel.openMap(this.DetailData.longitude,this.DetailData.name,this.DetailData.address)
+      }
+    }
+    onLoad(options){
+      this.activity_id = options.id
+      if(options.launch_id){
+        this.param = {
+          launch_id: options.launch_id,
+        }
+      }
+      this.param.activity_id = options.id
     }
     onShow(){
       clearInterval(timer)
@@ -501,88 +514,16 @@
       if(wx.getStorageSync('launch_id')){
         this.param.launch_id = wx.getStorageSync('launch_id')
       }
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let param = {
-          la: this.GeographyData.latitude,
-          lng: this.GeographyData.longitude,
-        }
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
-          this.loadingHidden = true
-          this.$apply()
-          this.loadBarginData(this)
-        }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            this.loadBarginData(this)
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        BargainModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadBarginData(this)
-            this.$apply()
-          }
-          if(!this.userInfo){
-            that.methods._loadData((data)=>{
-              that.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:that.userInfo
-              })
-              let postdata = {
-                wechat_name: that.userInfo.userInfo.nickName,
-                area: that.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: that.userInfo.userInfo.avatarUrl,
-                encryptedData:that.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              wepy.$instance.globalData.isGetInfo = true
-              that.loadingHidden = true
-              // 从转发进来的时候,判断需要提示砍价
-              this.loadBarginData(this)
-            })
-          }
-        },()=>{
-          BargainModel.twoGetCityName((res)=>{
-            console.log(res)
-          })
-        })
-      }
+      this.loadBarginData(this)
       BargainModel.getBargainLoad({activity_id: this.param.activity_id, page: 1},(ResData)=>{
         // 砍价排行榜
-        this.RankingData = ResData
-        this.lastLoadList = ResData
+        if(ResData[0].openid == ''){
+          this.RankingData = []
+          this.lastLoadList = []
+        } else {
+          this.RankingData = ResData
+          this.lastLoadList = ResData
+        }
         this.$apply()
       })
     }
@@ -595,6 +536,7 @@
         that.rules = ResData.rule_str
         that.isOne = ResData.bargain.launch.help_count
         that.isTakePartIn = ResData.is_self_help
+        that.loadingHidden = true
         // that.DetailData.prize_details = that.DetailData.prize_details.replace(/&/g,'&')
         wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5)
         wxParse.wxParse('article2', 'html', that.DetailData.details, that, 5)
@@ -634,20 +576,13 @@
     onShareAppMessage(){
       let that = this;
       let shareTitle = null;
-      let path = null;
-      that.userInfo = wx.getStorageSync('user')
+      let path = '';
       if(that.DetailData){
-        path = 'pages/Bargain/details?launch_id='+that.bargain.launch.id+"&"+'id='+that.DetailData.id
-        if(that.userInfo){
-          shareTitle = that.userInfo.userInfo.nickName + that.DetailData.title
-        }
-        if(!that.userInfo){
-          shareTitle = that.DetailData.title
-        }
+        path = '/pages/Bargain/details?id='+that.activity_id+"&"+'launch_id='+that.bargain.launch.id
+        shareTitle = that.DetailData.title
       }
       if(!that.DetailData){
-        path = 'pages/Bargain/details?launch_id='+that.param.launch_id+"&"+'activity_id='+that.param.activity_id
-        shareTitle = wepy.$instance.globalData.name
+        path = '/pages/index/index'
       }
       let shareObj = {
         title: shareTitle,
@@ -667,7 +602,7 @@
       return shareObj
     }
     onReachBottom(){
-      if(!this.isLoadAll){
+      if(!this.isLoadAll && this.lastLoadList.length != 0){
         this.page++
         wx.showLoading({
           title:'加载中...'
@@ -675,9 +610,9 @@
         BargainModel.getBargainLoad({activity_id: this.param.activity_id, page: this.page},(ResData)=>{
           // 砍价排行榜
           let isLoadAll = this._isLoadAll(this.lastLoadList,ResData)
+          wx.hideLoading()
           if(isLoadAll){
             this.isLoadAll = true
-            wx.hideLoading()
             wx.showToast({
               title: '已经到底了',
               icon: 'loading',
@@ -685,7 +620,7 @@
             })
           }else{
             this.lastLoadList = ResData
-            this.RankingData = [...this.RankingData, ...ResData] 
+            this.RankingData = [...this.RankingData, ...ResData]
             this.$apply()
           }
         })
@@ -768,9 +703,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
+    position: fixed;
     top: 430rpx;
     right: 20rpx;
+    z-index: 1;
     &::after{
       content:none;
     }
@@ -973,14 +909,21 @@
             &.success{
               justify-content: center;
               .kanyidao{
+                margin: 0;
+                padding: 0;
+                border-radius: 10rpx;
                 width: 562px;
                 margin: 0 auto;
+                &::after{
+                  content: none;
+                }
               }
             }
             &.payState {
               pointer-events: none;
             }
             .kanyidao{
+              padding: 0;
               width: 400rpx;
               height: 75rpx;
               border-radius: 10rpx;
@@ -991,7 +934,7 @@
               background-color: #558329;
               margin: 0;
               &::after{
-              content:none;
+                content:none;
               }
               &.No{
                 pointer-events: none;
@@ -1048,6 +991,56 @@
           width: 100%;
           text-align: center;
           display: block;
+        }
+      }
+    }
+    .shop-address{
+      width: 710rpx;
+      box-sizing: border-box;
+      height: 126rpx;
+      padding-left: 20rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      background-color: #fff;
+      border-radius: 10rpx;
+      margin-bottom: 20rpx;
+      .shop-address-txt{
+        display: flex;
+        flex-direction: column;
+        color: #CFCFCF;
+        text{
+          width: 500rpx;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 25rpx;
+        }
+        text:first-child{
+          font-size: 28rpx;
+          color: #666;
+          margin-bottom: 15rpx;
+        }
+      }
+      .shop-adress-right{
+        display: flex;
+        align-items: center;
+        margin-right: 20rpx;
+        .locationIcon{
+          width: 24rpx;
+          height: 24rpx;
+          padding: 14rpx;
+          border-radius: 100%;
+          border:1rpx solid #2C2D2C;
+          margin-right: 40rpx;
+        }
+        .phoneIcon{
+          width: 24rpx;
+          height: 24rpx;
+          padding: 14rpx;
+          border-radius: 100%;
+          border:1rpx solid #2C2D2C;
         }
       }
     }
@@ -1309,6 +1302,10 @@
           box-shadow: 0 0 20rpx rgba(119,119,119,.4);
           background-color: #fff;
         }
+        .canvasImg{
+          width: 650rpx;
+          height: 1000rpx;
+        }
         .saveImg{
           width: 650rpx;
           height: 80rpx;
@@ -1338,6 +1335,10 @@
         transition: 1s;
       }
     }
+  }
+  .noScroll{
+    height: 100%;
+    overflow: hidden;
   }
   .bargain_success{
     width: 100%;

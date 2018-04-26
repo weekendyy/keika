@@ -13,8 +13,8 @@
               <view class="first">{{item[0]}} <text>{{item[1]}}/张</text></view>
               <text class="date">{{item[2]}}</text>
             </view>
-            <text class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 2}}" @tap="vip({{index}})">购买</text>
-            <text class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 1}}" @tap="vip({{index}})">续费</text>
+            <button open-type="getUserInfo" bindgetuserinfo="vip" class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 2}}" data-index='{{index}}'>购买</button>
+            <button open-type="getUserInfo" bindgetuserinfo="vip" class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 1}}" data-index='{{index}}'>续费</button>
           </view>
         </repeat>
         <view class="phoneBox">
@@ -32,7 +32,7 @@
         <view class="phoneBox" style="margin-top:30rpx;">
           <input placeholder="请输入开通手机号码(必填)" type="number" value="{{phoneNumberPassWord}}" @input="phoneInpPassWord" />
         </view>
-        <text class="btn {{numOpenState == true? '': 'active'}}" @tap="Verification()">立即激活</text>
+        <button open-type="getUserInfo" bindgetuserinfo="Verification" class="btn {{numOpenState == true? '': 'active'}}">立即激活</button>
       </view> 
     </view>
   </view>
@@ -40,6 +40,7 @@
 <script>
   import wepy from 'wepy'
   import VipModel from './Vip-model'
+  import Address from '../../utils/address.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -68,114 +69,119 @@
       phoneInpPassWord(e){
         this.phoneNumberPassWord = e.detail.value
       },
-      Verification(){
-        let isPhoneNumberOk = VipModel.verifyPhoneNumber(this.phoneNumberPassWord)
-        if(!isPhoneNumberOk){
-          return false
-        }
-        if(Number(this.activate_num.length) === 0){
-          wx.showToast({
-            title: '请输入激活码',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if (isNaN(this.activate_num)){
-          wx.showToast({
-            title: '请输入纯数字',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false;
-        }
-        if(Number(this.activate_num.length) <= 14){
-          wx.showToast({
-            title: '激活码长度不足',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        this.numOpenState  = false
-        let query = {}
-        query.activate_num = this.activate_num
-        query.link_tel = this.phoneNumberPassWord
-        VipModel.numOpen(query, (ResData)=>{
-          if(ResData == 1){
-            wx.showToast({
-              title: '开通会员成功',
-              icon: 'success',
-              duration: 2000
-            })
-            this.numOpenState = true
-            this.activate_num = ''
-            this.open_status = 1
-            this.$apply()
+      Verification(res){
+        Address.getUser(res,()=>{
+          let isPhoneNumberOk = VipModel.verifyPhoneNumber(this.phoneNumberPassWord)
+          if(!isPhoneNumberOk){
             return false
           }
-          if(ResData.code == 4){
+          if(Number(this.activate_num.length) === 0){
             wx.showToast({
-              title: '激活码错误',
-              icon: 'success',
-              duration: 2000
+              title: '请输入激活码',
+              icon:'loading',
+              duration: 1000,
+              mask: true,
             })
-            this.numOpenState = true
-            this.$apply()
             return false
           }
-          if(ResData.code == 5){
+          if (isNaN(this.activate_num)){
             wx.showToast({
-              title: '激活码已经使用',
-              icon: 'success',
-              duration: 2000
+              title: '请输入纯数字',
+              icon:'loading',
+              duration: 1000,
+              mask: true,
             })
-            this.numOpenState = true
-            this.$apply()
+            return false;
+          }
+          if(Number(this.activate_num.length) <= 14){
+            wx.showToast({
+              title: '激活码长度不足',
+              icon:'loading',
+              duration: 1000,
+              mask: true,
+            })
             return false
           }
+          this.numOpenState  = false
+          let query = {}
+          query.activate_num = this.activate_num
+          query.link_tel = this.phoneNumberPassWord
+          VipModel.numOpen(query, (ResData)=>{
+            if(ResData == 1){
+              wx.showToast({
+                title: '开通会员成功',
+                icon: 'success',
+                duration: 2000
+              })
+              this.numOpenState = true
+              this.activate_num = ''
+              this.open_status = 1
+              this.$apply()
+              return false
+            }
+            if(ResData.code == 4){
+              wx.showToast({
+                title: '激活码错误',
+                icon: 'success',
+                duration: 2000
+              })
+              this.numOpenState = true
+              this.$apply()
+              return false
+            }
+            if(ResData.code == 5){
+              wx.showToast({
+                title: '激活码已经使用',
+                icon: 'success',
+                duration: 2000
+              })
+              this.numOpenState = true
+              this.$apply()
+              return false
+            }
+          })
         })
       },
       phoneInp(e){
         this.phoneNumber = e.detail.value
       },
-      vip(index){
-        let isPhoneNumberOk = VipModel.verifyPhoneNumber(this.phoneNumber)
-        if(!isPhoneNumberOk){
-          return false
-        }
-        this.vipOpenState  = false
-        let param = {
-          time_type: index,
-          card_id: this.card_id,
-          link_tel: this.phoneNumber
-        }
-        VipModel.VipExecPay(param, (ResData)=>{
-          if(ResData.code == 1) {
-            VipModel.wxPay(ResData.data, ResData=>{
-              // 支付成功以后, 跳转到状态页面 把防止重复提交的订单状态变量设置成 true
-              if(ResData == 2) {
-                wx.showToast({
-                  title: '恭喜你,成功了,',
-                  icon: 'success',
-                  duration: 1200
-                })
-                this.vipOpenState = true
-                this.$apply()
-                wx.switchTab({
-                  url: '/pages/Index/index'
-                })
-              }
-              // 取消支付以后,也需要把支付状态变量设置成 true
-              if(ResData == 1) {
-                this.vipOpenState = true
-                this.$apply()
-              }
-            })
+      vip(res){
+        Address.getUser(res,()=>{
+          let index = res.currentTarget.dataset.index
+          let isPhoneNumberOk = VipModel.verifyPhoneNumber(this.phoneNumber)
+          if(!isPhoneNumberOk){
+            return false
           }
+          this.vipOpenState  = false
+          let param = {
+            time_type: index,
+            card_id: this.card_id,
+            link_tel: this.phoneNumber
+          }
+          VipModel.VipExecPay(param, (ResData)=>{
+            if(ResData.code == 1) {
+              VipModel.wxPay(ResData.data, ResData=>{
+                // 支付成功以后, 跳转到状态页面 把防止重复提交的订单状态变量设置成 true
+                if(ResData == 2) {
+                  wx.showToast({
+                    title: '恭喜你,成功了,',
+                    icon: 'success',
+                    duration: 1200
+                  })
+                  this.vipOpenState = true
+                  this.$apply()
+                  wx.switchTab({
+                    url: '/pages/Index/index'
+                  })
+                }
+                // 取消支付以后,也需要把支付状态变量设置成 true
+                if(ResData == 1) {
+                  this.vipOpenState = true
+                  this.$apply()
+                }
+              })
+            }
+          })
         })
       }
     }
@@ -263,6 +269,9 @@ page{
           }
         }
         .btn{
+          margin: 0;
+          padding: 0;
+          background-color: transparent;
           width: 159rpx;
           line-height: 69rpx;
           text-align: center;
@@ -270,6 +279,9 @@ page{
           background-color: #ffa715;
           font-size: 32rpx;
           color: #fff;
+          &::after{
+            content:none;
+          }
           &.active{
             pointer-events: none;
           }

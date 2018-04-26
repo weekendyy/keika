@@ -10,8 +10,9 @@
         <image src="{{goodsInfo.main_img}}"></image>
       </view>
       <view class="goods-info">
-        <text>{{goodsInfo.magic_shop_name}}</text>
+        <text>{{goodsInfo.magic_goods_name}}</text>
         <text>{{goodsInfo.magic_goods_title}}</text>
+        <text>店铺名称：{{goodsInfo.magic_shop_name}}</text>
       </view>
     </view>
     <view class="Verification-wrapper">
@@ -167,15 +168,21 @@
     .goods-info{
       display: flex;
       flex-direction: column;
+      height: 110rpx;
+      justify-content: space-between;
       text{
         &:first-child{
-          font-size:28rpx;
-          color:#272727;
-        }
-        &:last-child{
-          margin-top:22rpx;
           font-size:32rpx;
           color:#ff683a;
+        }
+        &:nth-child(2){
+          font-size:24rpx;
+          color:#999;
+          margin-bottom: 7rpx;
+        }
+        &:last-child{
+          font-size:24rpx;   
+          color:#999;
         }
       }
     }

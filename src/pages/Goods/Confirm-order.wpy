@@ -181,6 +181,10 @@
               // 支付成功以后, 跳转到状态页面 把防止重复提交的订单状态变量设置成 true
               if(ResData == 2) {
                 this.payState = true
+                let prevPage = getCurrentPages()[getCurrentPages().length-2]
+                prevPage.setData({
+                  buy_log: 2
+                })
                 this.$apply()
                 wx.navigateTo({
                   url: './pay-result'

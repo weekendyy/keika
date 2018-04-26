@@ -1,7 +1,7 @@
 <template>
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="index-container" hidden="{{!loadingHidden}}">
+  <view class="index-container {{showPosterBox?'noScroll':''}}" hidden="{{!loadingHidden}}">
     <view class="topImgBox">
       <image src="{{subjectImg}}" mode="aspectFill" class="topPic"></image>
       <view class="backBome" @tap="backToHome">
@@ -9,6 +9,12 @@
         <text class="backhometxt">返回首页</text>
       </view>
     </view>
+    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+      <view class="posterT">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </button>
     <view class="searchBox">
       <view class="searchBoxCenter">
         <image src="images/search.png" mode="widthFix" class="searchIcon"></image>
@@ -69,10 +75,21 @@
               </view>
             </view>
           </view>
-          <view wx:if="{{shopData.length == 0}}">
+          <view wx:if="{{isEmpty}}">
             <template is="emptyGoodsTips" data="{{tipsTxt:'暂无商铺'}}"></template>
           </view>
         </scroll-view>
+      </view>
+    </view>
+    <view class="posterBox">
+      <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+      <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="subjectCanvas"></canvas>
+        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
+        <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+          <text>保存图片</text>
+        </view>
       </view>
     </view>
   </view>
@@ -85,10 +102,11 @@
   import ShopModel from '../pages/Shop/shop-model'
   import MyModel from '@/pages/My/index-model'
   import TimeLimitActivityDetailModel from './TimeLimitActivityDetail-model'
+  import Address from '../utils/address'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '推荐店铺',
+      navigationBarTitleText: '推荐店铺'
     }
     data = {
       loadingHidden: false,
@@ -101,7 +119,12 @@
       subjectImg:'',
       where_like:'',
       status:'',
-      formId:''
+      formId:'',
+      showPosterBox: false,
+      subject_data:'',
+      actionSheetHidden: true,
+      isEmpty: false,
+      posterImg: ''
     }
     computed = {
         
@@ -138,91 +161,50 @@
         this.shopRepeatReuqest = true
         this._getData(false,true)
 
+      },
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let posterPic = wx.getStorageSync('posterPic_'+'subjectCanvas'+'_'+this.subject_id)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          this.actionSheetHidden =  true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
+        let param = {}
+        param.id = this.subject_data[0].id
+        param.type = 6
+        this.actionSheetHidden =  true
+        TimeLimitActivityDetailModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            TimeLimitActivityDetailModel.creatPoster(this, 'subjectCanvas', ResData.data, '', '', '','专题','images/posterTy.png','',this.subject_id)
+          }
+        })
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        TimeLimitActivityDetailModel.savePoste(this,'subjectCanvas',this.subject_id)
       }
     }
     onLoad(e){
       this.subject_id = e.id
       this.status = e.status
       this.formId = e.formId
-      this.subjectImg = wx.getStorageSync('subJectImg')
       this.$apply()
-      wx.setNavigationBarTitle({
-        title: e.subTitle
-      })
-      console.log(this.formId)
     }
     onShow(){
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
-          this.loadingHidden = true
-          this.$apply()
-        }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        },()=>{
-          MyModel.twoGetCityName((res)=>{
-            console.log(res)
-          })
-        })
-      }
       this.pageNum = 1
       this.shopRepeatReuqest = true
-      this._getData(false,false)
+      Address.getGeoAndUserInfo(()=>{
+        this._getData(false,false)
+      })
     }
     onReachBottom(){
       if (!this.shopRepeatReuqest) {
@@ -233,6 +215,7 @@
       }
     }
     _getData(isReachBottom,showLoading){
+      this.GeographyData = wx.getStorageSync('GeographyData')
       if(showLoading){
         wx.showLoading({
           title: '加载中',
@@ -252,11 +235,20 @@
       TimeLimitActivityDetailModel.getActivityData(query,(resData)=>{
         if(resData.code == 1){
           wx.hideLoading()
+          this.isEmpty = false
           this.loadingHidden = true
+          this.subjectImg = resData.subject_data[0].img_url
+          wx.setNavigationBarTitle({
+            title: resData.subject_data[0].subject_name
+          })
           if(isReachBottom){
             this.shopData = [...this.shopData,...resData.data]
           }else{
             this.shopData = resData.data
+            if(this.shopData.length == 0){
+              this.isEmpty = true
+            }
+            this.subject_data = resData.subject_data
           }
           if(!resData.data.length && isReachBottom){
             this.shopRepeatReuqest = false
@@ -267,6 +259,11 @@
               duration: 1500
             })
           }
+        } else {
+          this.loadingHidden = true
+          wx.showToast({
+            title: '参数错误，请重试'
+          })
         }
         this.$apply()
       })
@@ -306,6 +303,39 @@
       .backhometxt{
         font-size: 23rpx;
         color: #fff;
+      }
+    }
+  }
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 268rpx;
+    right: 20rpx;
+    z-index: 200;
+    &::after{
+      content:none;
+    }
+    .posterT{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 65rpx;
+      height: 65rpx;
+      border:1rpx dashed #fff;
+      border-radius: 100%;
+      font-size: 20rpx;
+      color: #fff;
+      text{
+        margin: 3rpx 0;
       }
     }
   }
@@ -522,6 +552,80 @@
         }
       }
     }
+  }
+  .posterBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .poster_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .poster_content{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotateY(0deg);
+      transition: .4s;
+      .posterImg{
+        width: 650rpx;
+        height: 1080rpx;
+        margin-bottom: 20rpx;
+      }
+      .canvas{
+        box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+        background-color: #fff;
+      }
+      .canvasImg{
+        width: 650rpx;
+        height: 1000rpx;
+      }
+      .saveImg{
+        width: 650rpx;
+        height: 80rpx;
+        background-color: #FE6420;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 28rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        pointer-events: none;
+        margin-top: 20rpx;
+        .downPic{
+          width: 35rpx;
+          height: 35rpx;
+          margin-right: 20rpx;
+        }
+      }
+      .canSave{
+        pointer-events: auto;
+      }
+    }
+    .showPosterBox{
+      opacity: 1;
+      transform: rotateY(0);
+      transition: 1s;
+    }
+  }
+  .noScroll{
+    height: 100%;
+    overflow: hidden;
   }
 </style>
 

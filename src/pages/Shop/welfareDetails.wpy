@@ -1,17 +1,26 @@
 <template>
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="Index-container">
+  <view class="Index-container {{showPosterBox?'noscroll':''}}">
     <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
       <swiper-item class="banner-item">
         <image src="{{WelfareData.banner_img}}" mode="aspectFill"></image>
       </swiper-item>
     </swiper>
+    <BackHome top='20'></BackHome>
     <view class="item-wrapper">
       <view class="item">
         <view class="shop-info-header">
-          <text class="shop-title">{{WelfareData.magic_shop_name}}</text>
+          <text class="shop-title">{{WelfareData.magic_goods_name}}</text>
+          <view class="goods-share" @tap="Share">
+            <image src="../Goods/img/icon-share.png" class="icon-share" mode="widthFix"></image>
+            <text class="share">分享</text>
+          </view>
         </view>
-        <text class="time">营业时间: {{WelfareData.business_time}}</text>
+        <text class="shop-title-name">{{WelfareData.magic_goods_title}}</text>
+        <view class="shop-info-bottom">
+          <text class="shop-name">店铺：{{WelfareData.magic_shop_name}}</text>
+          <text class="time">营业时间: {{WelfareData.business_time}}</text>
+        </view>
       </view>
       <view class="item h120">
         <image src="../Shop/images/icon-address.png" class="icon-address"></image>
@@ -41,7 +50,8 @@
     </view>
     <form report-submit="magicFormId" bindsubmit="addWelfare">
       <button class="open-vip receiveBtn" form-type="submit" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 3}}">
-        <text>马上领取</text>
+        <text wx:if="{{WelfareData.repertory_num != WelfareData.get_num}}">马上领取</text>
+        <text wx:if="{{WelfareData.repertory_num == WelfareData.get_num}}">已领完</text>
       </button>
     </form>
     <view class="open-vip" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 1}}">
@@ -55,15 +65,44 @@
       <text wx:if="{{use_status == 2}}">已使用</text>
     </view>
   </view>
+  <view class="shareBox">
+    <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
+    <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
+      <button class="shareItem" open-type="share">
+        <image src="http://p55e536k6.bkt.clouddn.com/weixin.png" mode="widthFix" class="shareIcon"></image>
+        <text>微信好友</text>
+      </button>
+
+      <button class="shareItem" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+        <image src="http://p55e536k6.bkt.clouddn.com/share.png" mode="widthFix" class="shareIcon"></image>
+        <text>生成卡片</text>
+      </button>
+    </view>
+  </view>
+  <view class="posterBox">
+    <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+    <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+      <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="welfareCanvas"></canvas>
+      <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
+      <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+        <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+        <text>保存图片</text>
+      </view>
+    </view>
+  </view>
 </template>
 <script>
   import wepy from 'wepy'
   import ShopModel from './shop-model'
   import wxParse from '../../wxParse/wxParse'
+  import BackHome from '../../components/backHome'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '福利详情',
+    }
+    components = {
+      BackHome: BackHome
     }
     data = {
       id: null,
@@ -71,25 +110,24 @@
       card_status: null,
       check_get_log: null,
       time_status:null,
+      actionSheetHidden: true,
       orderId:'',
-      use_status:''
+      use_status:'',
+      showPosterBox: '',
+      posterImg: ''
     }
     methods = {
       onShareAppMessage(){
         return {
           title: this.WelfareData.magic_shop_name,
-          path: 'pages/Shop/welfareDetails?id='+ this.id,
+          path: '/pages/Shop/welfareDetails?id='+ this.id,
         }
       },
       openMap(data){
-        let latitude = data.split(",")[0]
-        let longitude = data.split(",")[1]
-        this.$navigate('./map',{latitude:latitude,longitude:longitude,shopName:this.WelfareData.magic_shop_name,shopAddress:this.WelfareData.address})
+        ShopModel.openMap(data,this.WelfareData.magic_shop_name,this.WelfareData.address)
       },
       tel(data){
-        wx.makePhoneCall({
-          phoneNumber: data
-        })
+        ShopModel.makePhoneCall(data)
       },
       openVip(){
         this.$navigate('../Vip/Index')
@@ -121,6 +159,50 @@
       },
       gotoUse(){
         this.$navigate('../My/coupon?id='+this.orderId)
+      },
+      closeShareBox(){
+        this.actionSheetHidden = true
+        this.$apply()
+      },
+      Share(){
+        this.actionSheetHidden = false
+        this.$apply()
+      },
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let posterPic = wx.getStorageSync('posterPic_'+'welfareCanvas'+'_'+this.id)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          this.actionSheetHidden =  true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
+        let param = {}
+        param.id = this.id
+        param.type = 7
+        this.actionSheetHidden =  true  
+        ShopModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            ShopModel.creatPoster(this, 'welfareCanvas', ResData.data, '', '', '','','',ResData.data.address,this.id)
+          }else{
+            wx.showToast({
+              title: ResData.message,
+              icon: 'none',
+              duration: 1500
+            })
+          }
+        })
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        ShopModel.savePoste(this,'welfareCanvas',this.id)
       }
     }
     onLoad(options){
@@ -175,16 +257,39 @@
     }
     .shop-info-header{
       width:  100%;
-      margin-top:38rpx;
-      margin-bottom:24rpx;
+      margin-top:30rpx;
       display: flex;
       align-items: center;
       justify-content: space-between;
       .shop-title {
-        flex: 1;
-        font-size:36rpx;
+        font-size:35rpx;
         color:#323232;
         font-weight: 500;
+        overflow: hidden;
+        line-height: 42rpx;
+        max-width: 600rpx;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .goods-share{
+        flex: 0 0 70rpx;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: column;
+
+        /*box-shadow: 0 0rpx 30rpx rgba(129,126,126,.1);*/
+        transition: .3s;
+        margin-left: 13rpx;
+        .icon-share{
+          width: 35rpx;
+          height: 35rpx;
+        }
+        .share {
+          color: #AFAFAF;
+          font-size: 25rpx;
+          margin-top: 10rpx;
+        }
       }
       .time{
         display: block;
@@ -193,11 +298,37 @@
         margin-bottom:34rpx;
       }
     }
-    .time{
+    .shop-title-name{
+      font-size: 28rpx;
+      color: #999;
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
       display: block;
-      font-size:28rpx;
-      color:#747474;
-      margin-bottom:34rpx;
+      margin-top: 10rpx;
+      text-overflow: ellipsis;
+      max-width: 600rpx;
+    }
+    .shop-info-bottom{
+      display: flex;
+      align-items: center;
+      margin: 30rpx 0;
+      .shop-name{
+        font-size: 28rpx;
+        color: #747474;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 370rpx;
+      }
+      .time{
+        display: block;
+        font-size:28rpx;
+        color:#747474;
+        margin-left: 40rpx;
+        flex: 1;
+      }
     }
     .h120, .h80{
       display: flex;
@@ -312,6 +443,39 @@
       }
     }
   }
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 200rpx;
+    right: 20rpx;
+    z-index: 200;
+    &::after{
+      content:none;
+    }
+    .posterT{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 65rpx;
+      height: 65rpx;
+      border:1rpx dashed #fff;
+      border-radius: 100%;
+      font-size: 20rpx;
+      color: #fff;
+      text{
+        margin: 3rpx 0;
+      }
+    }
+  }
   .open-vip{
     width: 100%;
     height: 110rpx;
@@ -336,5 +500,131 @@
     &::after{
       content:none;
     }
+  }
+  .posterBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .poster_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .poster_content{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotateY(0deg);
+      transition: .4s;
+      .posterImg{
+        width: 650rpx;
+        height: 1080rpx;
+        margin-bottom: 20rpx;
+      }
+      .canvas{
+        box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+        background-color: #fff;
+      }
+      .canvasImg{
+        width: 650rpx;
+        height: 1000rpx;
+      }
+      .saveImg{
+        width: 650rpx;
+        height: 80rpx;
+        background-color: #FE6420;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 28rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        pointer-events: none;
+        margin-top: 20rpx;
+        .downPic{
+          width: 35rpx;
+          height: 35rpx;
+          margin-right: 20rpx;
+        }
+      }
+      .canSave{
+        pointer-events: auto;
+      }
+    }
+    .showPosterBox{
+      opacity: 1;
+      transform: rotateY(0);
+      transition: 1s;
+    }
+  }
+  .shareBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .shareBox_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .shareBox_content{
+      width: 100%;
+      height: 200rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      position: absolute;
+      bottom: -200rpx;
+      left: 0;
+      background-color: #fff;
+      transform: translateY(0);
+      pointer-events: auto;
+      .shareItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        &::after{
+          content:none;
+        }
+        .shareIcon{
+          width: 80rpx;
+          height: 80rpx;
+          margin-bottom: 20rpx;
+        }
+        text{
+          font-size: 25rpx;
+          color: #222;
+        }
+      }
+    }
+    .show_shareBox{
+      transform: translateY(-200rpx);
+      transition: .3s;
+    }
+  }
+  .noscroll{
+    height: 100%;
+    overflow: hidden;
   }
 </style>

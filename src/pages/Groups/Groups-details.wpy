@@ -1,12 +1,13 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="Groups-details {{prohibitScroll == true ? 'container': ''}}" hidden="{{!loadingHidden}}">
+  <view class="Groups-details {{prohibitScroll == true ? 'container': ''}} {{showPosterBox?'noscroll':''}}" wx:if="{{loadingHidden}}">
     <swiper autoplay="true" interval="3000" indicator-dots="true" indicator-color="#bbd5ef" indicator-active-color="#ff4422" class="swiper-wrapper">
       <swiper-item class="swiper-item"  wx:for="{{DetailData.banner}}" wx:for-item="item" wx:key="index">
         <image class="swiper-image" src="{{item}}"></image>
       </swiper-item>
     </swiper>
+    <BackHome top='20'></BackHome>
     <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
       <view class="posterT">
         <text>生成</text>
@@ -36,6 +37,16 @@
         <text>{{DetailData.describe}}</text>
       </view>
     </view>
+    <view class="shop-address">
+      <view class="shop-address-txt">
+        <text wx:if="{{DetailData.group_shop_name}}">{{DetailData.group_shop_name}}</text>
+        <text wx:if="{{DetailData.address}}">{{DetailData.address}}</text>
+      </view>
+      <view class="shop-adress-right">
+        <image @tap="toMap" mode="aspectFill" class="locationIcon" src="../../images/location.png"></image>
+        <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
+      </view>
+    </view>
     <view class="join-wrapper">
       <view class="rule-header">
         <text class="rule-text">支付开团邀请{{DetailData.group_person}}人参团,人数不足自动退款</text>
@@ -56,10 +67,10 @@
             </view>
             <text class="state">拼团中</text>
           </view>
-          <view class="group-item" wx:if="{{GroupMonadData.length == 0}}" @tap="buyGoods('2')">
+          <button open-type="getUserInfo" bindgetuserinfo="buyGoods" class="group-item" wx:if="{{GroupMonadData.length == 0}}" data-index='2'>
             <text class="noGroupMonadData">暂时还没有人开团哦~</text>
             <text class="state">去开团</text>
-          </view>
+          </button>
         </view>
       </view>
     </view>
@@ -152,14 +163,14 @@
         <image class="index-icon" src="./images/icon-index.png"></image>
         <text class="index-text">首页</text>
       </navigator>
-      <view class="purchase {{payState == true ? '' : 'disabled'}} {{DetailData.group_goods_status==2?'':'disabled'}}" @tap="buyGoods('1')">
+      <button open-type="getUserInfo" bindgetuserinfo="buyGoods" class="purchase {{payState == true ? '' : 'disabled'}} {{DetailData.group_goods_status==2?'':'disabled'}}" data-index='1'>
         <text class="purchase-Price">{{DetailData.discount_price}}</text>
         <text class="purchase-text">单独购买</text>
-      </view>
-      <view class="buy-wrapper {{payState == true ? '' : 'disabled'}} {{DetailData.group_goods_status==2?'':'disabled'}}" @tap="buyGoods('2')">
+      </button>
+      <button open-type="getUserInfo" bindgetuserinfo="buyGoods" class="buy-wrapper {{payState == true ? '' : 'disabled'}} {{DetailData.group_goods_status==2?'':'disabled'}}" data-index='2'>
         <text class="buy-Price">{{DetailData.group_price}}</text>
         <text class="buy-text">{{DetailData.group_person}}人拼团</text>
-      </view>
+      </button>
     </view>
     <view class="shareBox">
       <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
@@ -178,7 +189,8 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="groupcCanvas"></canvas>
+        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="groupCanvas"></canvas>
+        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
           <text>保存图片</text>
@@ -186,7 +198,7 @@
       </view>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
@@ -235,16 +247,20 @@
   import MyModel from '@/pages/My/index-model'
   import wxParse from '../../wxParse/wxParse'
   import wepy from 'wepy'
+  import BackHome from '../../components/backHome'
+  import Address from '../../utils/address.js'
   let animationShowHeight = 0;
   export default class index extends wepy.page {
     config = {
-      navigationBarBackgroundColor: '#000000',
+      navigationBarBackgroundColor: '#fff',
       navigationBarTitleText: '活动详情',
-      navigationBarTextStyle: '#fff'
+      navigationBarTextStyle: 'black'
+    }
+    components = {
+      BackHome: BackHome
     }
     data = {
       currentTabsIndex: 0,
-      DetailsData: '',
       goodsId: '',
       DetailData: null,
       likeData: null,
@@ -262,8 +278,8 @@
       end_time: '',
       start_time:'',
       userInfo: null,
-      GeographyData: null,
-      showPosterBox: false
+      showPosterBox: false,
+      posterImg: ''
     }
     methods = {
       onTabsItemTap(i){
@@ -308,13 +324,21 @@
         wx.showLoading({
           title: '生成卡片中',
         })
+        let posterPic = wx.getStorageSync('posterPic_'+'groupCanvas'+'_'+this.DetailData.id)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
         let param = {}
         param.id = this.goodsId
         param.type = 2
         this.actionSheetHidden =  true
         Groups.getPostData(param,ResData=>{
           if(ResData.code == 1){
-            Groups.creatPoster(this, 'groupcCanvas', ResData.data, this.DetailData.goods_name, this.DetailData.discount_price,this.DetailData.original_price,'拼团','../../images/posterTy.png')
+            Groups.creatPoster(this, 'groupCanvas', ResData.data, this.DetailData.goods_name, this.DetailData.group_price,this.DetailData.original_price,'拼团','../../images/posterTy.png','',this.DetailData.id)
           }
         })
       },
@@ -359,29 +383,32 @@
         this.animationData = animation.export()
         this.prohibitScroll = false
       },
-      buyGoods(index){
-        this.payState = false
-        let type = index
-        let _param = {
-          group_goods_id: this.goodsId,
-          pay_type: type,
-        }
-        Groups.createGroupsPlace(_param, ResData=>{
-            if(ResData.code === 1){
-              this.$navigate('/pages/Groups/Groups-Confirm-order',{orderId: ResData
-                .order_id, pay_type: type,});
-              this.payState = true
-              return false
-            }
-            if(ResData.code != 1){
-              let message = ResData.message
-              wx.showToast({
-                title: message,
-                icon: 'success',
-                duration: 1200
-              })
-              return false
-            }
+      buyGoods(res){
+        Address.getUser(res,()=>{
+          let index = res.currentTarget.dataset.index
+          this.payState = false
+          let type = index
+          let _param = {
+            group_goods_id: this.goodsId,
+            pay_type: type,
+          }
+          Groups.createGroupsPlace(_param, ResData=>{
+              if(ResData.code === 1){
+                this.$navigate('/pages/Groups/Groups-Confirm-order',{orderId: ResData
+                  .order_id, pay_type: type,});
+                this.payState = true
+                return false
+              }
+              if(ResData.code != 1){
+                let message = ResData.message
+                wx.showToast({
+                  title: message,
+                  icon: 'success',
+                  duration: 1200
+                })
+                return false
+              }
+          })
         })
       },
       addGroups(type){
@@ -410,9 +437,8 @@
         })
       },
       onShareAppMessage(){
-        let that = this;
-        that.userInfo = wx.getStorageSync('user')
-        let shareTitle = that.userInfo.userInfo.nickName + this.DetailData.goods_name
+        let that = this
+        let shareTitle = this.DetailData.goods_name
         let shareObj = {
           title: shareTitle,
           path: '/pages/Groups/Groups-details?id='+ this.goodsId,
@@ -428,17 +454,6 @@
         }
         return shareObj
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this),
       bigPic(idx,index){
         wx.previewImage({
           current: this.EvaluateData[idx].image[index], // 当前显示图片的http链接
@@ -454,7 +469,13 @@
         this.$apply()
       },
       savePostePic(){
-        Groups.savePoste(this,'groupcCanvas')
+        Groups.savePoste(this,'groupCanvas',this.DetailData.id)
+      },
+      makePhoneCall(){
+        Groups.makePhoneCall(this.DetailData.link_tel)
+      },
+      toMap(){
+        Groups.openMap(this.DetailData.longitude,this.DetailData.group_shop_name,this.DetailData.address)
       }
     }
     onLoad(options){
@@ -466,6 +487,7 @@
       query.formID = options.formID
       Groups.getGroupMonad(query, ResData=>{
         if(ResData.code === 1){
+          this.loadingHidden = true
           this.GroupMonadData = ResData.data
           this.$apply()
         }
@@ -477,6 +499,7 @@
       }
       Groups.getGroupsGoodsDetail(param,ResData=>{
         if(ResData.code === 1){
+          this.loadingHidden = true
           this.DetailData = ResData.data
           const article = this.DetailData.detail;
           this.end_time = this.DetailData.reside_time * 1000;
@@ -486,71 +509,6 @@
           this.$apply()
         }
       })
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
-          this.loadingHidden = true
-          this.$apply()
-        }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        })
-      }
-      
     }
     onReady(){
       /**
@@ -563,6 +521,7 @@
       })
       Groups.getGroupsGoodsLike(ResData=>{
         if(ResData.code === 1){
+          this.loadingHidden = true
           this.likeData = ResData.data
           this.$apply()
         }
@@ -613,6 +572,10 @@
       overflow-y: hidden;
     }
   }
+  .noscroll{
+    height: 100%;
+    overflow: hidden;
+  }
   .swiper-wrapper{
     width: 100%;
     height: 522rpx;
@@ -631,9 +594,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
+    position: fixed;
     top: 320rpx;
     right: 20rpx;
+    z-index: 10;
     &::after{
       content:none;
     }
@@ -755,6 +719,55 @@
       }
     }
   }
+  .shop-address{
+    width: 750rpx;
+    box-sizing: border-box;
+    height: 126rpx;
+    padding-left: 20rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    background-color: #fff;
+    margin: 30rpx auto;
+    .shop-address-txt{
+      display: flex;
+      flex-direction: column;
+      color: #CFCFCF;
+      text{
+        width: 500rpx;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-size: 25rpx;
+      }
+      text:first-child{
+        font-size: 28rpx;
+        color: #666;
+        margin-bottom: 15rpx;
+      }
+    }
+    .shop-adress-right{
+      display: flex;
+      align-items: center;
+      margin-right: 20rpx;
+      .locationIcon{
+        width: 24rpx;
+        height: 24rpx;
+        padding: 14rpx;
+        border-radius: 100%;
+        border:1rpx solid #2C2D2C;
+        margin-right: 40rpx;
+      }
+      .phoneIcon{
+        width: 24rpx;
+        height: 24rpx;
+        padding: 14rpx;
+        border-radius: 100%;
+        border:1rpx solid #2C2D2C;
+      }
+    }
+  }
   .join-wrapper{
     margin-top: 16rpx;
     background-color: #fff;
@@ -800,6 +813,8 @@
       .group-list{
         overflow:auto;
         .group-item{
+          padding: 0;
+          margin: 0;
           width: 684rpx;
           height: 100rpx;
           background-color: #f6f6f6;
@@ -807,6 +822,9 @@
           display: flex;
           align-items: center;
           border-radius: 50rpx;
+          &::after{
+            content: none;
+          }
           .pic{
             flex: 0 0 70rpx;
             height: 70rpx;
@@ -821,6 +839,8 @@
             font-size: 28rpx;
             color: #2a2a2a;
             flex: 0 0 4em;
+            height:50rpx;
+            line-height: 50rpx;
           }
           .group-time{
             display: flex;
@@ -1208,6 +1228,9 @@
       }
     }
     .purchase{
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
       width: 100%;
       flex: 1;
       display: flex;
@@ -1216,6 +1239,9 @@
       justify-content: center;
       background-color: #ffe7e3;
       color: #ff4422;
+      &::after{
+        content: none;
+      }
       &.disabled{
         color: #fff;
         background-image: linear-gradient(to right, #cbcbcb,#9a9a9a);
@@ -1229,7 +1255,10 @@
       }
     }
     .buy-wrapper{
+      padding: 0;
+      margin: 0;
       width: 100%;
+      border-radius: 0;
       flex:1;
       display: flex;
       align-items: center;
@@ -1237,6 +1266,9 @@
       justify-content: center;
       background-color: #ff4422;
       color: #fff;
+      &::after{
+        content: none;
+      }
       &.disabled{
         background-image: linear-gradient(to right, #cbcbcb,#9a9a9a);
         pointer-events: none;
@@ -1337,6 +1369,10 @@
       .canvas{
         box-shadow: 0 0 20rpx rgba(119,119,119,.4);
         background-color: #fff;
+      }
+      .canvasImg{
+        width: 650rpx;
+        height: 1000rpx;
       }
       .saveImg{
         width: 650rpx;

@@ -1,7 +1,7 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
-  <view class="goods-details-wrapper {{showPosterBox?'stopScroll':''}}" hidden="{{!loadingHidden}}">
+  <view class="goods-details-wrapper {{showPosterBox?'stopScroll':''}}" wx:if="{{loadingHidden}}">
     <swiper indicator-dots="true" autoplay="true" class="swiper" indicator-color="#ccc" indicator-active-color="#ff4f11">
       <repeat for="{{DetailsData.arr_banner}}" wx:key="index" wx:for-item="item">
         <swiper-item class="banner-item">
@@ -9,6 +9,7 @@
         </swiper-item>
       </repeat>
     </swiper>
+    <BackHome top='20'></BackHome>
     <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
       <view class="posterT">
         <text>生成</text>
@@ -55,10 +56,10 @@
     </view>
     <view class="openVipBox" wx:if="{{DetailsData.magic_vip_status == 2}}" @tap="gotoOpenVip">
       <view class="openVipBox_left">
-        <image class="vipIcon" mode="widthFix" src="img/viptime.png"></image>
+        <image class="vipIcon" mode="widthFix" src="http://p55e536k6.bkt.clouddn.com/vip.png"></image>
         <text>开通VIP享受更多特权</text>
       </view>
-      <text class="gotoOpen">去开通 ></text>
+      <text class="gotoOpen">开通VIP</text>
     </view>
     <view class="goods-wrapper">
       <view class="goods-name-wrapper">
@@ -68,9 +69,15 @@
           <text class="share">分享</text>
         </view>
       </view>
-      <view class="Activity-date">
-        <text class="Activity-date_txt">消费有效期截至：</text>
-        <text class="Activity-date_num">{{DetailsData.end_time}}</text>
+      <view class="shop-address">
+        <view class="shop-address-txt">
+          <text wx:if="{{DetailsData.promotion_shop_name}}">{{DetailsData.promotion_shop_name}}</text>
+          <text wx:if="{{DetailsData.address}}">{{DetailsData.address}}</text>
+        </view>
+        <view class="shop-adress-right">
+          <image @tap="toMap" mode="aspectFill" class="locationIcon" src="../../images/location.png"></image>
+          <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
+        </view>
       </view>
       <view class="goods-rule"  wx:if="{{DetailsData.rule_list.length > 0}}">
         <repeat for="{{DetailsData.rule_list}}" wx:key="index" wx:for-item="item">
@@ -80,15 +87,9 @@
           </view>
         </repeat>
       </view>
-      <view class="goods-sign" wx:if="{{DetailsData.shop_auth_list.length > 0}}">
-        <repeat for="{{DetailsData.shop_auth_list}}" wx:key="index" wx:for-item="item">
-          <image src="./img/icon_success.png"></image>
-          <text>{{item}}</text>
-        </repeat>
-      </view>
     </view>
     <view class="goods-process">
-      <image src="./img/goods_process.png"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/promotion_tip.png"></image>
     </view>
     <view class="goods-details">
       <view class="details-header">
@@ -98,6 +99,10 @@
       </view>
       <view class="details-main">
         <view class="main-details" hidden="{{ currentTabsIndex != 0 }}">
+          <view class="end-time">
+            <text>消费有效期截至：</text>
+            <text>{{DetailsData.end_time}}</text>
+          </view>
           <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
         </view>
         <view class="main-details" hidden="{{ currentTabsIndex != 1 }}">
@@ -116,7 +121,7 @@
                   <image src="{{item}}" @tap="bigPic({{idx}},{{index}})"></image>
                 </block>
               </view>
-              <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent" data-index="{{index}}">
+              <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent({{idx}})" data-index="{{index}}">
                 <image src="./img/Fabulous@selecd.png" wx:if="{{item.like}}"></image>
                 <image src="./img/Fabulous.png" wx:else></image>
                 <text class="Fabulous">{{item.like_count}}</text>
@@ -158,23 +163,23 @@
       
       <!--aqing 临时修改开始  -->
       <!-- 未开始 -->
-      <view wx:if="{{DetailsData.new_time_status == 0}}" class="Buy" @tap="makeOrderTime" data-wpybuygoods-a="">
+      <view wx:if="{{DetailsData.new_time_status == 0}}" class="Buy" @tap="makeOrderTime">
         {{DetailsData.order_time_str}}
       </view>
       <!--进行中  -->
       <block wx:if="{{DetailsData.new_time_status == 1}}">
-        <view wx:if="{{buy_log == 1}}" class="Buy" bindtap="buyGoods" data-wpybuygoods-a="">
+        <button open-type="getUserInfo" bindgetuserinfo="buyGoods" wx:if="{{buy_log == 1}}" class="Buy">
           立即抢购
-        </view> 
-        <view wx:if="{{buy_log == 2}}" class="Buy" bindtap="gotoUse" data-wpybuygoods-a="">
+        </button> 
+        <view wx:if="{{buy_log == 2}}" class="Buy" bindtap="gotoUse">
           立即使用
         </view>
-        <view wx:if="{{buy_log == 3}}" class="Buy" data-wpybuygoods-a="">
+        <view wx:if="{{buy_log == 3}}" class="Buy">
           已使用
         </view>
       </block>
       <!--已经结束  -->
-      <view wx:if="{{DetailsData.new_time_status == 2}}" class="Buy disabled " bindtap="buyGoods" data-wpybuygoods-a="">
+      <view wx:if="{{DetailsData.new_time_status == 2}}" class="Buy disabled " >
          活动已经结束
       </view> 
     </view>
@@ -200,7 +205,8 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas wx:if="{{showPosterBox}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="bargaincanvas"></canvas>
+        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="goodsCanvas"></canvas>
+        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
           <text>保存图片</text>
@@ -208,7 +214,7 @@
       </view>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
@@ -290,9 +296,14 @@
   import wepy from 'wepy'
   import DetailsModel from './details-model'
   import MyModel from '@/pages/My/index-model'
+  import BackHome from '../../components/backHome'
+  import Address from '../../utils/address.js'
   export default class Index extends wepy.page {
     config = {
       navigationBarTitleText: '套餐详情'
+    }
+    components = {
+      BackHome: BackHome
     }
     data = {
       currentTabsIndex: 0,
@@ -313,7 +324,8 @@
       end_time:'',
       clock:'',
       posterPic:'',
-      showPosterBox: false
+      showPosterBox: false,
+      posterImg: ''
     }
     methods= {
       /* tab切换 */
@@ -331,8 +343,7 @@
         this.$apply()
       },
       /* 点赞 */
-      FabulousEvent($event){
-        let i= DetailsModel.getDataSet($event,'index')
+      FabulousEvent(i){
         let indexlike = this.EvaluateData[i].like
         let indexId = this.EvaluateData[i].id
         DetailsModel.PostEvaluateLike(indexId, ResData=> {
@@ -349,68 +360,75 @@
         })
       },
       /* 下单 */
-      buyGoods(){
-        DetailsModel.delOrder(this.goods_id,ResData=>{
-          if(Number(ResData.code) == ERR_OK) {
-            wx.showToast({
-              title: '抢购成功',
-              icon: 'success',
-              duration: 2000
-            })
-            wx.navigateTo({
-              url: './Confirm-order?orderId='+ ResData.order_id
-            })
-          }
-          if(Number(ResData.code) == 0) {
-            wx.showToast({
-              title: '订单异常',
-              icon: 'success',
-              duration: 1200
-            })
-            this.payState = false
-            this.$apply()
-            return false
-          }
-          if(Number(ResData.code) == 2) {
-            wx.showToast({
-              title: '库存不够啦!!!',
-              icon: 'success',
-              duration: 1200
-            })
-            this.payState = false
-            this.$apply()
-            return false
-          }
-          if(Number(ResData.code) == 3) {
-            wx.showToast({
-              title: '商品下架了!!!',
-              icon: 'success',
-              duration: 1200
-            })
-            this.payState = false
-            this.$apply()
-            return false
-          }
-          if(Number(ResData.code) == 4) {
-            wx.showToast({
-              title: '活动过期啦!!!',
-              icon: 'success',
-              duration: 1200
-            })
-            this.payState = false
-            this.$apply()
-            return false
-          }
-          if(Number(ResData.code) == 11) {
-            wx.showToast({
-              title: ResData.message,
-              icon: 'success',
-              duration: 1200
-            })
-            this.payState = false
-            this.$apply()
-            return false
-          }
+      buyGoods(res){
+        Address.getUser(res,()=>{
+          DetailsModel.delOrder(this.goods_id,ResData=>{
+            if(Number(ResData.code) == ERR_OK) {
+              wx.showToast({
+                title: '抢购成功',
+                icon: 'success',
+                duration: 2000
+              })
+              wx.navigateTo({
+                url: './Confirm-order?orderId='+ ResData.order_id
+              })
+            }
+            if(Number(ResData.code) == 0) {
+              wx.showToast({
+                title: '订单异常',
+                icon: 'success',
+                duration: 1200
+              })
+              this.payState = false
+              this.$apply()
+              return false
+            }
+            if(Number(ResData.code) == 2) {
+              wx.showToast({
+                title: '库存不够啦!!!',
+                icon: 'success',
+                duration: 1200
+              })
+              this.payState = false
+              this.$apply()
+              return false
+            }
+            if(Number(ResData.code) == 3) {
+              wx.showToast({
+                title: '商品下架了!!!',
+                icon: 'success',
+                duration: 1200
+              })
+              this.payState = false
+              this.$apply()
+              return false
+            }
+            if(Number(ResData.code) == 4) {
+              wx.showToast({
+                title: '活动过期啦!!!',
+                icon: 'success',
+                duration: 1200
+              })
+              this.payState = false
+              this.$apply()
+              return false
+            }
+            if(Number(ResData.code) == 11) {
+              wx.showToast({
+                title: ResData.message,
+                icon: 'success',
+                duration: 1200
+              })
+              this.payState = false
+              this.$apply()
+              return false
+            }
+          })
+        })
+      },
+      gotoUse(){
+        wx.navigateTo({
+          url: '../My/order/coupon?id='+this.DetailsData.order_id
         })
       },
       Share(){
@@ -427,20 +445,27 @@
         wx.showLoading({
           title: '生成卡片中',
         })
+        let posterPic = wx.getStorageSync('posterPic_'+'goodsCanvas'+'_'+this.goods_id)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
         let param = {}
         param.id = this.goods_id
         param.type = 1
         this.actionSheetHidden =  true
         DetailsModel.getPostData(param,ResData=>{
           if(ResData.code == 1){
-            MyModel.creatPoster(this, 'bargaincanvas', ResData.data, this.DetailsData.name, this.DetailsData.discount_price,this.DetailsData.original_price,'抢购','../../images/posterTy.png')
+            MyModel.creatPoster(this, 'goodsCanvas', ResData.data, this.DetailsData.name, this.DetailsData.discount_price,this.DetailsData.original_price,'抢购','../../images/posterTy.png','',this.goods_id)
           }
         })
       },
       onShareAppMessage(name){
         let that = this;
-        that.userInfo = wx.getStorageSync('user')
-        let shareTitle = that.userInfo.userInfo.nickName + that.DetailsData.name
+        let shareTitle = that.DetailsData.name
         return {
           title: shareTitle,
           path: '/pages/Goods/details?id='+ this.goods_id,
@@ -455,29 +480,13 @@
           }
         }
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this),
       gotoOpenVip(){
         wx.navigateTo({
           url: '../Vip/Index'
         })
       },
-      gotoUse(){
-        wx.navigateTo({
-          url: '../My/order/coupon?id='+this.DetailsData.order_id
-        })
-      },
       savePostePic(){
-        MyModel.savePoste(this,'bargaincanvas')
+        MyModel.savePoste(this,'goodsCanvas',this.goods_id)
       },
       closePosterBox(){
         this.showPosterBox = false
@@ -500,99 +509,28 @@
             icon: 'success'
           })
         })
+      },
+      makePhoneCall(){
+        DetailsModel.makePhoneCall(this.DetailsData.link_tel)
+      },
+      toMap(){
+        DetailsModel.openMap(this.DetailsData.longitude,this.DetailsData.promotion_shop_name,this.DetailsData.address)
       }
     }
     onLoad(options){
       DetailsModel.getMorePromotion( ResData=>{
         if (ResData.code == 1) {
           this.SeckillData = ResData.data
+          this.loadingHidden = true
           this.$apply()
         }
       })
       this.goods_id = options.id
-      this.formID = options.formID
-      // var scene = decodeURIComponent(options.scene)
-      // console.log(scene)
-    }
-    onShow(){
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
-          this.loadingHidden = true
-          this.$apply()
-        }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        })
-      }
-      DetailsModel.getVipStateInfo(ResData=>{
-        if( Number(ResData.code)==1 ){
-          if(Number(ResData.check_result.status) == IS_VIP) {
-            this.VipState = false
-            this.$apply()
-          }
-        }
-        this.$apply()
-      })
       let query = {}
       query.goods_id = this.goods_id
-      query.magic_formID = this.formID
       DetailsModel.getGoodsDetails(query,ResData =>{
         if (ResData.code == 1) {
+          this.loadingHidden = true
           this.DetailsData = ResData.promotion[0]
           const article = this.DetailsData.detail;
           wxParse.wxParse('article', 'html', article, this, 0);
@@ -601,6 +539,18 @@
           countdown(this)
           this.$apply()
         }
+      })
+    }
+    onShow(){
+      DetailsModel.getVipStateInfo(ResData=>{
+        if( Number(ResData.code)==1 ){
+          this.loadingHidden = true
+          if(Number(ResData.check_result.status) == IS_VIP) {
+            this.VipState = false
+            this.$apply()
+          }
+        }
+        this.$apply()
       })
     }
     onHide(){
@@ -651,9 +601,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
+    position: fixed;
     top: 320rpx;
     right: 20rpx;
+    z-index: 200;
     &::after{
       content:none;
     }
@@ -664,7 +615,7 @@
       justify-content: center;
       width: 65rpx;
       height: 65rpx;
-      border:1rpx dashed #fff;
+      border:1px dashed #fff;
       border-radius: 100%;
       font-size: 20rpx;
       color: #fff;
@@ -816,26 +767,33 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 86rpx;
+    height: 116rpx;
     background-color: #fff;
     margin-bottom: 20rpx;
+    border-bottom: 1px solid #E3E2E2;
     .openVipBox_left{
       display: flex;
       align-items: center;
       margin-left: 20rpx;
       .vipIcon{
-        width: 30rpx;
-        height: 30rpx;
-        margin-right: 12rpx;
+        width: 65rpx;
+        height: 65rpx;
+        margin-right: 16rpx;
       }
       text{
-        font-size: 25rpx;
-        color: #2F2F2F;
+        font-size: 27rpx;
+        color: #EACD98;
       }
     }
     .gotoOpen{
-      color: #FF5011;
-      font-size: 25rpx;
+      width: 136rpx;
+      height: 60rpx;
+      font-size: 28rpx;
+      color: #fff;
+      background:linear-gradient(to top,#F6DA96,#F7DEA0,#F6DA96);
+      border-radius: 40rpx;
+      line-height: 60rpx;
+      text-align: center;
       margin-right: 20rpx;
     }
   }
@@ -843,7 +801,7 @@
     height:85rpx;
     display: flex;
     align-items: center;
-    border-bottom:1rpx solid #e3e2e2;
+    border-bottom:1px solid #e3e2e2;
     margin-bottom:20rpx;
     background-color: #fff;
     .icon-time{
@@ -867,16 +825,16 @@
   }
   .goods-wrapper{
     background-color: #fff;
-    border-top:1rpx solid #e3e2e2;
+    border-top:1px solid #e3e2e2;
     > view {
-      border-bottom:1rpx solid #e3e2e2;
+      border-bottom:1px solid #e3e2e2;
       padding-left:4%;
       width: 96%;
     }
     .goods-name-wrapper {
       display: flex;
       align-items: baseline;
-      border-bottom:1rpx solid #e3e2e2;
+      border-bottom:1px solid #e3e2e2;
       box-sizing: border-box;
       padding: 20rpx;
       width: 100%;
@@ -914,21 +872,48 @@
         transform: scale(1);
       }
     }
-    .Activity-date{
+    .shop-address{
       width: 100%;
-      height: 88rpx;
+      height: 126rpx;
       display: flex;
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
-      .Activity-date_txt{
-        font-size: 27rpx;
-        color:#848589;
+      .shop-address-txt{
+        display: flex;
+        flex-direction: column;
+        font-size: 23rpx;
+        color: #CFCFCF;
+        text{
+          width: 500rpx;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+        text:first-child{
+          color: #666;
+          margin-bottom: 15rpx;
+        }
       }
-      .Activity-date_num{
-        color: #242424;
-        font-size: 27rpx;
+      .shop-adress-right{
+        display: flex;
+        align-items: center;
         margin-right: 20rpx;
+        .locationIcon{
+          width: 24rpx;
+          height: 24rpx;
+          padding: 14rpx;
+          border-radius: 100%;
+          border:1px solid #2C2D2C;
+          margin-right: 40rpx;
+        }
+        .phoneIcon{
+          width: 24rpx;
+          height: 24rpx;
+          padding: 14rpx;
+          border-radius: 100%;
+          border:1px solid #2C2D2C;
+        }
       }
     }
     .goods-rule{
@@ -973,10 +958,8 @@
   }
   .goods-process{
     padding-left:0;
-    margin-top: 20rpx;
     margin-bottom:20rpx;
-    border-top: 1rpx solid #e3e2e2;
-    border-bottom:1rpx solid #e3e2e2;
+    border-bottom:1px solid #e3e2e2;
     image{
       width: 100%;
       height:165rpx;
@@ -986,8 +969,8 @@
     background-color: #fff;
     .details-header{
       display: flex;
-      border-top:1rpx solid #e3e2e2;
-      border-bottom:1rpx solid #e3e2e2;
+      border-top:1px solid #e3e2e2;
+      border-bottom:1px solid #e3e2e2;
       .details-title{
         width:50%;
         height: 83rpx;
@@ -997,14 +980,29 @@
         color: #000000;
         &.active{
           color:#ed4f4f;
-          margin-bottom:-1rpx;
-          border-bottom:1rpx solid #ed4f4f;
+          margin-bottom:-1px;
+          border-bottom:1px solid #ed4f4f;
         }
       }
     }
     .main-details {
       box-sizing: border-box;
       padding: 10rpx;
+      padding-top: 0;
+      .end-time{
+        width: 100%;
+        height: 130rpx;
+        display: flex;
+        align-items: center;
+        font-size: 27rpx;
+        text:first-child{
+          color: #8C8D91;
+          margin-left: 30rpx;
+        }
+        text:last-child{
+          color: #242424;
+        }
+      }
       &:last-child{
         background-color: #f5f5f7;
       }
@@ -1086,13 +1084,13 @@
         height: 34rpx;
         display: flex;
         align-items: center;
-        border: 1rpx solid #ccc;
+        border: 1px solid #ccc;
         border-radius: 50rpx;
         font-size: 0;
         color: #b5b4b4;
         &.active{
           color: #ff4344;
-          border: 1rpx solid #ff4344;
+          border: 1px solid #ff4344;
           pointer-events: none;
         }
         image{
@@ -1126,21 +1124,24 @@
         display: flex;
         flex-direction: column;
         padding:1px;
-        border:1rpx solid #e5e5e5;
+        border:1px solid #e5e5e5;
         margin-left:16rpx;
         image{
           width:340rpx;
-          height:340rpx;
+          height:243rpx;
         }
         > text{
           margin-top:24rpx;
           font-size:24rpx;
           color: #323323;
+          margin-left: 15rpx;
         }
         .Price-wrapper{
           display: flex;
-          align-items: flex-end;
-          margin-left:7rpx;
+          align-items: baseline;
+          margin-left:15rpx;
+          margin-bottom: 15rpx;
+          margin-top: 16rpx;
           .Seckill-title {
             color: #ff4344;
             font-size: 24rpx;
@@ -1190,7 +1191,7 @@
       }
     }
     .btn ~ .btn{
-      border-left:1rpx solid #efefee;
+      border-left:1px solid #efefee;
     }
     .gotoOpenVip{
       flex: 0 0  140rpx;
@@ -1213,6 +1214,9 @@
       }
     }
     .Buy{
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
       flex: 1;
       width:  100%;
       text-align: center;
@@ -1222,6 +1226,9 @@
       &.disabled{
         background-image: linear-gradient(to right, #cbcbcb,#9a9a9a);
         pointer-events: none;
+      }
+      &::after{
+        content: none;
       }
     }
   }
@@ -1330,6 +1337,10 @@
       .canvas{
         box-shadow: 0 0 20rpx rgba(119,119,119,.4);
         background-color: #fff;
+      }
+      .canvasImg{
+        width: 650rpx;
+        height: 1000rpx;
       }
       .saveImg{
         width: 650rpx;

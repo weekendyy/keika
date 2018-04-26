@@ -1,8 +1,8 @@
 <template>
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="index-container" hidden="{{!loadingHidden}}" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
-    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+  <view class="index-container" wx:if="{{loadingHidden}}" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
+    <cheader :headerinfo.sync="headerinfo"></cheader>
     <!-- 分类列表 -->
       <!-- swpier形式 -->
     <view class="shopClassify" style="height: {{shopClassifys.length<5?'170rpx':'310rpx'}}" wx:if="{{shopClassifys.length!=0}}">
@@ -95,17 +95,16 @@
                 <view class="fuli-item-top">
                   <text class="type">{{item.one_str}}</text>
                   <text class="name">{{item.magic_goods_name}}</text>
-                  <!-- <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==3}}">领取</text>
-                  <text class="btn" wx:if="{{item.magicgetlog == null && item.time_status==1}}">未开始</text>
-                  <text class="btn end" wx:if="{{item.magicgetlog == null && item.time_status==2}}">已结束</text>
-                  <text class="btn end" wx:if="{{item.magicgetlog != null}}">已领取</text> -->
                   <!-- 活动未开始 -->
                   <block wx:if="{{item.time_status==1}}">
                     <text class="btn">未开始</text>
                   </block>
                   <!-- 活动进行中 -->
                   <block wx:if="{{item.time_status==3}}">
-                    <text class="btn" wx:if="{{item.get_status == 1}}">领取</text>
+                    <block wx:if="{{item.get_status == 1}}">
+                      <text class="btn" wx:if="{{item.get_num != item.repertory_num}}">领取</text>
+                      <text class="btn end" wx:if="{{item.get_num == item.repertory_num}}">已领完</text>
+                    </block>
                     <text class="btn end" wx:if="{{item.get_status == 2}}">已领取</text>
                   </block>
                   <!-- 活动已结束 -->
@@ -179,7 +178,7 @@
       </view>
     </view>
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
@@ -189,6 +188,7 @@
   import cheaderModel from '@/components/cheader-model'
   import ShopModel from './shop-model'
   import MyModel from '@/pages/My/index-model'
+  import Address from '../../utils/address'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -196,7 +196,6 @@
     }
     data = {
       loadingHidden: false,
-      GeographyData: null,
       userInfo: null,
       currentTabsIndex: '0',
       TitleData: [],
@@ -236,7 +235,7 @@
       onShareAppMessage(){
         return {
           title: "推荐店铺",
-          path: 'pages/Shop/shopIndex',
+          path: '/pages/Shop/shopIndex',
         }
       },
       onTabsItemTapFormId(e){
@@ -282,17 +281,6 @@
       gotoWelfare(index){
         this.$navigate('../Shop/welfareDetails',{id:index})
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this),
       openLeagueBox(){
         this.showLeagueWindow = true
         this.$apply()
@@ -377,10 +365,48 @@
         this.$navigate('shopList',{id:id,name:name,formId:this.formId})
       }
     }
+    onLoad(){
+      Address.getGeoAndUserInfo(()=>{
+        if(this.currentTabsIndex=='0'){
+          ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
+            if(ResData.code == 1){
+              this.isEmpty.isNowEmpty = false
+              this.shopData = ResData.data
+              if(this.shopData.length == 0){
+                this.isEmpty.isNowEmpty = true
+              }
+              this.TitleData = ResData.stores_recommend_str
+              this.shopClassifys = ResData.classify_data
+              this.from_in_shop_data = ResData.from_in_shop_data
+              this.magic_from_str = ResData.magic_from_str
+              this.check_join = ResData.check_join
+              this.loadingHidden = true
+              this.$apply()
+            }
+          })
+        }else{
+          let query = {}
+          query.magic_form_id = this.formId
+          query.page_num = this.pageNum.nearPage
+          ShopModel.getNearbyData(query,(ResData)=>{
+            if(ResData.code == 1){
+              this.nearbyData = ResData.data
+              this.isEmpty.isNearbyEmpty = false
+              if(this.nearbyData.length == 0){
+                this.isEmpty.isNearbyEmpty = true
+              }
+              this.loadingHidden = true
+              this.$apply()
+            }
+          })
+        }
+      })
+    }
     onShow(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data
+          this.loadingHidden = true
           this.$apply()
         }
       })
@@ -388,106 +414,6 @@
       this.pageNum.nearPage=1
       this.shopRepeatReuqest = true
       this.nearbyRepeatReuqest = true
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
-          this.loadingHidden = true
-          this.$apply()
-        }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        },()=>{
-          MyModel.twoGetCityName((res)=>{
-            console.log(res)
-          })
-        })
-      }
-      if(this.currentTabsIndex=='0'){
-        ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
-          if(ResData.code == 1){
-            this.isEmpty.isNowEmpty = false
-            this.shopData = ResData.data
-            if(this.shopData.length == 0){
-              this.isEmpty.isNowEmpty = true
-            }
-            this.TitleData = ResData.stores_recommend_str
-            this.shopClassifys = ResData.classify_data
-            this.from_in_shop_data = ResData.from_in_shop_data
-            this.magic_from_str = ResData.magic_from_str
-            this.check_join = ResData.check_join
-            this.$apply()
-          }
-        })
-      }else{
-        let query = {}
-        query.magic_form_id = this.formId
-        query.page_num = this.pageNum.nearPage
-        ShopModel.getNearbyData(query,(ResData)=>{
-          if(ResData.code == 1){
-            this.nearbyData = ResData.data
-            this.isEmpty.isNearbyEmpty = false
-            if(this.nearbyData.length == 0){
-              this.isEmpty.isNearbyEmpty = true
-            }
-            this.$apply()
-          }
-        })
-      }
-
     }
     onReachBottom(){
       if (this.currentTabsIndex == 0){
@@ -536,7 +462,7 @@
     width: 100%;
     height: 310rpx;
     background-color: #fff;
-    border-bottom: 2rpx solid #D8D8D8;
+    border-bottom: 1rpx solid #EDEDED;
     .shopClassify-swiper{
       width: 100%;
       height: 100%;
@@ -833,7 +759,6 @@
       box-sizing: border-box;
       display: flex;
       align-items: center;
-      border-bottom:1rpx solid #e4e4e4;
       background-color: #fff;
       .teb-item{
         padding: 0;
@@ -842,6 +767,8 @@
         width: 136rpx;
         text-align: center;
         line-height: 90rpx;
+        height: 90rpx;
+        box-sizing: border-box;
         font-size: 28rpx;
         color: #4c4c4c;
         border-bottom: 6rpx solid transparent;
@@ -896,12 +823,13 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        height: 189rpx;
+        justify-content: space-between;
         .shop-name{
           width: 100%;
           overflow: hidden;
           text-overflow:ellipsis;
           white-space: nowrap;
-          padding-top:10rpx;
           font-size:34rpx;
           color: #000;
           font-weight: bold;

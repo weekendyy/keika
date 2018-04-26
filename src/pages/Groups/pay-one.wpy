@@ -2,7 +2,7 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="pay" hidden="{{!loadingHidden}}">
     <view class="pay-success">
-      <view class="goods-wrapper">
+      <view class="goods-wrapper" @tap="toGroupDetail">
         <view class="goods-pic">
           <image class="pic" src="{{groupData.main_img}}"></image>
         </view>
@@ -18,7 +18,7 @@
             <text class="num">{{groupData.group_person}}人团</text>
             <text class="Discount">拼团立省{{groupData.diff_price}}元</text>
           </view>
-          <image wx:if="{{groupData.join_status == 1 && groupData.diff_person == 0}}" class="success" src="./images/success.png"></image>
+          <image wx:if="{{groupData.join_status == 1 && groupData.diff_person == 0}}" class="success" src="http://applet.czsjcrm.cn/images/templete_image/group_001.png"></image>
         </view>
       </view>
       <view class="Result-wrapper">
@@ -75,7 +75,6 @@
       monad_data: null,
       loadingHidden: false,
       userInfo: null,
-      GeographyData: null,
     }
     methods = {
       onShareAppMessage(options){
@@ -99,20 +98,18 @@
               pay_type: ResData.order_type
             }
             this.$navigate('/pages/Groups/Groups-Confirm-order', param)
+          } else {
+            wx.showToast({
+              title: ResData.message,
+              icon: 'none',
+              duration: 1500
+            })
           }
         })
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this)
+      toGroupDetail(){
+        this.$navigate('../../pages/Groups/Groups-details', {id: this.groupData.goods_id})
+      }
     }
     onLoad(options){
       this.orderID = options.orderID
@@ -123,6 +120,7 @@
       }
       Groups.getGroupSuccessShare(param,ResData=>{
         if(ResData.code == 1){
+          this.loadingHidden = true
           this.groupData = ResData.data
           this.monad_data = ResData.monad_data
           let num = this.groupData.diff_person
@@ -133,70 +131,6 @@
           this.$apply()
         }
       })
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
-          this.loadingHidden = true
-          this.$apply()
-        }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        })
-      }
     }
   }
 </script>

@@ -1,43 +1,44 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="index-container">
+    <!-- 黑卡会员轮播图 -->
     <view class="cheader-index {{loadingHidden?'show-header':''}}">
-    <!-- <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo" :formID.sync="formId"></cheader> -->
-
-    <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-      <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1}}" wx:if="{{headerinfo.home_banner.length}}">
-        <repeat for="{{headerinfo.home_banner}}" key="index">
-          <swiper-item class="swiper-item" @tap="gotoBannerUrl({{item.banner_path}})">
-            <image class="swiper-image" src="{{item.banner_url}}"></image>
-          </swiper-item>
-        </repeat>
-      </swiper>
-      <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
-        <view class="open-wrapper">
-          <image src="{{headerinfo.card_img}}" class="logo"></image>
-          <view class="user-info">
-            <image class="pic" src="{{userInfo.userInfo.avatarUrl}}"></image>
-            <text class="name">{{userInfo.userInfo.nickName}}</text>
-            <view class="open">
-              <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
-              <button class="btn" form-type="submit">{{headerinfo.magic_auth_str[1]}}</button>
+      <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
+        <!-- 已开通 -->
+        <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1 && headerinfo.home_banner.length}}">
+          <repeat for="{{headerinfo.home_banner}}" key="index">
+            <swiper-item class="swiper-item" @tap="gotoBannerUrl({{item.banner_path}})">
+              <image class="swiper-image" src="{{item.banner_url}}"></image>
+            </swiper-item>
+          </repeat>
+        </swiper>
+        <!-- 未开通会员 -->
+        <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
+          <view class="open-wrapper" style="background-image: url({{headerinfo.background_img}})">
+            <image src="{{headerinfo.card_img}}" class="logo"></image>
+            <view class="user-info">
+              <open-data type="userAvatarUrl" class="pic"></open-data>
+              <open-data type="userNickName" class="name"></open-data>
+              <view class="open">
+                <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
+                <button class="btn" form-type="submit">{{headerinfo.magic_auth_str[1]}}</button>
+              </view>
             </view>
           </view>
+          <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
         </view>
-        <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
+      </form>
+    </view>
+    <!-- 导航栏 -->
+    <form report-submit="magic-formID" bindsubmit="navClickFromID">
+      <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}" >
+        <button class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" data-index="{{index}}" form-type="submit">
+          <image src="{{item.classify_img}}"></image>
+          <text>{{item.classify_name}}</text>
+        </button>
       </view>
     </form>
-
-
-    </view>
-    <form report-submit="magic-formID" bindsubmit="navClickFromID">
-    <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}" >
-      <button class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" data-index="{{index}}" form-type="submit">
-        <image src="{{item.classify_img}}"></image>
-        <text>{{item.classify_name}}</text>
-      </button>
-    </view>
-    </form>
+    <!-- 专题 -->
     <view class="TimeLimitActivity {{loadingHidden?'show_TimeLimitActivity':''}} {{subject_data.length?'':'hide_TimeLimitActivity'}}">
       <view class="TimeLimitActivity_title" wx:if="{{subject_data.length}}">
         <image src="./images/xianshi.png" mode="widthFix" class="xianshiIcon"></image>
@@ -56,6 +57,7 @@
       </view>
       </form>
     </view>
+    <!-- 活动推荐 -->
     <view class="index-list {{loadingHidden?'show-index-list':''}}">
       <view class="index-header" wx:if="{{activityData.length}}">
         <image src="./images/liwu.png"></image>
@@ -88,12 +90,18 @@
             </view>
           </view>
           <view class="status-img" wx:if="{{item.residue_num!=0}}">
-            <image src="./images/qiang.png"></image>
+            <view class="status-img-content">
+              <text>赶快</text>
+              <text>来抢</text>
+            </view>
           </view>
-          <view class="status-img" wx:if="{{item.residue_num == 0}}">
-            <image src="./images/end.png"></image>
+          <view class="status-img empty" wx:if="{{item.residue_num == 0}}">
+            <view class="status-img-content">
+              <text>已经</text>
+              <text>抢光</text>
+            </view>
           </view>
-          <image class="item-pic" src="{{item.banner}}"></image>
+          <image class="item-pic" src="{{item.banner}}" mode="aspectFill"></image>
           <view class="item-data">
             <view class="left">
               <view class="brand">
@@ -115,6 +123,7 @@
         </view>
       </repeat>
     </view>
+    <!-- 会员福利 -->
     <view class="vip-list"  wx:if="{{welfareData.length}}">
       <view class="index-header">
         <image src="./images/fuli.png"></image>
@@ -123,16 +132,22 @@
       <scroll-view  scroll-y="true" bindscrolltolower="onReachBottom">
         <repeat for="{{welfareData}}" wx:for-item="item" key:index="index">
           <view class="index-item" @tap="gotoWelfareDetails({{index}})" >
-            <view class="status-img" wx:if="{{item.residue_num!=0}}">
-              <image src="./images/qiang.png"></image>
+            <view class="status-img" wx:if="{{item.repertory_num!=0}}">
+              <view class="status-img-content">
+                <text>赶快</text>
+                <text>来抢</text>
+              </view>
             </view>
-            <view class="status-img" wx:if="{{item.residue_num == 0}}">
-              <image src="./images/end.png"></image>
+            <view class="status-img empty" wx:if="{{item.repertory_num == 0}}">
+              <view class="status-img-content">
+                <text>已经</text>
+                <text>抢完</text>
+              </view>
             </view>
             <view class="vip-wrapper">
               <text>{{listtitle[3]}}</text>
             </view>
-            <image class="item-pic" src="{{item.banner_img}}"></image>
+            <image class="item-pic" src="{{item.banner_img}}" mode="aspectFill"></image>
             <view class="item-data">
               <view class="brand">
                 <text>品牌 : </text>
@@ -152,14 +167,15 @@
         </repeat>
       </scroll-view>
     </view>
+    <!-- 抽奖按钮 -->
+    <!-- <image @tap="toPrizeList" class="toPrize" src="http://p55e536k6.bkt.clouddn.com/ertgfr.gif" mode="widthFix"></image> -->
   </view>
-  <view hidden="{{loadingHidden}}">
+  <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
 <script>
   import wepy from 'wepy'
-  // import cheader from '@/components/cheader'
   import cheaderModel from '@/components/cheader-model'
   import indexModel from './index-model'
   import MyModel from '@/pages/My/index-model'
@@ -177,7 +193,6 @@
       pageNum :1,
       activityData: '',
       loadingHidden: false,
-      GeographyData: null,
       userInfo: null,
       listtitle: null,
       navData: null,
@@ -189,7 +204,7 @@
       onShareAppMessage(){
         return {
           title: wepy.$instance.globalData.name,
-          path: 'pages/Index/index',
+          path: '/pages/Index/index',
         }
       },
       gotoDetails(index){
@@ -236,17 +251,6 @@
           }
         })
       },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this),
       navClickFromID(e){
         this.formId = e.detail.formId
         let index = e.detail.target.dataset.index
@@ -281,9 +285,8 @@
         let index = e.detail.target.dataset.index
         let subjectItem = this.subject_data[index]
         wx.navigateTo({
-          url:'../../TimeLimitActivity/TimeLimitActivityDetail?id='+subjectItem.id+'&subTitle='+subjectItem.subject_name+'&status='+subjectItem.time_status+'&formId='+formId
+          url:'../../TimeLimitActivity/TimeLimitActivityDetail?id='+subjectItem.id+'&formId='+formId
         })
-        wx.setStorageSync('subJectImg',this.subject_data[index].img_url)
       },
       gotoOpenVipFormId(e){
         this.formId = e.detail.formId
@@ -292,8 +295,15 @@
         })
       },
       gotoBannerUrl(url){
+        if(url){
+          wx.navigateTo({
+            url: url
+          })
+        }
+      },
+      toPrizeList(){
         wx.navigateTo({
-          url: url
+          url: '../../lotteryDraw/lotteryDrawIndex'
         })
       }
     }
@@ -304,6 +314,7 @@
           this.listtitle = ResData.data.char_str
           this.home_goods_classify_str=ResData.data.home_goods_classify_str
           this.subject_data = ResData.data.subject_data
+          this.loadingHidden = true
           if(ResData.data.magic_top_title){
             wepy.$instance.globalData.name = ResData.data.magic_top_title
             wx.setNavigationBarTitle({
@@ -319,6 +330,7 @@
       })
       indexModel.getNaData((ResData)=>{
         this.navData = ResData.data
+        this.loadingHidden = true
         this.$apply()
       })
     }
@@ -328,80 +340,14 @@
       indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
         if(ResData.code == 1){
           this.welfareData = ResData.data
-          this.$apply()
-        }
-      })
-      let Geography = wx.getStorageSync('GeographyData')
-      if(Geography){
-        this.GeographyData = Geography
-        let user = wx.getStorageSync('user')
-        if(user){
-          this.userInfo = user
           this.loadingHidden = true
           this.$apply()
         }
-        if(!this.userInfo){
-          this.methods._loadData((data)=>{
-            this.userInfo = data
-            wx.setStorage({
-              key:"user",
-              data:this.userInfo
-            })
-            let postdata = {
-              wechat_name: this.userInfo.userInfo.nickName,
-              area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-              portrait: this.userInfo.userInfo.avatarUrl,
-              encryptedData:this.userInfo.encryptedData,
-              iv:this.userInfo.iv,
-              versions: "vip5",
-            }
-            MyModel.postUserInfo(postdata)
-            wepy.$instance.globalData.isGetInfo = true
-            this.loadingHidden = true
-            this.$apply()
-          })
-        }
-      }
-      if(!this.GeographyData){
-        MyModel.getCityName((ResData)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: ResData
-          })
-          let user = wx.getStorageSync('user')
-          if(user){
-            this.userInfo = user
-            this.loadingHidden = true
-          }
-          if(!this.userInfo){
-            this.methods._loadData((data)=>{
-              this.userInfo = data
-              wx.setStorage({
-                key:"user",
-                data:this.userInfo
-              })
-              let postdata = {
-                wechat_name: this.userInfo.userInfo.nickName,
-                area: this.userInfo.userInfo.country + this.userInfo.userInfo.province + this.userInfo.userInfo.city,
-                portrait: this.userInfo.userInfo.avatarUrl,
-                encryptedData:this.userInfo.encryptedData,
-                iv:this.userInfo.iv,
-                versions: "vip5",
-              }
-              MyModel.postUserInfo(postdata)
-              this.loadingHidden = true
-              this.$apply()
-            })
-          }
-        },()=>{
-          MyModel.twoGetCityName((res)=>{
-            console.log(res)
-          })
-        })
-      }
+      })
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data
+          this.loadingHidden = true
           this.$apply()
         }
       })
@@ -440,19 +386,6 @@
         wx.stopPullDownRefresh()
         isConnectNet = true
       })
-      setTimeout(()=>{
-        wx.stopPullDownRefresh()
-        if(!isConnectNet){
-          wx.showToast({
-            title: '请检查您的网络',
-            icon: 'none',
-            duration: 2000
-          })
-        }
-      },10000)
-    }
-    components = {
-      // cheader: cheader
     }
   }
 </script>
@@ -494,8 +427,8 @@
         content:none;
       }
       image{
-        width: 50rpx;
-        height: 50rpx;
+        width: 70rpx;
+        height: 70rpx;
       }
       text{
         margin-top: 20rpx;
@@ -663,10 +596,31 @@
         position: absolute;
         right: 20rpx;
         top: 20rpx;
-        image{
-          width: 108rpx;
-          height: 108rpx;
+        width: 108rpx;
+        height: 108rpx;
+        border-radius: 100%;
+        background-color: rgba(206,8,3,.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .status-img-content{
+          width: 92rpx;
+          height: 92rpx;
+          border-radius: 100%;
+          border:1px dashed #fff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 30rpx;
+          color: #fff; 
+          text{
+            line-height: 33rpx;
+          }
         }
+      }
+      .empty{
+        background-color: rgba(0,0,0,.5);
       }
 
       .item-pic{
@@ -815,10 +769,31 @@
         position: absolute;
         right: 20rpx;
         top: 20rpx;
-        image{
-          width: 108rpx;
-          height: 108rpx;
+        width: 108rpx;
+        height: 108rpx;
+        border-radius: 100%;
+        background-color: rgba(206,8,3,.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .status-img-content{
+          width: 92rpx;
+          height: 92rpx;
+          border-radius: 100%;
+          border:1px dashed #fff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 30rpx;
+          color: #fff; 
+          text{
+            line-height: 33rpx;
+          }
         }
+      }
+      .empty{
+        background-color: rgba(0,0,0,.5);
       }
       .vip-wrapper{
         position: absolute;
@@ -947,6 +922,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
       .logo{
         width: 335rpx;
         height: 120rpx;
@@ -1019,6 +997,26 @@
       margin-bottom:-20rpx;
       position: relative;
       z-index: 1;
+    }
+  }
+  .toPrize{
+    width: 200rpx;
+    height: 200rpx;
+    position: fixed;
+    right: -20rpx;
+    top: 916rpx;
+    transition: .5s;
+    // animation: 3s prize infinite;
+  }
+  .hidePrize{
+    transform: translateX(200rpx);
+  }
+  @keyframes prize{
+    0%,95%,100%{
+      transform: scale(1);
+    }
+    98%{
+      transform: scale(1.2);
     }
   }
 </style>

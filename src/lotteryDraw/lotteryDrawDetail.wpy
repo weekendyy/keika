@@ -1,0 +1,330 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="lotteryDetail-container" hidden="{{!loadingHidden}}">
+    <view class="header">
+      <view class="lotteryDrawItem">
+        <image src="http://p55e536k6.bkt.clouddn.com/tuceng.png" mode="scaleToFill" class="lotteryPic"></image>
+        <view class="lotteryInfo">
+          <view class="lottery-info-top">
+            <text class="info-top-title">奖品：iphone 8 (红色特别版) X1</text>
+            <text class="info-top-desc">橙子黑卡 赞助</text>
+          </view>
+          <view class="lottery-info-bottom">
+            <text>04月14日 12:00 自动开奖</text>
+          </view>
+        </view>
+      </view>
+      <view class="toXcX" @tap="toAnothorXcX" hover-class="toAnothorXcXTap" hover-start-time="0" hover-stay-time="0">
+        <text class="toXcx_left">赞助商</text>
+        <view class="toXcX_right">
+          <text>橙子黑卡</text>
+          <image src="image/test.svg" mode="widthFix" class="xiaocxIcon"></image>
+          <image src="image/right.png" mode="widthFix" class="rightIcon"></image>
+        </view>
+      </view>
+    </view>
+    <view class="lotteryBox">
+      <view class="lotteryBtn" @tap="lotterytap">
+        <text class="{{lotteryBtnMoveEnd?'lotteryBtnDesable':''}}">{{lotterytxt}}</text>
+        <view class="animaIcon {{lotteryBtnMove?'show-animaIcon':''}} {{lotteryBtnMoveEnd?'show-animaIconEnd':''}}"></view>
+      </view>
+      <view class="takepartNumber">已有2563人参与，<text @tap="seeMore">查看全部</text><image src="image/moretright.png" mode="widthFix"></image></view>
+      <view class="takePartIcons">
+        <block wx:for="{{7}}">
+          <image src="http://p55e536k6.bkt.clouddn.com/sss.png" class="tkIcon" mode="aspectFill"></image>
+        </block>
+      </view>
+    </view>
+    <view class="konwMore">
+      <view class="knowMoreTxt">
+        <view class="cut"></view>
+        <text>了解更多</text>
+        <view class="cut"></view>
+      </view>
+      <view class="knowMore-content">
+        <image src="http://p55e536k6.bkt.clouddn.com/tuceng.png" style="width:100%;"></image>
+      </view>
+      <view style="height:150rpx;"></view>
+    </view>
+    <view class="lotteryBottom {{showBottomTab?'show_lotteryBottom':''}}">  
+      <button open-type="share">邀请朋友参与</button>
+      <button @tap="toAnothorXcX">更多福利</button>
+    </view>
+  </view>
+  <view hidden="{{loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '抽奖详情',
+    }
+    data = {
+      loadingHidden: true,
+      showBottomTab: false,
+      lotteryBtnMove: false,
+      lotteryBtnMoveEnd: false,
+      lotterytxt: '参与抽奖'
+    }
+    computed = {
+        
+    }
+    methods = {
+      lotterytap(){
+        let that = this
+        this.lotteryBtnMove = true
+        setTimeout(()=>{
+          that.lotteryBtnMoveEnd = true
+          that.lotterytxt = '待开奖'
+          that.$apply()
+        },250)
+        this.$apply()
+      },
+      toAnothorXcX(){
+        wx.navigateToMiniProgram({
+          appId: 'wx9b2593a2270b42b8',
+          success(res) {
+          },
+          fail(res) {
+            console.log(res)
+          }
+        })
+      },
+      seeMore(){
+        wx.navigateTo({
+          url: 'lotteryDrawPeople'
+        })
+      }
+    }
+    onLoad(e){
+     
+    }
+    onShow(){
+      this.showBottomTab = true
+      this.$apply()
+    }
+    onReachBottom(){
+      
+    }
+   
+    components = {
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F1F1F1;
+  }
+  .lotteryDetail-container{
+
+    .header{
+
+      .lotteryDrawItem{
+        width: 100%;
+        background-color: #fff;
+        overflow: hidden;
+        .lotteryPic{
+          width: 100%;
+          height: 375rpx;
+        }
+        .lotteryInfo{
+          width: 100%;
+          box-sizing: border-box;
+          padding: 30rpx 20rpx;
+          .lottery-info-top{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            line-height: 1;
+            .info-top-title{
+              font-size: 32rpx;
+              width: 500rpx;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .info-top-desc{
+              font-size: 26rpx;
+              line-height: 1;
+              padding: 12rpx 17rpx;
+              border:1px solid #575757;
+              color: #575757;
+            }
+          }
+          .lottery-info-bottom{
+            color: #808080;
+            font-size: 25rpx;
+            line-height: 1;
+            margin-top: 20rpx;
+          } 
+        }
+      }
+      .toXcX{
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        border-top: 1px solid #EDEDED;
+        height: 100rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #fff;
+        .toXcx_left{
+          font-size: 31rpx;
+        }
+        .toXcX_right{
+          color: #494949;
+          font-size: 31rpx;
+          display: flex;
+          align-items: center;
+          .xiaocxIcon{
+            width: 35rpx;
+            height: 35rpx;
+            margin: 0 10rpx 0 15rpx;
+          }
+          .rightIcon{
+            width: 30rpx;
+            height: 30rpx;
+          }
+        }
+      }
+      .toAnothorXcXTap{
+        opacity: .5;
+      }
+    }
+    .lotteryBox{
+      width: 100%;
+      height: 560rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      .lotteryBtn{
+        width: 220rpx;
+        height: 220rpx;
+        background-color: #D25345;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 32rpx;
+        border-radius: 100%;
+        position: relative;
+        .lotteryBtnDesable{
+          opacity: .5;
+        }
+        .animaIcon{
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 100%;
+          border:8rpx solid #fff;
+          box-sizing: border-box;
+          transition: .2s;
+          transform: scale(0);
+        }
+        .show-animaIcon{
+          transform: scale(1);
+        }
+        .show-animaIconEnd{
+          transform: scale(0.9);
+          opacity: .5;
+        }
+      }
+      .takepartNumber{
+        color: #808080;
+        display: flex;
+        align-items: center;
+        font-size: 27rpx;
+        line-height: 1;
+        margin: 50rpx 0 40rpx;
+        text{
+          color: #2473B8;
+        }
+        image{
+          width: 22rpx;
+          height: 22rpx;
+        }
+      }
+      .takePartIcons{
+        display: flex;
+        align-items: center;
+        .tkIcon{
+          width: 66rpx;
+          height: 66rpx;
+          margin:0 4rpx;
+        }
+      }
+    }
+    .konwMore{
+      width: 100%;
+      background-color: #fff;
+      .knowMoreTxt{
+        width: 100%;
+        height: 150rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text{
+          font-size: 30rpx;
+          color: #8E8E8E;
+          margin: 0 30rpx;
+        }
+        .cut{
+          width: 75rpx;
+          height: 1px;
+          background-color: #8E8E8E;
+        }
+      }
+      .knowMore-content{
+        box-sizing: border-box;
+      }
+    }
+    .lotteryBottom{
+      width: 100%;
+      height: 130rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      bottom: -130rpx;
+      left: 0;
+      border-top: 1px solid #EFEFEF;
+      background-color: #fff;
+      transition: .6s;
+      button{
+        width: 346rpx;
+        height: 88rpx;
+        margin: 0 10rpx;
+        padding: 0;
+        border-radius: 0;
+        border:2rpx solid #575757;
+        font-size: 28rpx;
+        box-sizing: border-box;
+        line-height: 84rpx;
+        &::after{
+          content: none;
+        }
+      }
+      button:nth-child(1){
+        background-color: #575757;
+        color: #fff;
+      }
+      button:nth-child(2){
+        color: #575757;
+      }
+    }
+    .show_lotteryBottom{
+      transform: translateY(-130rpx);
+    }
+  }
+
+</style>
+

@@ -3,7 +3,7 @@
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="shopList-container" hidden="{{!loadingHidden}}">
     <!-- banner -->
-    <cheader :headerinfo.sync="headerinfo" :userInfo.sync="userInfo"></cheader>
+    <cheader :headerinfo.sync="headerinfo"></cheader>
     <!-- 好店类型 -->
     <swiper indicator-dots="{{true}}" wx:if="{{shopClassifyNum.length!=0}}" class="shopClassify-swiper" indicator-dots="{{shopClassifyNum.length<5?false:true}}">
       <block wx:for="{{shopClassifyNum}}" wx:for-index="idx">
@@ -99,17 +99,16 @@
       sonId:'',
       isLoadAll:false,
       headerinfo:null,
-      userInfo:null,
       GeographyData:''
     }
     computed = {
-        shopClassifyNum () {
-            let result = [];
-            for(var i=0,len=this.shopClassifys.length;i<len;i+=4){
-               result.push(this.shopClassifys.slice(i,i+4));
-            }
-            return result
-        }
+      shopClassifyNum () {
+          let result = [];
+          for(var i=0,len=this.shopClassifys.length;i<len;i+=4){
+             result.push(this.shopClassifys.slice(i,i+4));
+          }
+          return result
+      }
     }
     methods = {
       classifyItemTap(idx,index,sonId){
@@ -152,11 +151,6 @@
           this.$apply()
         }
       })
-      let user = wx.getStorageSync('user')
-      if(user){
-        this.userInfo = user
-        this.$apply()
-      }
       wx.setNavigationBarTitle({
         title: e.name
       })
@@ -173,6 +167,9 @@
       if(this.GeographyData){
         query.lng = this.GeographyData.latitude 
         query.lat = this.GeographyData.longitude
+      } else {
+        query.lng = ''
+        query.lat = ''
       }
       ShopModel.getShopListInfo(query,(ResData)=>{
         if(ResData.code == 1){

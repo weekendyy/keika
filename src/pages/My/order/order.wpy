@@ -236,26 +236,20 @@
       tabHeaderTitles: ['全部','拼团中','待付款','待使用','待评价'],
       orderAllData: [],
       formId:'',
-      vipStatue:2
+      vipStatue:2,
+      pageNum: 1,
+      isLoadAll: false
     }
     methods={
       onTabsItemTap(index){
         // 切换 Tabitem
+        this.pageNum = 1
+        this.isLoadAll = false
         this.currentTabsIndex = index
-          let param = {
-            type: orderType[this.currentTabsIndex].type
-          }
-
-          OrderModel.getOrderList(param, ResData=> {
-            if(Number(ResData.code) === 1) {
-              this.orderAllData.length = 0;
-              this.orderAllData = ResData.data
-              this.$apply()
-            }
-          })
+        this._loadOrderList()
       },
       orderDetails(index){
-//        跳转至详情页
+       //跳转至详情页
         let orderIndex = index
         let orderID = this.orderAllData[orderIndex].id
         let goods_order_type = this.orderAllData[orderIndex].goods_order_type
@@ -415,21 +409,48 @@
     onLoad(options) {
       this.currentTabsIndex = options.id;
       this.formId = options.formId
-      console.log(this.formId)
     }
     onShow(){
-      let param = {
-        type: orderType[this.currentTabsIndex].type,
-        magic_form_id: this.formId
-      }
-      OrderModel.getOrderList(param, ResData=> {
-        if(ResData.code == 1) {
-          this.orderAllData.length = 0;
-          this.vipStatue = ResData.magic_vip_status
-          this.orderAllData = ResData.data
-          this.$apply()
+      this.pageNum = 1
+      this.isLoadAll = false
+      this._loadOrderList()
+    }
+    onReachBottom(){
+      this._loadOrderList(true)
+    }
+    _loadOrderList(isReachBottom){
+      if(isReachBottom && !this.isLoadAll || !isReachBottom){
+        let param = {
+          type: orderType[this.currentTabsIndex].type,
+          magic_form_id: this.formId || '',
+          limit_num: isReachBottom? ++this.pageNum : this.pageNum
         }
-      })
+        OrderModel.getOrderList(param, ResData=> {
+          if(ResData.code == 1) {
+            if(isReachBottom){
+              if(ResData.data.length == 0){
+                this.isLoadAll = true
+                this.$apply()
+                wx.showToast({
+                  title: '已经到底了',
+                  icon: 'loading',
+                  duration: 1500
+                })
+              } else{
+                this.orderAllData = [...this.orderAllData,...ResData.data]
+                this.$apply()
+              }
+            } else{
+              this.orderAllData.length = 0
+              this.vipStatue = ResData.magic_vip_status
+              this.orderAllData = ResData.data
+              this.$apply()
+            }
+          } else{
+            OrderModel.showTips(ResData.message)
+          }
+        })
+      }
     }
   }
 </script>
