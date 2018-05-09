@@ -1,32 +1,36 @@
 <template>
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="index-container" wx:if="{{loadingHidden}}" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
-    <cheader :headerinfo.sync="headerinfo"></cheader>
+  <view class="index-container" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
+    <view class="banner {{loadingHidden?'showbanner':''}}">
+      <cheader :headerinfo.sync="headerinfo"></cheader>
+    </view>
     <!-- 分类列表 -->
       <!-- swpier形式 -->
-    <view class="shopClassify" style="height: {{shopClassifys.length<5?'170rpx':'310rpx'}}" wx:if="{{shopClassifys.length!=0}}">
-      <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-      <swiper indicator-dots="{{shopClassifyNum.length<9?false:true}}" class="shopClassify-swiper">
-        <block wx:for="{{shopClassifyNum}}">
-          <swiper-item>
-            <block wx:for="{{item}}">
-              <button class="classifyItem" data-index="{{index}}" form-type="submit" >
-                <image src="{{item.img_url}}" mode="aspectFill" class="classifyItem-pic"></image>
-                <text>{{item.title_name}}</text>
-              </button>
-            </block>
-          </swiper-item>
-        </block>
-      </swiper>
-      </form>
+    <view class="shopClassifyBox {{loadingHidden?'showshopClassify':''}}">
+      <view class="shopClassify" style="height: {{shopClassifys.length<5?'170rpx':'310rpx'}}" wx:if="{{shopClassifys.length!=0}}">
+        <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
+        <swiper indicator-dots="{{shopClassifyNum.length<9?false:true}}" class="shopClassify-swiper">
+          <block wx:for="{{shopClassifyNum}}" wx:for-index="idx" wx:key="{{idx}}">
+            <swiper-item>
+              <block wx:for="{{item}}" wx:key="{{item.id}}">
+                <button class="classifyItem" data-index="{{index}}" data-idx="{{idx}}" form-type="submit" >
+                  <image src="{{item.img_url}}" mode="aspectFill" class="classifyItem-pic"></image>
+                  <text>{{item.title_name}}</text>
+                </button>
+              </block>
+            </swiper-item>
+          </block>
+        </swiper>
+        </form>
+      </view>
     </view>
     <!-- 入驻栏 -->
-    <view class="league">
+    <view class="league {{loadingHidden?'showleague':''}}">
       <image src="{{magic_from_str.today_in_img}}" mode="widthFix" class="leagueImg"></image>
       <swiper indicator-dots="{{false}}" class="league-swiper" circular
         autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}">
-        <block wx:for="{{from_in_shop_data}}">
+        <block wx:for="{{from_in_shop_data}}" wx:key="{{item.magic_shop_name}}">
           <swiper-item>
             <view>
               <text>{{item.wechat_name}}</text>
@@ -34,7 +38,7 @@
           </swiper-item>
         </block>
       </swiper>
-      <view class="leaguebtn" wx:if="{{check_join==2}}" hover-class="leaguebtn-hover" hover-start-time="0" hover-stay-time="0" @tap="openLeagueBox">{{magic_from_str.in_shop_str}}</view>
+      <button open-type="getUserInfo" lang="zh_CN" class="leaguebtn" wx:if="{{check_join==2}}" hover-class="leaguebtn-hover" hover-start-time="0" hover-stay-time="0" bindgetuserinfo="openLeagueBox">{{magic_from_str.in_shop_str}}</button>
     </view>
     <!-- 入驻弹窗 -->
     <view class="leagueWindow">
@@ -59,7 +63,7 @@
       <view class="leagueBox-cover" wx:if="{{showLeagueWindow}}" ></view>
       <image src="images/close.png" mode="aspectFill" wx:if="{{showLeagueWindow}}" class="closeIcon" @tap="closeleagueBox"></image>
     </view>
-    <view class="tab-box">
+    <view class="tab-box {{loadingHidden?'show-tab-box':''}}">
       <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
         <view class="tab-list">
           <repeat for="{{TitleData}}" wx:for-item="item" key="index">
@@ -69,7 +73,7 @@
       </form>
       <view class="tab-content">
         <scroll-view scroll-y="true" class="shop-data" hidden="{{ currentTabsIndex != 0 }}">
-          <view class="shop-data-item" wx:for="{{shopData}}" wx:for-item="item" wx:key="index" @tap="gotoShop({{index}})">
+          <view class="shop-data-item" wx:for="{{shopData}}" wx:for-item="item" wx:for-index="idx" wx:key="index" @tap="gotoShop({{idx}})">
             <view class="top">
               <view class="pic-wrapper">
                 <image class="pic" src="{{item.main_img}}"></image>
@@ -91,7 +95,7 @@
               </view>
             </view>
             <view class="bottom">
-              <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}})">
+              <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}},{{idx}},{{index}})">
                 <view class="fuli-item-top">
                   <text class="type">{{item.one_str}}</text>
                   <text class="name">{{item.magic_goods_name}}</text>
@@ -278,12 +282,14 @@
         const i = this.nearbyData[index].id
         this.$navigate('./shopDetails',{id:i})
       },
-      gotoWelfare(index){
-        this.$navigate('../Shop/welfareDetails',{id:index})
+      gotoWelfare(id,idx,index){
+        this.$navigate('../Shop/welfareDetails',{id:id, idx: idx, index: index})
       },
-      openLeagueBox(){
-        this.showLeagueWindow = true
-        this.$apply()
+      openLeagueBox(res){
+        Address.getUser(res,()=>{
+          this.showLeagueWindow = true
+          this.$apply()
+        })
       },
       closeleagueBox(){
         this.showLeagueWindow = false
@@ -291,11 +297,12 @@
       },
       submitJoinShopInfo(e){
         this.formId = e.detail.formId
+        let userInfo = wx.getStorageSync('userInfo')
         let query = {}
         query.link_tel = this.link_tel
         query.link_shop_name = this.link_shop_name
-        query.wechat_name = this.userInfo.userInfo.nickName
-        query.wechat_img = this.userInfo.userInfo.avatarUrl
+        query.wechat_name = userInfo.nickName
+        query.wechat_img = userInfo.avatarUrl
         query.formId = this.formId
         if(!this.link_shop_name){
           wx.showToast({
@@ -358,10 +365,12 @@
         this.link_tel = e.detail.value
       },
       gotoOpenVipFormId(e){
+        console.log(e)
         this.formId = e.detail.formId
         let index = e.detail.target.dataset.index
-        let id = this.shopClassifyNum[0][index].id
-        let name = this.shopClassifyNum[0][index].title_name
+        let idx = e.detail.target.dataset.idx
+        let id = this.shopClassifyNum[idx][index].id
+        let name = this.shopClassifyNum[idx][index].title_name
         this.$navigate('shopList',{id:id,name:name,formId:this.formId})
       }
     }
@@ -410,10 +419,6 @@
           this.$apply()
         }
       })
-      this.pageNum.shopPage=1
-      this.pageNum.nearPage=1
-      this.shopRepeatReuqest = true
-      this.nearbyRepeatReuqest = true
     }
     onReachBottom(){
       if (this.currentTabsIndex == 0){
@@ -524,6 +529,13 @@
       }
     }
   }
+  .shopClassifyBox{
+    opacity: 0;
+  }
+  .showshopClassify{
+    opacity: 1;
+    transition: .5s .1s;
+  }
   .league{
     width: 100%;
     height: 108rpx;
@@ -532,6 +544,7 @@
     display: flex;
     align-items: center;
     border-bottom: 20rpx solid #FAF9F9;
+    opacity: 0;
     .leagueImg{
       width: 96rpx;
       height:53rpx;
@@ -555,6 +568,8 @@
       }
     }
     .leaguebtn{
+      padding: 0;
+      margin: 0;
       color: #fff;
       font-size: 25rpx;
       line-height: 50rpx;
@@ -563,10 +578,17 @@
       padding: 0 20rpx;
       margin-right: 20rpx;
       transition: .2s;
+      &::after{
+        content:none;
+      }
     }
     .leaguebtn-hover{ 
       transform: scale(1.1);
     }
+  }
+  .showleague{
+    opacity: 1;
+    transition: .5s .3s;
   }
   .leagueWindow{
     position: fixed;
@@ -753,6 +775,7 @@
   .tab-box{
     position: relative;
     z-index:2;
+    opacity: 0;
     .tab-list{
       width: 100%;
       padding-left: 40rpx;
@@ -940,6 +963,17 @@
         }
       }
     }
+  }
+  .show-tab-box{
+    opacity: 1;
+    transition: .5s .3s;
+  }
+  .banner{
+    opacity: 0;
+  }
+  .showbanner{
+    opacity: 1;
+    transition: .5s;
   }
 </style>
 

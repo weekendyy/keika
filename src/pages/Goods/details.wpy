@@ -56,7 +56,7 @@
     </view>
     <view class="openVipBox" wx:if="{{DetailsData.magic_vip_status == 2}}" @tap="gotoOpenVip">
       <view class="openVipBox_left">
-        <image class="vipIcon" mode="widthFix" src="http://p55e536k6.bkt.clouddn.com/vip.png"></image>
+        <image class="vipIcon" mode="widthFix" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.png"></image>
         <text>开通VIP享受更多特权</text>
       </view>
       <text class="gotoOpen">开通VIP</text>
@@ -168,7 +168,7 @@
       </view>
       <!--进行中  -->
       <block wx:if="{{DetailsData.new_time_status == 1}}">
-        <button open-type="getUserInfo" bindgetuserinfo="buyGoods" wx:if="{{buy_log == 1}}" class="Buy">
+        <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="buyGoods" wx:if="{{buy_log == 1}}" class="Buy">
           立即抢购
         </button> 
         <view wx:if="{{buy_log == 2}}" class="Buy" bindtap="gotoUse">
@@ -325,7 +325,8 @@
       clock:'',
       posterPic:'',
       showPosterBox: false,
-      posterImg: ''
+      posterImg: '',
+      formId: ''
     }
     methods= {
       /* tab切换 */
@@ -525,16 +526,19 @@
           this.$apply()
         }
       })
+      this.formId = options.formID
       this.goods_id = options.id
       let query = {}
       query.goods_id = this.goods_id
+      query.formId = this.formId
       DetailsModel.getGoodsDetails(query,ResData =>{
         if (ResData.code == 1) {
           this.loadingHidden = true
           this.DetailsData = ResData.promotion[0]
-          const article = this.DetailsData.detail;
-          wxParse.wxParse('article', 'html', article, this, 0);
-          this.buy_log = this.DetailsData.buy_log;
+          let article = this.DetailsData.detail
+          article = article.replace(/<img>/g, '')
+          wxParse.wxParse('article', 'html', article, this, 0)
+          this.buy_log = this.DetailsData.buy_log
           this.end_time = this.DetailsData.residue_time*1000
           countdown(this)
           this.$apply()

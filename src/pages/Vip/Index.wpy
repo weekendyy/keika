@@ -13,8 +13,8 @@
               <view class="first">{{item[0]}} <text>{{item[1]}}/张</text></view>
               <text class="date">{{item[2]}}</text>
             </view>
-            <button open-type="getUserInfo" bindgetuserinfo="vip" class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 2}}" data-index='{{index}}'>购买</button>
-            <button open-type="getUserInfo" bindgetuserinfo="vip" class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 1}}" data-index='{{index}}'>续费</button>
+            <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="vip" class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 2}}" data-index='{{index}}'>购买</button>
+            <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="vip" class="btn {{vipOpenState == true? '': 'active'}}" wx-if="{{open_status == 1}}" data-index='{{index}}'>续费</button>
           </view>
         </repeat>
         <view class="phoneBox">
@@ -32,7 +32,7 @@
         <view class="phoneBox" style="margin-top:30rpx;">
           <input placeholder="请输入开通手机号码(必填)" type="number" value="{{phoneNumberPassWord}}" @input="phoneInpPassWord" />
         </view>
-        <button open-type="getUserInfo" bindgetuserinfo="Verification" class="btn {{numOpenState == true? '': 'active'}}">立即激活</button>
+        <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="Verification" class="btn {{numOpenState == true? '': 'active'}}">立即激活</button>
       </view> 
     </view>
   </view>

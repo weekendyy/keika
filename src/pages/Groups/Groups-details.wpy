@@ -67,7 +67,7 @@
             </view>
             <text class="state">拼团中</text>
           </view>
-          <button open-type="getUserInfo" bindgetuserinfo="buyGoods" class="group-item" wx:if="{{GroupMonadData.length == 0}}" data-index='2'>
+          <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="buyGoods" class="group-item" wx:if="{{GroupMonadData.length == 0}}" data-index='2'>
             <text class="noGroupMonadData">暂时还没有人开团哦~</text>
             <text class="state">去开团</text>
           </button>

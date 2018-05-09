@@ -1,17 +1,14 @@
 <template>
-  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="lotteryDetail-peopleList" hidden="{{!loadingHidden}}">
-    <text class="takePartIn">25343位参与者</text>
+    <text class="takePartIn">{{joinNum}}位参与者</text>
     <view class="peopleList">
-      <image wx:for="{{30}}" src="" mode="aspectFill" class="prizePeoples"></image>
+      <image wx:for="{{joiners}}" src="{{item.wechat_portrait}}" mode="aspectFill" class="prizePeoples"></image>
     </view>
-  </view>
-  <view hidden="{{loadingHidden}}">
-    <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
 <script>
   import wepy from 'wepy'
+  import lotteryDrawModel from './lotteryDraw-model.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -19,7 +16,11 @@
     }
     data = {
       loadingHidden: true,
-      
+      goodsId: '',
+      joiners: [],
+      joinNum: '',
+      pageNum: 1,
+      isLoadAll: false
     }
     computed = {
         
@@ -28,14 +29,43 @@
       
     }
     onLoad(e){
-     
+      this.goodsId = e.id
+      let query ={
+        goodsId: this.goodsId,
+        pageNum: this.pageNum
+      }
+      lotteryDrawModel.getAlljoiners(query,(res)=>{
+        if(res.code == 1){
+          this.joiners = res.data.order_list
+          this.joinNum = res.data.count
+          this.$apply()
+        }
+      })
     }
     onShow(){
       this.showBottomTab = true
       this.$apply()
     }
     onReachBottom(){
-      
+      if(!isLoadAll){
+        lotteryDrawModel.showTips('加载中...')
+        this.pageNum++
+        let query ={
+          goodsId: this.goodsId,
+          pageNum: this.pageNum
+        }
+        lotteryDrawModel.getAlljoiners(query,(res)=>{
+          if(res.code == 1){
+            wx.hideLoading()
+            if(res.data.order_list.length == 0){
+              this.isLoadAll = true
+              lotteryDrawModel.showTips('已经到底了')
+            }
+            this.joiners = [...this.joiners, ...res.data.order_list]
+            this.$apply()
+          }
+        })
+      }
     }
    
     components = {
@@ -43,7 +73,6 @@
   }
 </script>
 <style lang="less">
-  @import '../pages/tpls/loading/loading.wxss';
   Page{
     background-color: #F1F1F1;
   }
@@ -63,7 +92,7 @@
     .peopleList{
       width: 100%;
       display: flex;
-      justify-content: space-around;
+      justify-content: flex-start;
       flex-wrap: wrap;
       .prizePeoples{
         width: 66rpx;

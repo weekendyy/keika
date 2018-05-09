@@ -9,7 +9,7 @@
   </swiper>
   <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
     <view class="open-wrapper" style="background-image: url({{headerinfo.background_img}});">
-      <image src="{{headerinfo.card_img}}" class="logo"></image>
+      <view class="logo"></view>
       <view class="user-info">
         <open-data type="userAvatarUrl" class="pic"></open-data>
         <open-data type="userNickName" class="name"></open-data>
@@ -19,7 +19,7 @@
         </view>
       </view>
     </view>
-    <image class="open-bg" src="./images/open-vip-bg.jpg"></image>
+    <image class="open-bg" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.jpg"></image>
   </view>
 </form>
 </template>

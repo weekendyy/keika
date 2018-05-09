@@ -142,7 +142,7 @@ class Groups extends Base{
       data: {
         group_goods_id: queryData.group_goods_id,
         time_status: queryData.time_status,
-        magic_formID: queryData.formID
+        magic_form_id: queryData.formID
       },
       sCallback(resData){
         callback && callback(resData)

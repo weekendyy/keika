@@ -18,7 +18,7 @@
     <view class="searchBox">
       <view class="searchBoxCenter">
         <image src="images/search.png" mode="widthFix" class="searchIcon"></image>
-        <input type="text" confirm-type="search" @input="searchInp" bindconfirm="searchGetData" placeholder="输入您喜欢的餐馆" value="{{searchValue}}">
+        <input type="text" confirm-type="search" @input="searchInp" bindconfirm="searchGetData" placeholder="输入您喜欢的餐馆" value="{{searchValue}}" />
       </view>
     </view>
     <view class="tab-box">

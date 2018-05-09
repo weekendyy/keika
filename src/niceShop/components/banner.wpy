@@ -1,0 +1,56 @@
+<template>
+  <view class="Banner">
+    <swiper indicator-dots="true" autoplay="true" interval="3000" circular='true' class="swiperBox">
+      <block wx:for="{{bannerImgs}}" wx:key="{{index}}">
+        <swiper-item>
+          <image src="{{item}}" class="bannerImg" mode="scaleToFill" />
+        </swiper-item>
+      </block>
+    </swiper>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.component{
+      props = {
+        bannerImgs: Object
+      }
+      data = {
+        
+      }
+      methods = {
+        
+      }
+      onLoad(){
+      }
+  }
+</script>
+<style lang="less">
+  .swiperBox{
+    width: 750rpx;
+    height: 390rpx;
+    .bannerImg{
+      width: 100%;
+      height: 100%;
+    }
+    .wx-swiper-dots.wx-swiper-dots-horizontal{
+         margin-bottom: 2rpx;
+    }
+    .wx-swiper-dot{
+        width:35rpx;
+        display: inline-flex;
+        height: 7rpx;
+        justify-content:space-between;
+        border-radius: 5rpx
+    }
+    .wx-swiper-dot::before{
+        content: '';
+        flex-grow: 1; 
+        background: rgba(255,255,255,0.8);
+    }
+    .wx-swiper-dot-active::before{
+        background:#F3C169;
+    }
+  }
+</style>

@@ -34,7 +34,7 @@
             </view>
           </repeat>
         </view>
-        <button class="card-box success" open-type="getUserInfo" bindgetuserinfo="add" wx:if="{{goodsInfo.first_join == 1 && goodsInfo.status == 1}}">
+        <button class="card-box success" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="add" wx:if="{{goodsInfo.first_join == 1 && goodsInfo.status == 1}}">
           <view class="card">
             <text>我也要参加</text>
           </view>
@@ -154,7 +154,9 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '集卡活动详情'
+      navigationBarTitleText: '集卡活动详情',
+      enablePullDownRefresh: true,
+      backgroundTextStyle: 'dark'
     }
     components = {
       BackHome: BackHome
@@ -303,7 +305,7 @@
       }
       this.queryData.lucky_goods_id = options.id
       if(options.formID){
-        this.queryData.magic_formID = options.formID
+        this.queryData.magic_form_id = options.formID
       }
     }
     onShow(){
@@ -314,6 +316,15 @@
           wxParse.wxParse('article', 'html', article, this, 0)
           this.likeNum = ResData.data.browse_num
           this.loadingHidden = true
+        }
+        this.$apply()
+      })
+    }
+    onPullDownRefresh(){
+      CardModel.getDetail(this.queryData, ResData=> {
+        if(ResData.code == 1){
+          this.goodsInfo = ResData.data
+          wx.stopPullDownRefresh()
         }
         this.$apply()
       })

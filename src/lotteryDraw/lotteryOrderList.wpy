@@ -1,0 +1,153 @@
+<template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <view class="lotteryOrderList">
+    <view class="tabItems">
+      <view class="tabItem {{index == tabIndex?'activeItem':''}}" wx:for="{{tabItems}}" @tap="itemTab({{index}})">
+        <text>{{item}}</text>
+      </view>
+    </view>
+    <!-- 列表 -->
+    <view class="orderList">
+      <view class="orderItem" wx:for="{{tabIndex == 0 ? allOrder : lotteryOrder}}" @tap="tolotteryDetail({{index}})">
+        <text class="orderTitle">奖品：{{item.rewardgoods.goods_name}} X{{item.rewardgoods.goods_num}}</text>
+        <view class="orderItem-right">
+          <text>{{item.create_time}}</text>
+          <image src="image/right.png" mode="widthFix"></image>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{isEmpty.allOrderEmpty && tabIndex == 0}}">
+      <template is="emptyGoodsTips" data="{{tipsTxt:'暂无抽奖活动'}}"></template>
+    </view>
+    <view wx:if="{{isEmpty.lotteryOrderEmpty && tabIndex == 1}}">
+      <template is="emptyGoodsTips" data="{{tipsTxt:'暂无抽奖活动'}}"></template>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import lotteryDrawModel from './lotteryDraw-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '抽奖订单',
+    }
+    data = {
+      tabItems: ['全部抽奖', '中奖纪录'],
+      tabIndex: 0,
+      allOrder: [ ],
+      lotteryOrder: [],
+      isEmpty: {
+        allOrderEmpty: false,
+        lotteryOrderEmpty: false
+      }
+    }
+    computed = {
+        
+    }
+    methods = {
+      itemTab(index){
+        this.tabIndex = index
+        this.$apply()
+        if(index == 1 && this.lotteryOrder.length == 0){
+          lotteryDrawModel.getLotteryOrder({type: 2},(res)=>{
+            this.isEmpty.lotteryOrderEmpty = false
+            if(res.code == 1){
+              if(res.data.length == 0){
+                this.isEmpty.lotteryOrderEmpty = true
+              }
+              this.lotteryOrder = res.data
+              this.$apply()
+            }
+          })
+        }
+      },
+      tolotteryDetail(index){
+        if(this.tabIndex == 0){
+          this.$navigate('./lotteryDrawDetail',{id: this.allOrder[index].goods_id})
+        }
+        if(this.tabIndex == 1){
+          this.$navigate('./lotteryDrawDetail',{id: this.lotteryOrder[index].goods_id})
+        }
+      }
+    }
+    onLoad(){
+      lotteryDrawModel.getLotteryOrder({type: 1},(res)=>{
+        if(res.code == 1){
+          if(res.data.length == 0){
+            this.isEmpty.allOrderEmpty = true
+          }
+          this.allOrder = res.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  Page{
+    background-color: #F1F1F1;
+  }
+  .lotteryOrderList{
+    width: 100%;
+    .tabItems{
+      width: 100%;
+      height: 100rpx;
+      background-color: #fff;
+      display: flex;
+      .tabItem{
+        font-size: 31rpx;
+        color: #777;
+        border-bottom: 2px solid #E7E7E7;
+        flex: 1;
+        height: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        line-height: 100rpx;
+      }
+      .activeItem{
+        color: #FF602E;
+        border-bottom: 2px solid #FF602E;
+      }
+    }
+    .orderList{
+      width: 100%;
+      .orderItem{
+        width: 100%;
+        height: 110rpx;
+        background-color: #fff;
+        box-sizing: border-box;
+        padding: 0 30rpx;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 25rpx;
+        .orderTitle{
+          font-size: 30rpx;
+          color: #4A4A4A;
+          flex: 0 0 400rpx;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .orderItem-right{
+          display: flex;
+          align-items: center;
+          text{
+            font-size: 30rpx;
+            color: #B0B0B1;
+          }
+          image{
+            width: 30rpx;
+            height: 30rpx;
+            margin-left: 20rpx;
+          }
+        }
+      }
+    }
+  }
+</style>
+

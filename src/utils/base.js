@@ -27,10 +27,6 @@ class Base {
     if (params.setUpUrl) {
       url = params.url
     }
-    // if(!wx.getStorageSync('token')){
-    //   that._refetch(params)
-    //   return false
-    // }
     wx.request({
       url: url,
       data: params.data,
@@ -44,30 +40,16 @@ class Base {
         // 异常不要返回到回调中，就在request中处理，记录日志并showToast一个统一的错误即可
         let code = res.statusCode.toString()
         let startChar = code.charAt(0)
-        if (startChar !== '2') {
-          if (code === '500' && !noRefetch) {
+        if (startChar !== '2') {        //不正常访问 
+          if(res.data.code == '401' && !noRefetch){  // token问题
+            console.log('token无效')
             that._refetch(params)
+          } else if(!noRefetch) {
+            that._refetch(params)
+            console.log(res)
+            console.log(params)
           }
-          if (Number(res.data.code) === 10) {
-            TokenModel.goNot()
-            wx.showToast({
-              title: 'code==10',
-              icon: 'none'
-            })
-            this._toIndex()
-            return false
-          }
-          params.sCallback && params.sCallback(res.data)
-        } else {
-          if (Number(res.data.code) === 10) {
-            TokenModel.goNot()
-            this._toIndex()
-            wx.showToast({
-              title: 'code==10',
-              icon: 'none'
-            })
-            this._toIndex()
-          }
+        } else {  // 正常访问
           params.sCallback && params.sCallback(res.data)
         }
       },
@@ -83,6 +65,7 @@ class Base {
       title:'请求失败，请重试',
       icon: 'none'
     })
+    console.log(err)
   }
   _refetch(param) {
     TokenModel.getTokenFromServer((token) => {
@@ -385,7 +368,7 @@ class Base {
   showTips(tips){
     wx.showToast({
       title: tips,
-      icon: 'loading',
+      icon: 'none',
       duration: 1500
     })
   }
@@ -421,6 +404,23 @@ class Base {
         title: '未设置地理坐标',
         icon: 'none',
         duration: 1500
+      })
+    }
+  }
+  // 修改上一个页面的某个状态
+  setPrePageState(data,changeData){
+    let prevPage = getCurrentPages()[getCurrentPages().length-2]
+    prevPage.setData({
+      [data]: changeData
+    })
+  }
+  //小程序跳转
+  navTo(url){
+    if(url == '/pages/Index/index' || url == '/pages/Activity/index' || url == '/pages/Shop/shopIndex' || url == '/pages/My/index'){
+      wx.switchTab({url:url})
+    } else {
+      wx.navigateTo({
+        url: url
       })
     }
   }

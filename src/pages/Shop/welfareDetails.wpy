@@ -37,19 +37,11 @@
         <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
       </view>
     </view>
-<!--    <view class="shopDetails-wrapper">
-      <view class="shopDetails-header">
-        <image src="../Shop/images/about.png"></image>
-        <text>店铺详情</text>
-      </view>
-      <view class="shopDetails-content">
-      </view>
-    </view>-->
     <view class="open-vip" wx:if="{{card_status == 2}}" @tap="openVip()">
       <text>开通会员即可获赠</text>
     </view>
     <form report-submit="magicFormId" bindsubmit="addWelfare">
-      <button class="open-vip receiveBtn" form-type="submit" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 3}}">
+      <button loading="{{isAddWelfare}}" class="open-vip receiveBtn" form-type="submit" wx:if="{{card_status == 1 && check_get_log == 2 && time_status == 3}}">
         <text wx:if="{{WelfareData.repertory_num != WelfareData.get_num}}">马上领取</text>
         <text wx:if="{{WelfareData.repertory_num == WelfareData.get_num}}">已领完</text>
       </button>
@@ -114,7 +106,11 @@
       orderId:'',
       use_status:'',
       showPosterBox: '',
-      posterImg: ''
+      posterImg: '',
+      formId: '',
+      isAddWelfare: false,
+      idx: '',
+      index: ''
     }
     methods = {
       onShareAppMessage(){
@@ -133,6 +129,10 @@
         this.$navigate('../Vip/Index')
       },
       addWelfare(e){
+        if(this.isAddWelfare){
+          return false
+        }
+        this.isAddWelfare = true
         let param = {
           goods_id: this.id,
           magic_form_id: e.detail.formId
@@ -147,13 +147,19 @@
             this.check_get_log = 1
             this.use_status = 1
             this.orderId = ResData.data
+            this.isAddWelfare = false
             this.$apply()
+            if(this.idx){
+              ShopModel.setPrePageState('shopData['+this.idx+'].magicgoods['+this.index+'].get_status',2)
+            }
           } else{
             wx.showLoading({
               title: ResData.message,
               icon: 'success',
               duration: 1500
             })
+            this.isAddWelfare = false
+            this.$apply()
           }
         })
       },
@@ -206,10 +212,15 @@
       }
     }
     onLoad(options){
-      this.id = options.id
+      this.id = options.id || ' '
+      this.idx = options.idx || ' '
+      this.index = options.index || ' '
+      if(options.formID){
+        this.formId = options.formID
+      }
     }
     onShow(){
-      ShopModel.getWelfareData({id:this.id}, (ResData)=>{
+      ShopModel.getWelfareData({id:this.id, formId: this.formId}, (ResData)=>{
         if(ResData.code == 1){
           this.WelfareData = ResData.data
           wxParse.wxParse('article1', 'html', this.WelfareData.magic_goods_detail, this, 5)

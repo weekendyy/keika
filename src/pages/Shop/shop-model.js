@@ -14,7 +14,8 @@ class Shop extends Base {
       url: 'v5/magic_goods/get_home_goods_detail',
       data: {
         magic_goods_id: queryData.id,
-        versions: 'vip5'
+        versions: 'vip5',
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)

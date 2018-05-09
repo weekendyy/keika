@@ -1,0 +1,128 @@
+<template>
+  <view class="sponsorBox">
+    <view class="txtBox">
+      <text class="text1" wx:if="{{sponData.one_line}}">{{sponData.one_line}}</text>
+      <text class="text2" wx:if="{{sponData.two_line}}">{{sponData.two_line}}</text>
+      <text class="text3" wx:if="{{sponData.tree_line}}">{{sponData.tree_line}}</text>
+    </view>
+    <textarea cursor-spacing="100" maxlength="-1" bindinput="bindTextAreaBlur" auto-height placeholder="{{sponData.four_line}}" />
+    <button class="submitbtn" open-type="getUserInfo" lang="zh_CN " bindgetuserinfo="submit">提交</button>
+    <text class="submitDesc">{{sponData.five_line}}</text>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import lotteryDrawModel from './lotteryDraw-model.js'
+  import Address from '../utils/address.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '成为赞助商',
+      disableScroll: true
+    }
+    data = {
+      sponsorValue: '',
+      sponData: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      submit(res){
+        Address.getUser(res,()=>{
+          if(this.sponsorValue == ''){
+            lotteryDrawModel.showTips('请输入内容')
+            return false
+          }
+          let userInfo = wx.getStorageSync('userInfo')
+          let query = {
+            content: this.sponsorValue,
+            wechat_name: userInfo.nickName,
+            portrait_img: userInfo.avatarUrl
+          }
+          lotteryDrawModel.postSponsorInfo(query, (res)=>{
+            if(res.code == 1){
+              lotteryDrawModel.showTips('提交成功')
+              setTimeout(()=>{
+                wx.navigateBack({
+                  delta: 1
+                })
+              },1000)
+            }
+          })
+        })
+      },
+      bindTextAreaBlur(res){
+        this.sponsorValue = res.detail.value
+        this.$apply()
+      }
+    }
+    onLoad(e){
+      lotteryDrawModel.getSponsorInfo({},(res)=>{
+        if(res.code == 1){
+          this.sponData = res.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  Page{
+    background-color: #F1F1F1;
+  }
+  .sponsorBox{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .txtBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 35rpx 30rpx;
+    color: #808080;
+    font-size: 28rpx;
+    line-height: 40rpx;
+    .text1{
+      margin-bottom: 35rpx;
+      line-height: 50rpx;
+      display: block;
+    }
+    .text2{
+      display: block;
+      margin-bottom: 35rpx;
+      line-height: 50rpx;
+    }
+    .text3{
+      color: #D15043;
+    }
+  }
+  textarea{
+    width: 100%;
+    min-height: 500rpx;
+    background-color: #fff;
+    box-sizing: border-box;
+    padding: 45rpx 30rpx;
+    font-size: 29rpx;
+  }
+  .submitbtn{
+    width: 690rpx;
+    height: 90rpx;
+    background-color: #575757;
+    color: #fff;
+    font-size: 29rpx;
+    text-align: center;
+    line-height: 90rpx;
+    margin-top: 60rpx;
+  }
+  .submitDesc{
+    color: #808080;
+    font-size: 27rpx;
+    width: 100%;
+    text-align: center;
+    margin-top: 30rpx;
+  }
+</style>
+

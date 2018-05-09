@@ -4,7 +4,7 @@
       <image src="./images/icon_evaluate.png"></image>
       <text>购买成功</text>
     </view>
-    <view class="Confirm_header {{groupsData.status == 1 ? 'active': ''}}" wx:if="{{groupsData.status == 1}}">
+    <view class="Confirm_header {{groupsData.status == 1 ? 'active': ''}}" wx:if="{{groupsData.status == 1 && groupsData.address_options == 1}}">
       <view class="no-address" wx:if="{{!AddressInfo.shipping_name}}" @tap="getAddress">
         <image src="./images/icon_address.png"></image>
         <text>选择添加收货地址</text>

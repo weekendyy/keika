@@ -5,7 +5,7 @@
     <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
       <block wx:for="{{bannerpics}}" wx:key="bannerpics">
         <swiper-item class="swiperitembox">
-          <image src="{{item.banner_url}}" class="bannerpic" mode="scaleToFill"/>
+          <image src="{{item.banner_url}}" class="bannerpic" mode="aspectFill"/>
         </swiper-item>
       </block>
     </swiper>
@@ -14,7 +14,8 @@
         <view wx:for="{{tabitems}}" wx:key="tabitems" class="tabitem {{currentTabsIndex==index?'activeitem':''}}" @tap="itemTap({{index}})">{{item}}</view>
       </view>
       <scroll-view scroll-y wx:if="{{currentTabsIndex==0}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
-        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="scareBuyingList" @tap="gotoDetails({{index}})">
+        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="scareBuyingList">
+          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="gotoDetails" class="activityFormId"></button>
           <image src="{{item.main_img}}" mode="scaleToFill" class="goodspic"></image>
           <view class="rightbox">
             <view class="itemtop">
@@ -38,7 +39,8 @@
         </view>
       </scroll-view>
       <scroll-view scroll-y wx:if="{{currentTabsIndex==1}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
-        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="scareBuyingList" @tap="gotoDetails({{index}})">
+        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="scareBuyingList">
+          <button data-index="{{index}}" open-type="getUserInfo" bindgetuserinfo="gotoDetails" class="activityFormId"></button> 
           <image src="{{item.main_img}}" mode="aspectFill" class="goodspic"></image>
           <view class="rightbox">
             <view class="itemtop">
@@ -71,6 +73,7 @@
 <script>
   import wepy from 'wepy'
   import BargainModel from './Bargain-model'
+  import Address from '../../utils/address.js'
   export default class collectword extends wepy.page {
     config = {
       navigationBarTitleText: '加载中...'
@@ -145,15 +148,18 @@
           })
         }
       },
-      gotoDetails(index){
-        let id = null
-        if (this.currentTabsIndex == 0) {
-          id = this.NowActivityData[index].id
-        }
-        if(this.currentTabsIndex == 1){
-          id = this.OldActivityData[index].id
-        }
-        this.$navigate('../Bargain/details',{id:id})
+      gotoDetails(res){
+        Address.getUser(res,()=>{
+          let index = res.currentTarget.dataset.index
+          let id = null
+          if (this.currentTabsIndex == 0) {
+            id = this.NowActivityData[index].id
+          }
+          if(this.currentTabsIndex == 1){
+            id = this.OldActivityData[index].id
+          }
+          this.$navigate('../Bargain/details',{id:id})
+        })
       }
     }
     components = {
@@ -267,6 +273,7 @@
           height:264rpx;
           border-bottom: 2rpx solid #EFEFEF;
           box-sizing: border-box;
+          position: relative;
           &:last-child{
             border-bottom:2rpx solid #fff;
           }
@@ -277,6 +284,21 @@
             flex:0 0 220rpx;
             height:220rpx;
             border-radius: 8rpx;
+          }
+          .activityFormId{
+            width: 100%;
+            height: 264rpx;
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            border-radius: 0;
+            background-color: transparent;
+            z-index: 20;
+            &::after{
+              content: none;
+            }
           }
           .rightbox{
             flex:1;

@@ -1,0 +1,191 @@
+<template>
+  <form bindsubmit="postAddress">
+  <view class="addressBox">
+    <view class="addressContent-top">
+      <text class="topTxt">请在 <text>{{time}} 前</text>提供收货信息给发送人</text>
+    </view>
+    <view class="addressInfo">
+      <text class="addressInfo-txt">收货地址</text>
+      <view class="addressInfo-content">
+        <text class="chooseAddresstxt" @tap="chooseAddress">{{addressTxt}}</text>
+        <image src="image/right.png" mode="widthFix"></image>
+      </view>
+    </view>
+    <textarea value="{{remark}}" bindinput="remarkInp" auto-height="true" placeholder="填写备注信息" focus="{{focus}}" />
+    <button form-type="submit">保存</button>
+  </view>
+  </form>
+</template>
+<script>
+  import wepy from 'wepy'
+  import lotteryDrawModel from './lotteryDraw-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '地址选择',
+    }
+    data = {
+      time: '',
+      addressTxt: '选择收货地址',
+      addressInfo: '',
+      remark: '',
+      orderId: '',
+      goodsId: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      postAddress(){
+        if(!this.addressInfo.userName) {
+          lotteryDrawModel.showTips('请填写收货地址')
+          return false
+        }
+        let query = {
+          order_id: this.orderId,
+          shipping_province: this.addressInfo.provinceName,
+          shipping_city: this.addressInfo.cityName,
+          shipping_area: this.addressInfo.countyName,
+          shipping_name: this.addressInfo.userName,
+          shipping_phone: this.addressInfo.telNumber,
+          shipping_street: this.addressInfo.detailInfo,
+          remark: this.remark
+        }
+        lotteryDrawModel.postAddress(query,(res)=>{
+          if(res.code == 1){
+            lotteryDrawModel.showTips('保存成功')
+            let prevPage = getCurrentPages()[getCurrentPages().length-2]
+            prevPage.setData({
+              addressTxt: '地址已填写'
+            })
+            setTimeout(()=>{
+              wx.navigateBack({
+                delta: 1
+              })
+            },1000)
+          }
+        })
+      },
+      chooseAddress(){
+        wx.chooseAddress({
+          success: (res)=> {
+            this.addressInfo = res
+            this.addressTxt = res.userName+","+res.telNumber+","+res.provinceName+res.cityName+res.countyName+res.detailInfo
+            this.$apply()
+          }
+        })
+      },
+      remarkInp(res){
+        this.remark = res.detail .value
+      }
+    }
+    onLoad(e){
+      this.time = e.time
+      this.orderId = e.orderId
+      this.goodsId = e.goodsId
+      lotteryDrawModel.showAddress({goodsId: this.goodsId},(res)=>{
+        if(res.code == 1){
+          if(res.data.shipping_name){
+            let info = res.data
+            this.addressTxt = info.shipping_name+","+info.shipping_phone+","+info.shipping_province+info.shipping_city+info.shipping_area+info.shipping_street
+            this.addressInfo = {
+              provinceName: info.shipping_province,
+              cityName: info.shipping_city,
+              countyName: info.shipping_area,
+              userName :info.shipping_name,
+              telNumber :info.shipping_phone,
+              detailInfo :info.shipping_street
+            }
+          }
+          if(res.data.remark){
+            this.remark = res.data.remark
+          }
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  Page{
+    background-color: #F1F1F1;
+  }
+  .addressBox{
+    width: 100%;
+    .addressContent-top{
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 30rpx;
+      background-color: #fff;
+      margin-top: 1px;
+      height: 100rpx;
+      display: flex;
+      align-items: center;
+      .topTxt{
+        font-size: 28rpx;
+        color:#3F3F3F;
+        text{
+          color: #C64047;
+          font-size: 28rpx;
+        }
+      }
+    }
+    .addressInfo{
+      margin-top: 20rpx;
+      .addressInfo-txt{
+        margin-left: 30rpx;
+        font-size: 27rpx;
+        color: #888;
+        line-height: 70rpx;
+      }
+      .addressInfo-content{
+        width: 100%;
+        background-color: #fff;
+        height: 110rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        padding: 0 30rpx;
+        .chooseAddresstxt{
+          font-size: 30rpx;
+          flex: 0 0 660rpx;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        image{
+          flex: 0 0 45rpx;
+          width: 45rpx;
+          height: 45rpx;
+        }
+      }
+    }
+    textarea{
+      margin-top: 20rpx;
+      width: 100%;
+      font-size: 29rpx;
+      min-height: 200rpx;
+      padding: 10rpx 30rpx;
+      box-sizing: border-box;
+      background-color: #fff;
+    }
+    button{
+      width: 710rpx;
+      height: 90rpx;
+      padding: 0;
+      margin: 0;
+      border-radius: 0;
+      background-color: #575757;
+      color: #fff;
+      font-size: 29rpx;
+      line-height: 90rpx;
+      text-align: center;
+      margin-top: 50rpx;
+      margin-left: 20rpx;
+    }
+  }
+</style>
+

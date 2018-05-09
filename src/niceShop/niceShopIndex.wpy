@@ -1,0 +1,675 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="niceShopIndex">
+    <view class="bannerTop {{showContent?'showBanner':''}}">
+      <Banner :bannerImgs.sync='bannerImgs'></Banner>
+    </view>
+    <!-- 店铺头部 -->
+    <view class="shopHead {{showContent?'showShopHead':''}}">
+      <text class="shop-slogan">
+        “{{indexData.brief_describe}}”
+      </text>
+      <text class="shop-time">
+        {{fixedData.business}}{{indexData.business_time}}
+      </text>
+      <view class="share-column">
+        <view class="sharePeoples">
+          <image wx:for="{{peopleSeeData}}" wx:key="{{index}}" wx:if="{{index<4}}" src="{{item.userinfo.portrait_img}}" mode="aspectFill" class="sharePeopleIcon"></image>
+        </view>
+        <view class="share-seeNums">
+          <image src="images/seeIcon.png" mode="widthFix" class="seeNumsIcon"></image>
+          <text>{{indexData.see_num}}</text>
+        </view>
+        <button open-type="share" class="share-seeNums" data-type="index">
+          <image src="images/shareIcon.png" mode="widthFix" class="seeNumsIcon"></image>
+          <text>{{fixedData.share_str}}</text>
+        </button>
+      </view>
+    </view>
+    <!-- 地理位置和电话 -->
+    <view class="shop-address {{showContent?'show-shop-address':''}}">
+      <view class="shop-address-txt">
+        <text>{{indexData.magic_shop_name}}</text>
+        <text>{{indexData.address}}</text>
+      </view>
+      <view class="shop-adress-right">
+        <view hover-class="hoverlocationIcon" hover-start-time="0" hover-stay-time="500" style="transition: .4s;">
+          <image @tap="toMap" mode="aspectFill" class="locationIcon" src="./images/location.png"></image>
+        </view>
+        <view hover-class="hoverphoneIcon" hover-start-time="0" hover-stay-time="500" style="transition: .4s;">
+          <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="./images/phonecall.png"></image>
+        </view>
+      </view>
+    </view>
+    <!-- 会员权益 -->
+    <view class="couponBox {{showContent?'{{showCouponBox}}':''}}">
+      <view class="couponBox-title">
+        <text class="couponTitle">{{fixedData.vip_str_1}}</text>
+        <text class="couponDesc">{{fixedData.vip_str_2}}</text>
+      </view>
+      <view class="coupons">
+        <swiper class="swiperBox" indicator-dots="true" circular="true" next-margin="40rpx"
+          autoplay="{{false}}" interval="5000" duration="500">
+          <block wx:for="{{couponData}}" wx:key="{{index}}">
+            <swiper-item class="swiperItem">
+              <view class="couponItem" @tap="toCouponDetail({{index}})">
+                <view class="itemLeft">
+                  <view class="itemTitle">
+                    <text class="itemTitle-mian">{{item.magic_goods_name}}</text>
+                    <text class="couponNum">{{fixedData.share_vip}}</text>
+                  </view>
+                  <text class="itemDesc">{{item.magic_goods_title}}</text>
+                  <text class="couponTime">有效期：{{item.from_time}}-{{item.to_time}}</text>
+                </view>
+                <view class="itemRight">
+                  <image src="images/coupon.png" mode="widthFix"></image>
+                  <text wx:if="{{item.get_status == 2}}">立即使用</text>
+                  <text wx:if="{{item.get_status == 1}}">立即领取</text>
+                </view>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+      </view>
+    </view>
+    <!-- 今日推荐 -->
+    <view class="couponBox todayRM {{showContent?'{{showTodayRM}}':''}} {{todayData.length == 0?'hidden':''}}">
+      <view class="couponBox-title">
+        <view class="couponBox-title_left">
+          <text class="couponTitle">{{fixedData.today_recommond_1}}</text>
+          <text class="couponDesc">{{fixedData.today_recommond_2}}</text>
+        </view>
+        <view class="couponBox-title_right">
+          <text class="itemNum">{{todaySwiperIndex}}</text>
+          <text class="itemAllNum">/{{todayData.length}}</text>
+        </view>
+      </view>
+      <view class="rmToday">
+        <swiper class="swiperBox" indicator-dots="{{false}}" circular="true" bindchange="todaySwiper"
+          autoplay="{{false}}" interval="5000" duration="500">
+          <block wx:for="{{todayData}}" wx:key="{{index}}">
+            <swiper-item class="swiperItem">
+              <view class="itemBox" hover-class="hoverSwiperItem" hover-start-time="0" hover-stay-time="300">
+                <image src="{{item.banner_url}}" mode="aspectFill" class="mainPic" @tap="toDetail({{item.id}},{{item.goods_type}})"></image>
+                <view class="item-bottom">
+                  <view class="item-bottom-title">
+                    <text class="item-title">{{item.goods_name}}</text>
+                    <text class="item-desc">{{item.new_title}}</text>
+                  </view>
+                  <button open-type="share" data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">
+                    <image src="images/share.png" mode="widthFix" class="todayShare"></image>
+                  </button>
+                </view>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+        <view style="width: 100%; height: 1px; background-color: #E8E8E8"></view>
+      </view>
+    </view>
+    <!-- 精选推荐 -->
+    <view class="couponBox todayRM choice {{showContent?'showChoice':''}}">
+      <view class="couponBox-title">
+        <view class="couponBox-title_left">
+          <text class="couponTitle">{{fixedData.choose_recommond_1}}</text>
+          <text class="couponDesc">{{fixedData.choose_recommond_2}}</text>
+        </view>
+      </view>
+      <view class="rmToday choiceBox">
+        <view class="swiperBox" indicator-dots="{{false}}" circular="true"
+          autoplay="{{false}}" interval="5000" duration="500">
+          <block wx:for="{{choiceness}}" wx:key="{{index}}">
+            <view class="swiperItem" hover-start-time="0" hover-stay-time="300" hover-class="hoverswiperItem">
+              <view class="itemBox">
+                <image src="{{item.banner_url}}" mode="aspectFill" class="mainPic" @tap="toDetail({{item.id}},{{item.goods_type}})"></image>
+                <view class="item-bottom" style="border-bottom: 1px solid {{index == choiceData.length-1? '#fff' : '#E8E8E8' }}">
+                  <view class="item-bottom-title">
+                    <text class="item-title">{{item.goods_name}}</text>
+                    <text class="item-desc">{{item.new_title}}</text>
+                  </view>
+                  <button open-type="share" data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">
+                    <image src="images/share.png" mode="widthFix" class="todayShare"></image>
+                  </button>
+                </view>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import Banner from './components/banner'
+  import NiceShopModel from './niceShop-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '好店',
+    }
+    data = {
+      todaySwiperIndex: 1,
+      showContent: false,
+      shopId: '',
+      indexData: '',
+      fixedData: '',
+      peopleSeeData: '',
+      bannerImgs: [],
+      couponData: [],
+      todayData: [],
+      choiceness: []
+    }
+    components = {
+      Banner: Banner
+    }
+    computed = {
+        
+    }
+    methods = {
+      todaySwiper(res){
+        this.todaySwiperIndex = res.detail.current+1
+        this.$apply()
+      },
+      toMap(){
+        NiceShopModel.openMap(this.indexData.longitude,this.indexData.magic_shop_name,this.indexData.address)
+      },
+      makePhoneCall(){
+        NiceShopModel.makePhoneCall(this.indexData.link_tel)
+      },
+      toCouponDetail(index){
+        NiceShopModel.navTo('../pages/Shop/welfareDetails?id='+this.couponData[index].id)
+      },
+      toDetail(id,goodsType){
+      	if(goodsType == 1){  //抢购
+      		NiceShopModel.navTo('../pages/Goods/details?id='+id)
+      		return false
+      	}
+      	if(goodsType == 2){  //拼团
+      		NiceShopModel.navTo('../pages/Groups/Groups-details?id='+id)
+      		return false
+      	}
+      	if(goodsType == 5){  //集卡
+      		NiceShopModel.navTo('../pages/Card/details?id='+id)
+      		return false
+      	}
+      	if(goodsType == 4){  //砍价
+      		NiceShopModel.navTo('../pages/Bargain/details?id='+id)
+      		return false
+      	}
+      }
+    }
+    onLoad(e){
+      this.shopId = e.id
+      NiceShopModel.getIndexData({id: this.shopId},(res)=>{
+        if(res.code == 1){
+          this.indexData = res.data
+          this.fixedData = res.data.content_str
+          this.bannerImgs = res.data.banner_img
+          this.peopleSeeData = res.data.portrait_data
+          this.couponData = res.data.magicgoods
+          this.todayData = res.data.today_recommend_arr
+          this.choiceness = res.data.choiceness_recommend_arr
+          wx.setNavigationBarTitle({
+            title: res.data.magic_shop_name
+          })
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+      this.showContent = true
+      this.$apply()
+    }
+    onReachBottom(){
+      
+    }
+    onShareAppMessage(res){
+    	console.log(res)
+    	let defaultShare = {
+			title: this.indexData.magic_shop_name,
+			path: '/niceShop/niceShopIndex?id='+this.shopId,
+    		success: function(res) {
+    			NiceShopModel.showTips('转发成功')
+    		},
+    		fail: function(res) {
+    			NiceShopModel.showTips('转发取消')
+    		}
+		}
+		let detailShare ={}
+    	if(res.target.dataset.type){
+	    	let path = ''
+	    	if(res.target.dataset.type == '1'){
+	    		path = '/pages/Goods/details'
+	    	}
+	    	if(res.target.dataset.type == '2'){
+	    		path = '/pages/Groups/Groups-details'
+	    	}
+	    	if(res.target.dataset.type == '5'){
+	    		path = '/pages/Card/details'
+	    	}
+	    	if(res.target.dataset.type == '4'){
+	    		path = '/pages/Bargain/details'
+	    	}
+	    	detailShare = {
+    			title: res.target.dataset.title,
+    			path: path+'?id='+res.target.dataset.id,
+	    		success: function(res) {
+	    			NiceShopModel.showTips('转发成功')
+	    		},
+	    		fail: function(res) {
+	    			NiceShopModel.showTips('转发取消')
+	    		}
+    		}
+    	}
+		if(res.from == 'button'){
+			if(res.target.dataset.type == 'index'){
+				return defaultShare
+			} else {
+				return detailShare
+			}
+		} else {
+			return defaultShare
+		}
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F8F8;
+  }
+  .niceShopIndex{
+    .shopHead{
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-bottom: 1px solid #F6F6F6;
+      overflow: hidden;
+      background-color: #fff;
+      opacity: 0;
+      .shop-slogan{
+        width:660rpx;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        line-height: 52rpx;
+        font-size:39rpx;
+        color:#353535;
+        text-align: center;
+      }
+      .shop-time{
+        font-size: 29rpx;
+        color: #888;
+        margin-top: 10rpx;
+      }
+      .share-column{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 0 60rpx;
+        margin: 50rpx 0;
+        justify-content: space-between;
+        .sharePeoples{
+          display: flex;
+          align-items: center;
+          .sharePeopleIcon{
+            width: 60rpx;
+            height: 60rpx;
+            border-radius: 40rpx;
+            margin-right: 15rpx;
+          }
+        }
+        .share-seeNums{
+          padding: 0;
+          margin: 0;
+          background-color: transparent;
+          border-radius: 0;
+          display: flex;
+          align-items: center;
+          &::after{
+            content:none;
+          }
+          .seeNumsIcon{
+            width: 35rpx;
+            height: 35rpx;
+            margin-right: 10rpx;
+          }
+          text{
+            font-size: 26rpx;
+            color: #888;
+          }
+        }
+      }
+    }
+    .showShopHead{
+      opacity: 1;
+      transition: .5s .1s;
+    }
+    .shop-address{
+      opacity: 0;
+      width: 750rpx;
+      box-sizing: border-box;
+      height: 126rpx;
+      padding-left: 40rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      background-color: #fff;
+      margin-bottom: 20rpx;
+      .shop-address-txt{
+        display: flex;
+        flex-direction: column;
+        color: #CFCFCF;
+        text{
+          width: 500rpx;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 25rpx;
+        }
+        text:first-child{
+          font-size: 28rpx;
+          color: #666;
+          margin-bottom: 15rpx;
+        }
+      }
+      .shop-adress-right{
+        display: flex;
+        align-items: center;
+        margin-right: 40rpx;
+        .locationIcon{
+          width: 24rpx;
+          height: 24rpx;
+          padding: 14rpx;
+          border-radius: 100%;
+          border:1rpx solid #F4C573;
+          margin-right: 40rpx;
+        }
+        .hoverlocationIcon{
+          transform: scale(1.1);
+        }
+        .hoverphoneIcon{
+          transform: scale(1.1);
+        }
+        .phoneIcon{
+          width: 24rpx;
+          height: 24rpx;
+          padding: 14rpx;
+          border-radius: 100%;
+          border:1rpx solid #F4C573;
+        }
+      }
+    }
+    .show-shop-address{
+      opacity: 1;
+      transition: .5s .2s;
+    }
+    .couponBox{
+      width: 100%;
+      margin-top: 20rpx;
+      background-color: #fff;
+      opacity: 0;
+      .couponBox-title{
+        background-color: #fff;
+        box-sizing: border-box;
+        width: 100%;
+        padding: 40rpx 40rpx;
+        display: flex;
+        flex-direction: column;
+        .couponTitle{
+          font-size: 42rpx;
+          font-weight: 600;
+        }
+        .couponDesc{
+          font-size: 22rpx;
+          color: #93979D;
+          margin-top: 12rpx;
+          line-height: 35rpx;
+        }
+      }
+      .coupons{
+        width: 100%;
+        .swiperBox{
+          width: 100%;
+          height: 270rpx;
+          .wx-swiper-dots.wx-swiper-dots-horizontal{
+            margin-bottom: 2rpx;
+          }
+          swiper-item{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .swiperItem{
+            background-image: url('http://oyu2qzx2v.bkt.clouddn.com/couponbg.png');
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: 0 0;
+            background-clip: content-box;
+            background-color: #fff;
+          }
+          .couponItem{
+            display: flex;
+            border-radius: 15rpx;
+            box-sizing: border-box;
+            width:680rpx;
+            height: 215rpx;
+            overflow: hidden;
+            margin-bottom: 50rpx;
+            padding: 15rpx;
+            margin-right: 20rpx;
+            .itemLeft{
+              flex: 0 0 520rpx;
+              height: 185rpx;
+              box-sizing: border-box;
+              padding: 28rpx 38rpx;
+              padding-right: 0;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              .itemTitle{
+                display: flex;
+                align-items: center;
+                font-size: 30rpx;
+                width: 460rpx;
+                .itemTitle-mian{
+                  color: #323332;
+                  font-weight: 600;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-width: 320rpx;
+                }
+                .couponNum{
+                  color: #fff;
+                  padding: 8rpx 12rpx;
+                  background: linear-gradient(to right, #FD4E7B, #FF5864);
+                  border-radius: 7rpx;
+                  text-align: center;
+                  margin-left: 30rpx;
+                  font-size: 23rpx;
+                  flex: 0 0 90rpx;
+                }
+              }
+              .itemDesc{
+                color: #353535;
+                font-size: 24rpx;
+                width: 440rpx;
+                white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+              }
+              .couponTime{
+                font-size: 22rpx;
+                color: #9d9d9d;
+              }
+            }
+            .itemRight{
+              flex: 0 0 160rpx;
+              height: 185rpx;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              image{
+                width: 35rpx;
+                height: 35rpx;
+              }
+              text{
+                font-size: 27rpx;
+                font-weight: 600;
+                margin-top: 20rpx;
+              }
+            }
+          }
+        }
+      }
+    }
+    .showCouponBox{
+      opacity: 1;
+      transition: .5s .3s;
+    }
+    .todayRM{
+      margin-top: 0rpx;
+      .couponBox-title{
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        .couponBox-title_left{
+          display: flex;
+          flex-direction: column;
+        }
+        .couponBox-title_right{
+          display: flex;
+          align-items: baseline;
+          .itemNum{
+            color: #0A0B0A;
+            font-size: 35rpx;
+            font-weight: 600;
+          }
+          .itemAllNum{
+            font-size: 25rpx;
+            color: #9C9C9C;
+          }
+        }
+      }
+      .rmToday{
+        width: 100%;
+        height: 570rpx;
+        .swiperBox{
+          width: 100%;
+          height: 100%;
+          .swiperItem{
+            
+            .itemBox{
+              width: 100%;
+              height: 100%;
+              box-sizing: border-box;
+              padding: 0 40rpx;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              transition: .4s;
+              .mainPic{
+                width: 100%;
+                height: 385rpx;
+                border-radius: 10rpx;
+              }
+              .item-bottom{
+                flex: 1;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid #E8E8E8;
+                .item-bottom-title{
+                  display: flex;
+                  flex-direction: column;
+                  .item-title{
+                    font-size: 35rpx;
+                    font-weight: 600;
+                    width:600rpx;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    overflow:hidden;
+                  }
+                  .item-desc{
+                    font-size: 25rpx;
+                    color: #A4A4A4;
+                    margin-top: 20rpx;
+                    width:600rpx;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    overflow:hidden;
+                  }
+                }
+                button{
+                  padding: 0;
+                  margin: 0;
+                  background-color: transparent;
+                  border-radius: 0;
+                  &::after{
+                    content: none;
+                  }
+                  .todayShare{
+                    width: 45rpx;
+                    height: 45rpx;
+                  }
+                }
+              }
+            }
+            .hoverSwiperItem{
+              transform: scale(0.99);
+            }
+          }
+        }
+      }
+    }
+    .showTodayRM{
+      opacity: 1;
+      transition: .5s .4s;
+    }
+    .hidden{
+    	display: none;
+    }
+    .choice{
+      margin-top: 0;
+      .couponBox-title{
+        padding: 70rpx 40rpx 40rpx;
+      }
+      .choiceBox{
+        height: auto;
+        .swiperItem{
+          height: 540rpx;
+          margin-bottom: 40rpx;
+          transition: .4s;
+        }
+        .hoverswiperItem{
+          transform: scale(0.99);
+        }
+      }
+    }
+    .showChoice{
+      opacity: 1;
+      transition: .5s .5s;
+    }
+    .bannerTop{
+      opacity: 0;
+    }
+    .showBanner{
+      opacity: 1;
+      transition: .5s;
+    }
+  }
+</style>
+

@@ -1,10 +1,10 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="My-container" wx:if="{{loadingHidden}}">
+  <view class="My-container">
     <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-    <view class="open-vip">
+    <view class="open-vip {{loadingHidden?'show-open-vip':''}}">
       <view class="open-wrapper" style="background-image: url({{vipInfo.background_img}});">
-        <image src="{{vipInfo.card_img}}" class="logo"></image>
+        <view class="logo"></view>
         <view class="user-info">
           <open-data type="userAvatarUrl" class="pic"></open-data>
           <view class="user-wrapper">
@@ -15,10 +15,10 @@
           <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 1}}">{{magic_auth_str[2]}}</button>
         </view>
       </view>
-      <image class="open-bg" src="../Index/images/open-vip-bg.jpg"></image>
+      <image class="open-bg" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.jpg"></image>
     </view>
     </form>
-    <view class="nav-wrapper">
+    <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}">
       <view class="nav">
         <form report-submit='magic_form_id'>
           <button open-type="contact">
@@ -27,22 +27,29 @@
           </button>
         </form>
       </view>
-      <form report-submit='magic_form_id' bindsubmit="gotowelfare">
+      <form style="height:100%" report-submit='magic_form_id' bindsubmit="gotowelfare">
         <button class="nav" form-type="submit">
           <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
           <image src="./images/icon-fuli.png"></image>
           <text>{{center_index_str[1]}}</text>
         </button>
       </form>
-      <form report-submit='magic_form_id' bindsubmit="gotoOrder">
+      <form style="height:100%" report-submit='magic_form_id' bindsubmit="gotoOrder">
         <button class="nav" form-type="submit">
           <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text>
           <image src="./images/icon-all.png"></image>
           <text>{{center_index_str[2]}}</text>
         </button>
       </form>
+      <form style="height:100%" report-submit bindsubmit="gotoLottery">
+        <button class="nav" form-type="submit">
+          <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
+          <image src="./images/lottery.png"></image>
+          <text>{{center_index_str[3]}}</text>
+        </button>
+      </form>
     </view>
-    <view class="desc-wrapper" @longpress="showVersion" @touchend="hideVersion">
+    <view class="desc-wrapper {{loadingHidden?'show-desc-wrapper':''}}" @longpress="showVersion" @touchend="hideVersion">
       <view class="title-wrapper">
         <view class="h11"></view>
         <view class="h16 left"></view>
@@ -85,7 +92,7 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.13.6</text>
+        <text>V 1.13.8</text>
       </view>
     </view>
   </view>
@@ -147,6 +154,9 @@
       hideVersion(){
         this.isVersionShow = false
         this.$apply()
+      },
+      gotoLottery(){
+        this.$navigate('../../lotteryDraw/lotteryOrderList',{})
       }
     }
     onLoad(){
@@ -212,6 +222,7 @@
     flex-direction: column;
     align-items: center;
     background-color: #faf9f9;
+    opacity: 0;
     .open-wrapper{
       width: 670rpx;
       height: 408rpx;
@@ -268,11 +279,11 @@
           line-height: 70rpx;
           border: 1px solid #e3c289;
           border-radius: 10rpx;
-          background-color: #412d2e;
-          background-color: transparent;
+          background-color: #412D2E;
           padding: 0;
           margin:0;
           margin-right: 40rpx;
+
           &::after{
             content:none;
           }
@@ -287,6 +298,10 @@
       z-index: 1;
     }
   }
+  .show-open-vip{
+    opacity: 1;
+    transition: .5s;
+  }
   .nav-wrapper{
     width: 100%;
     height: 126rpx;
@@ -295,6 +310,7 @@
     z-index: 2;
     display: flex;
     justify-content: space-around;
+    opacity: 0;
     .nav{
       margin: 0;
       padding: 0;
@@ -340,6 +356,10 @@
       }
     }
   }
+  .show-nav-wrapper{
+    opacity: 1;
+    transition: .5s .1s;
+  }
   .desc-wrapper{
     width: 670rpx;
     margin: 45rpx auto;
@@ -348,6 +368,7 @@
     box-shadow: 0rpx 0rpx 16rpx 0rpx rgba(0, 0, 0, 0.15);
     border-radius: 15rpx;
     position: relative;
+    opacity: 0;
     .title-wrapper{
       display: flex;
       align-items: center;
@@ -469,5 +490,9 @@
       transform: translateY(3rpx);
       opacity: 1;
     }
+  }
+  .show-desc-wrapper{
+    opacity: 1;
+    transition: .5s .2s;
   }
 </style>

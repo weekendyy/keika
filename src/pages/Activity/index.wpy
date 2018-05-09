@@ -2,19 +2,24 @@
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
   <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
-    <view class="activity-wrapper" wx:if="{{loadingHidden}}">
-      <cheader :headerinfo.sync="headerinfo"></cheader>
+    <view class="activity-wrapper">
+      <view class="banner {{loadingHidden?'showbanner':''}}">
+        <cheader :headerinfo.sync="headerinfo"></cheader>
+      </view>
       <view class="activity-content">
-        <view class="activity-tab">
+        <view class="activity-tab {{loadingHidden?'show-activity-tab':''}}">
             <repeat for="{{TitleData}}" wx:for-item="item" key="index">
               <button class="tab-item {{currentTabsIndex == index ? 'active': ''}}" data-index="{{index}}" form-type="submit" >
                 {{item}}
               </button>
             </repeat>
         </view>
-        <view class="activity-tab-box">
+        <view class="activity-tab-box {{loadingHidden?'show-activity-tab-box':''}}">
             <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0}}">
-              <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoNowDetails({{index}})">
+              <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index">
+                <form report-submit="true" bindsubmit="gotoNowDetails">
+                  <button data-index="{{index}}" form-type="submit" class="activityFormId"></button>
+                </form>
                 <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
                   <view class="merge_goods_typeBox">
                     <view class="merge_goods_type_txt">限时抢购</view>
@@ -35,7 +40,7 @@
                     <view class="merge_goods_type_txt">集卡活动</view>
                   </view>
                 </view>
-                <image class="item-pic" src="{{item.banner}}"></image>
+                <image class="item-pic" src="{{item.banner}}" mode="aspectFill"></image>
                 <view class="item-data">
                   <view class="brand">
                     <text>品牌 : </text>
@@ -76,7 +81,7 @@
                     <view class="merge_goods_type_txt">集卡活动</view>
                   </view>
                 </view>
-                <image class="item-pic" src="{{item.banner}}"></image>
+                <image class="item-pic" src="{{item.banner}}" mode="aspectFill"></image>
                 <view class="item-data">
                   <view class="brand">
                     <text>品牌 : </text>
@@ -160,22 +165,24 @@
           })
         }
       },
-      gotoNowDetails(index){
+      gotoNowDetails(res){
+        let index = res.detail.target.dataset.index
+        let formId = res.detail.formId
         const i = this.NowActivityData[index]
         if(i.merge_goods_type == 2){
-          this.$navigate('../Groups/Groups-details',{id:i.group_id})
+          this.$navigate('../Groups/Groups-details',{id:i.group_id, formID: formId})
           return false
         }
         if(i.merge_goods_type == 1){
-          this.$navigate('../Goods/details',{id:i.promotion_id})
+          this.$navigate('../Goods/details',{id:i.promotion_id, formID: formId})
           return false
         }
         if(i.merge_goods_type == 4){
-          this.$navigate('../Bargain/details',{id:i.bargain_id})
+          this.$navigate('../Bargain/details',{id:i.bargain_id, formID: formId})
           return false
         }
         if(i.merge_goods_type == 3){
-          this.$navigate('../Card/details',{id:i.lucky_id})
+          this.$navigate('../Card/details',{id:i.lucky_id, formID: formId})
           return false
         }
       },
@@ -281,6 +288,13 @@
   page{
     background-color: #faf9f9;
   }
+  .banner{
+    opacity: 0;
+  }
+  .showbanner{
+    opacity: 1;
+    transition: .5s;
+  }
   .activity-content{
     position: relative;
     z-index:2;
@@ -290,6 +304,7 @@
         background-color: #fff;
         border-bottom: 1rpx solid #eeeeee;
         justify-content: center;
+        opacity: 0;
         .tab-item{
           width: 166rpx;
           line-height: 94rpx;
@@ -322,15 +337,24 @@
           }
         }
       }
+      .show-activity-tab{
+        opacity: 1;
+        transition: .5s .1s;
+      }
   }
   .activity-tab-box{
     margin-top: 31rpx;
+    opacity: 0;
     .index-list{
       &:first-child{
         padding-top:31rpx;
         padding-bottom:20rpx;
       }
     }
+  }
+  .show-activity-tab-box{
+    opacity: 1;
+    transition: .5s .3s;
   }
   .vip-list{
     .index-header{
@@ -360,6 +384,21 @@
       background-color: #ffffff;
       box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
       overflow: hidden;
+      position: relative;
+      .activityFormId{
+        width: 690rpx;
+        height: 520rpx;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        background-color: transparent;
+        &::after{
+          content: none;
+        }
+      }
       + .index-item{
         margin-top: 30rpx;
       }

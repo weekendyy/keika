@@ -102,31 +102,33 @@ class Address extends Base{
       sCallBack && sCallBack()
     }
   }
-  //获取用户信息
+  //获取用户信息并更新
   getUser(res,sCallBack){
     let userInfo = res.detail.userInfo
-    if(userInfo){
-      wx.setStorage({
-        key: "userInfo",
-        data: userInfo
-      })
-      let postdata = {
-        wechat_name: userInfo.nickName,
-        area: userInfo.country + userInfo.province + userInfo.city,
-        portrait: userInfo.avatarUrl,
-        encryptedData:res.detail.encryptedData,
-        iv:res.detail.iv,
-        versions: "vip5",
+    if(userInfo){  //用户点了确定授权或者已经授权
+      let value = wx.getStorageSync('userInfo')
+      if(value){
+        sCallBack && sCallBack()
+        return false
+      } else {
+        sCallBack && sCallBack()
+        let postdata = {
+          wechat_name: userInfo.nickName,
+          area: userInfo.country + userInfo.province + userInfo.city,
+          portrait: userInfo.avatarUrl,
+          encryptedData:res.detail.encryptedData,
+          iv:res.detail.iv,
+          versions: "vip5",
+        }
+        MyModel.postUserInfo(postdata)
+        wx.setStorageSync('userInfo', userInfo)
       }
-      MyModel.postUserInfo(postdata)
-      sCallBack && sCallBack()
     } else{
       wx.showToast({
         title: '需要获取您的用户信息才能使用该功能',
         icon: 'none',
         duration: 2000
       })
-      sCallBack && sCallBack()
     }
   }
 }

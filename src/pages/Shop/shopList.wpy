@@ -19,7 +19,7 @@
     </swiper>
     <view class="shop-content">
       <scroll-view class="shop-data" wx:if="{{shopData.length!=0}}" bindscrolltolower="onReachBottom">
-        <view class="shop-data-item" wx:for="{{shopData}}" wx:if="{{item.id}}" wx:for-item="item" wx:key="index" @tap="gotoShop({{index}})">
+        <view class="shop-data-item" wx:for="{{shopData}}" wx:if="{{item.id}}" wx:for-item="item" wx:for-index="idx" wx:key="idx" @tap="gotoShop({{idx}})">
           <view class="top">
             <view class="pic-wrapper">
               <image class="pic" src="{{item.main_img}}"></image>
@@ -41,7 +41,7 @@
             </view>
           </view>
           <view class="bottom">
-            <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}})">
+            <view class="fuli-item" wx:for="{{item.magicgoods}}" wx:for-item="item" wx:key="index" @tap.stop="gotoWelfare({{item.id}},{{idx}},{{index}})">
               <view class="fuli-item-top">
                 <text class="type">{{item.one_str}}</text>
                 <text class="name">{{item.magic_goods_title}}</text>
@@ -121,6 +121,13 @@
         queryDetail.choose_type = 2
         queryDetail.parent_classify_id = this.parent_id
         queryDetail.son_classify_id = sonId
+        if(this.GeographyData){
+          queryDetail.lng = this.GeographyData.latitude 
+          queryDetail.lat = this.GeographyData.longitude
+        } else {
+          queryDetail.lng = ''
+          queryDetail.lat = ''
+        }
         this.sonId = sonId
         ShopModel.getShopListInfo(queryDetail,(ResData)=>{
           if(ResData.code == 1){
@@ -133,8 +140,8 @@
         const i = this.shopData[index].id
         this.$navigate('./shopDetails',{id:i})
       },
-      gotoWelfare(index){
-        this.$navigate('../Shop/welfareDetails',{id:index})
+      gotoWelfare(id, idx, index){
+        this.$navigate('../Shop/welfareDetails',{id:id, idx: idx, index: index})
       }
     }
     onLoad(e){
@@ -154,24 +161,20 @@
       wx.setNavigationBarTitle({
         title: e.name
       })
-    }
-    onShow(){
-      this.pageNum = 1
-      this.isLoadAll = false
       this.GeographyData = wx.getStorageSync('GeographyData') 
-      let query = {}
-      query.page_num = this.pageNum
-      query.choose_type = 1
-      query.parent_classify_id = this.parent_id
-      query.son_classify_id = ''
+      let queryData = {}
+      queryData.page_num = this.pageNum
+      queryData.choose_type = 1
+      queryData.parent_classify_id = this.parent_id
+      queryData.son_classify_id = ''
       if(this.GeographyData){
-        query.lng = this.GeographyData.latitude 
-        query.lat = this.GeographyData.longitude
+        queryData.lng = this.GeographyData.latitude 
+        queryData.lat = this.GeographyData.longitude
       } else {
-        query.lng = ''
-        query.lat = ''
+        queryData.lng = ''
+        queryData.lat = ''
       }
-      ShopModel.getShopListInfo(query,(ResData)=>{
+      ShopModel.getShopListInfo(queryData,(ResData)=>{
         if(ResData.code == 1){
           this.shopClassifys = ResData.son_classify_data
           this.loadingHidden = true
@@ -179,6 +182,8 @@
         }
         this.$apply()
       })
+    }
+    onShow(){
     }
     components = {
       cheader

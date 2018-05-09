@@ -15,7 +15,7 @@
         <!-- 未开通会员 -->
         <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
           <view class="open-wrapper" style="background-image: url({{headerinfo.background_img}})">
-            <image src="{{headerinfo.card_img}}" class="logo"></image>
+            <view class="logo"></view>
             <view class="user-info">
               <open-data type="userAvatarUrl" class="pic"></open-data>
               <open-data type="userNickName" class="name"></open-data>
@@ -25,7 +25,7 @@
               </view>
             </view>
           </view>
-          <image class="open-bg" src="../../components/images/open-vip-bg.jpg"></image>
+          <image class="open-bg" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.jpg"></image>
         </view>
       </form>
     </view>
@@ -46,7 +46,7 @@
       </view>
       <form bindsubmit="toActivityList" report-submit="magicFormId">
       <view class="activityBox">
-        <block wx:for="{{subject_data}}">
+        <block wx:for="{{subject_data}}" wx:key="{{item.id}}">
           <button class="activityItem" form-type="submit" data-index="{{index}}">
             <image src="{{item.img_url}}" mode="aspectFill" class="activityItemPic"></image>
             <view class="activity_end" wx:if="{{item.time_status == 3}}">
@@ -64,27 +64,32 @@
         <text class="name">{{listtitle[0]}}</text>
       </view>
       <repeat for="{{activityData}}" wx:for-item="item" key:index="index">
-        <view class="index-item" @tap="gotoDetails({{index}})">
+        <view class="index-item">
+          <form report-submit="true" bindsubmit="gotoDetails" wx:if="{{item.merge_goods_type != 4}}">
+            <button data-index="{{index}}" form-type="submit" class="activityFormId"></button>
+          </form>
+          <!-- 砍价需要授权 -->
+          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="toBargain" class="activityFormId" wx:if="{{item.merge_goods_type == 4}}"></button>
+          <!-- 抢购 -->
           <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-            <!--<image src="../../images/icon-qianggou.png"></image>-->
             <view class="merge_goods_typeBox">
               <view class="merge_goods_type_txt">{{home_goods_classify_str.promotion_goods_str}}</view>
             </view>
           </view>
+          <!-- 拼团 -->
           <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-            <!--<image src="../../images/icon-pintuan.png"></image>-->
             <view class="merge_goods_typeBox">
               <view class="merge_goods_type_txt">{{home_goods_classify_str.group_goods_str}}</view>
             </view>
           </view>
+          <!-- 砍价 -->
           <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-            <!--<image src="../../images/icon-kanjia.png"></image>-->
             <view class="merge_goods_typeBox">
               <view class="merge_goods_type_txt">{{home_goods_classify_str.bargain_goods_str}}</view>
             </view>
           </view>
+          <!-- 集卡 -->
           <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-            <!--<image src="../../images/icon-jifu.png"></image>-->
             <view class="merge_goods_typeBox">
               <view class="merge_goods_type_txt">{{home_goods_classify_str.lucky_goods_str}}</view>
             </view>
@@ -131,7 +136,10 @@
       </view>
       <scroll-view  scroll-y="true" bindscrolltolower="onReachBottom">
         <repeat for="{{welfareData}}" wx:for-item="item" key:index="index">
-          <view class="index-item" @tap="gotoWelfareDetails({{index}})" >
+          <view class="index-item">
+            <form report-submit="true" bindsubmit="gotoWelfareDetails">
+              <button data-index="{{index}}" form-type="submit" class="activityFormId"></button>
+            </form>
             <view class="status-img" wx:if="{{item.repertory_num!=0}}">
               <view class="status-img-content">
                 <text>赶快</text>
@@ -168,7 +176,7 @@
       </scroll-view>
     </view>
     <!-- 抽奖按钮 -->
-    <!-- <image @tap="toPrizeList" class="toPrize" src="http://p55e536k6.bkt.clouddn.com/ertgfr.gif" mode="widthFix"></image> -->
+    <image @tap="toPrizeList" class="toPrize {{loadingHidden?'showtoPrizeList':''}}" src="http://applet.czsjcrm.cn/images/templete_image/reward_3.gif" mode="widthFix"></image>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -179,6 +187,7 @@
   import cheaderModel from '@/components/cheader-model'
   import indexModel from './index-model'
   import MyModel from '@/pages/My/index-model'
+  import Address from '../../utils/address.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -207,7 +216,9 @@
           path: '/pages/Index/index',
         }
       },
-      gotoDetails(index){
+      gotoDetails(res){
+        let index = res.detail.target.dataset.index
+        this.formId = res.detail.formId
         const i = this.activityData[index]
         if(i.merge_goods_type == 2){
           this.$navigate('../Groups/Groups-details',{id:i.group_id,formID:this.formId})
@@ -226,9 +237,19 @@
           return false
         }
       },
-      gotoWelfareDetails(index){
+      toBargain(res){
+        Address.getUser(res,()=>{
+          console.log(res)
+          let index = res.currentTarget.dataset.index
+          const i = this.activityData[index]
+          this.$navigate('../Bargain/details',{id:i.bargain_id})
+        })
+      },
+      gotoWelfareDetails(res){
+        let formId = res.detail.formId
+        let index = res.detail.target.dataset.index
         let i = this.welfareData[index].id
-        this.$navigate('../Shop/welfareDetails',{id:i})
+        this.$navigate('../Shop/welfareDetails',{id:i,formID: formId})
       },
       onReachBottom(){
         if (!this.preventRepeatReuqest) {
@@ -565,8 +586,21 @@
       overflow: hidden;
       transition: .5s;
       border-radius: 0;
-      &::after{
-        content:none;
+      position: relative;
+      .activityFormId{
+        width: 690rpx;
+        height: 520rpx;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        background-color: transparent;
+        z-index: 20;
+        &::after{
+          content: none;
+        }
       }
       .sign{
         position: absolute;
@@ -759,6 +793,21 @@
       background-color: #ffffff;
       box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
       transition: .5s;
+      position: relative;
+      .activityFormId{
+        width: 690rpx;
+        height: 520rpx;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        background-color: transparent;
+        &::after{
+          content: none;
+        }
+      }
       + .index-item{
         margin-top: 30rpx;
       }
@@ -1004,9 +1053,15 @@
     height: 200rpx;
     position: fixed;
     right: -20rpx;
-    top: 916rpx;
+    bottom: 40rpx;
     transition: .5s;
-    // animation: 3s prize infinite;
+    opacity: 0;
+    transform: scale(0);
+  }
+  .showtoPrizeList{
+    opacity: 1;
+    transition: .5s 1s;
+    transform: scale(1);
   }
   .hidePrize{
     transform: translateX(200rpx);

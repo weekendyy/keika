@@ -2,9 +2,11 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
   <!-- <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view> -->
-  <view class="container {{showPosterBox?'noScroll':''}}" wx:if="{{loadingHidden}}">
-    <image src="{{DetailData.img}}" class="bannerpic" mode="scaleToFill"/>
-    <BackHome top='70'></BackHome>
+  <view class="container {{showPosterBox?'noScroll':''}}">
+    <image src="{{DetailData.img}}" class="bannerpic {{loadingHidden?'showBannerpic':''}}" mode="aspectFill"/>
+    <view wx:if="{{loadingHidden}}">
+      <BackHome top='70'></BackHome>
+    </view>
     <view class="banner-info">
       <view class="banner-info-item">
         <text class="banner-info-itemNum">{{DetailData.see_num}}</text><text>人查看</text>
@@ -16,14 +18,14 @@
         <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
       </view>
     </view>
-    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo" lang="en">
+    <button class="posterText {{loadingHidden?'showposterText':''}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo" lang="en">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
     </button>
     <view class="mainBoxB">
-      <view class="mainBoxB-top">
+      <view class="mainBoxB-top {{loadingHidden?'show-mainBoxB-top':''}}">
         <text class="title">{{DetailData.title}}</text>
         <swiper indicator-dots="{{false}}" class="league-swiper" circular
         autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}" wx:if="{{floor_data.length}}">
@@ -50,13 +52,14 @@
           </view>
         </view>
       </view>
-      <view class="mainBoxB-bottom">
+      <view class="mainBoxB-bottom {{loadingHidden?'show-mainBoxB-bottom':''}}">
         <!-- <view class="priceNow">
           <text class="textPriceNow"><text>现价</text> {{DetailData.current_price}} <text>元</text></text>
         </view> -->
         <view class="mainBoxB-bottom-info">
           <view class="mainBoxB-bottom-info_left" wx:if="{{bargain.launch}}">
-            <text class="username">{{bargain.launch.nickname}}</text>
+            <text class="username" wx:if="{{bargain.launch.nickname}}">{{bargain.launch.nickname}}</text>
+            <open-data type="userNickName" wx:if="{{!bargain.launch.nickname}}" class="username"></open-data>
             <view class="userbj">
               <text>帮减人数：</text>
               <text class="userbjNum">{{bargain.launch.help_count}}</text>
@@ -85,14 +88,14 @@
               <!-- 商品还没卖完之前 -->
               <block wx:if="{{DetailData.last_num > 0}}">
                 <view class="menpiaobtn success" wx:if="{{isOne == 0}}">
-                  <button class="kanyidao" open-type="getUserInfo" bindgetuserinfo="myadd">我也要参加</button>
+                  <button class="kanyidao" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="myadd">我也要参加</button>
                 </view>
                 
                 <block wx:if="{{isOne != 0}}">
-                  <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1}}">
+                  <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1 && bargain.launch.receive_status != 1}}">
+                    <view class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:''}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
                     <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency||0}}次)</view>
-                    <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0 }}">邀请好友帮我砍</button>
-                    <view class="qiuzu"  @tap="gotoIndex()">更多福利</view>
+                    <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0}}">邀请好友帮我砍</button>
                   </view>
                   <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
                     <view class="kanyidao">减价成功,立即购买</view>
@@ -144,7 +147,7 @@
           <!-- 帮别人砍价 -->
           <block wx:if="{{bargain.is_own == 0}}">
             <view class="menpiaobtn success">
-              <button open-type="getUserInfo" bindgetuserinfo="addBargain" class="kanyidao  {{shareState == true ? '': 'No'}}">
+              <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="addBargain" class="kanyidao  {{shareState == true ? '': 'No'}}">
                 <text wx:if="{{isTakePartIn == 2}}">返回我的砍价首页</text>
                 <text wx:if="{{isTakePartIn == 1}}">我也要参加</text>
               </button>
@@ -154,7 +157,7 @@
         <text class="mainBoxB-bottom-txt">{{DetailData.loss_str}}</text>
       </view>
     </view>
-    <view class="shop-address">
+    <view class="shop-address {{loadingHidden?'show-shop-address':''}}">
       <view class="shop-address-txt">
         <text wx:if="{{DetailData.name}}">{{DetailData.name}}</text>
         <text wx:if="{{DetailData.address}}">{{DetailData.address}}</text>
@@ -317,10 +320,8 @@
   }
   import wepy from 'wepy'
   import BargainModel from './Bargain-model'
-  import MyModel from '@/pages/My/index-model'
   import wxParse from '../../wxParse/wxParse'
   import BackHome from '../../components/backHome'
-  import cheaderModel from '@/components/cheader-model'
   import Address from '../../utils/address.js'
   export default class jika extends wepy.page {
     config = {
@@ -355,7 +356,9 @@
       isLoadAll: false,
       lastLoadList: [],
       activity_id: '',
-      posterImg:''
+      posterImg:'',
+      formId: '',
+      secondLoad: false
     }
     methods = {
       gotoBuy(){
@@ -363,11 +366,6 @@
       },
       gotoMy(){
         this.$navigate('/pages/Bargain/Bargain-coupon',{id:this.bargain.launch.id});
-      },
-      gotoIndex(){
-        wx.switchTab({
-          url: '/pages/Index/index'
-        })
       },
       myadd(res){
         Address.getUser(res,()=>{
@@ -428,9 +426,6 @@
           }
         })
       },
-      gotoBuy(){
-        this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
-      },
       closeBarginSuccess(){
         this.showBarginSuccess = false
         this.$apply()
@@ -481,14 +476,18 @@
             activity_id: this.DetailData.id,
           }
           BargainModel.bargainLaunch(param,(ResData)=>{
-            this.bargain = ResData
-            this.DetailData.current_price = ResData.launch.now_price
-            wx.setStorage({
-              key:"launch_id",
-              data: this.bargain.launch.id
-            })
-            this.shareState = true
-            this.$apply()
+            if(ResData.code == 1){
+              this.bargain = ResData
+              this.DetailData.current_price = ResData.launch.now_price
+              wx.setStorage({
+                key:"launch_id",
+                data: this.bargain.launch.id
+              })
+              this.shareState = true
+              this.$apply()
+            } else {
+              BargainModel.showTips(ResData.message)
+            }
           })
         })
       },
@@ -501,12 +500,16 @@
     }
     onLoad(options){
       this.activity_id = options.id
+      this.formId = options.formID
       if(options.launch_id){
         this.param = {
           launch_id: options.launch_id,
         }
       }
       this.param.activity_id = options.id
+      if(this.formId){
+        this.param.magic_form_id = this.formId
+      }
     }
     onShow(){
       clearInterval(timer)
@@ -515,17 +518,6 @@
         this.param.launch_id = wx.getStorageSync('launch_id')
       }
       this.loadBarginData(this)
-      BargainModel.getBargainLoad({activity_id: this.param.activity_id, page: 1},(ResData)=>{
-        // 砍价排行榜
-        if(ResData[0].openid == ''){
-          this.RankingData = []
-          this.lastLoadList = []
-        } else {
-          this.RankingData = ResData
-          this.lastLoadList = ResData
-        }
-        this.$apply()
-      })
     }
     loadBarginData(that){
       BargainModel.getLuckyDetail(that.param,(ResData)=>{
@@ -537,9 +529,6 @@
         that.isOne = ResData.bargain.launch.help_count
         that.isTakePartIn = ResData.is_self_help
         that.loadingHidden = true
-        // that.DetailData.prize_details = that.DetailData.prize_details.replace(/&/g,'&')
-        wxParse.wxParse('article1', 'html', that.DetailData.prize_details, that, 5)
-        wxParse.wxParse('article2', 'html', that.DetailData.details, that, 5)
         if(wx.getStorageSync('launch_id')){
           wx.removeStorage({
             key: 'launch_id'
@@ -547,7 +536,7 @@
         }
         if(ResData.activity_attr.status == 1 || ResData.activity_attr.status == 2) {
           that.end_time = ResData.activity_attr.residue_time * 1000
-           countdown(that)
+          countdown(that)
         }
         if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
           // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
@@ -573,7 +562,8 @@
         that.$apply()
       })
     }
-    onShareAppMessage(){
+    onShareAppMessage(res){
+      return false
       let that = this;
       let shareTitle = null;
       let path = '';
@@ -626,6 +616,24 @@
         })
       }
     }
+    onPageScroll(e){
+      if(!this.secondLoad){
+        wxParse.wxParse('article1', 'html', this.DetailData.prize_details, this, 5)
+        wxParse.wxParse('article2', 'html', this.DetailData.details, this, 5)
+        this.secondLoad = true
+        BargainModel.getBargainLoad({activity_id: this.param.activity_id, page: 1},(ResData)=>{
+          // 砍价排行榜
+          if(ResData[0].openid == ''){
+            this.RankingData = []
+            this.lastLoadList = []
+          } else {
+            this.RankingData = ResData
+            this.lastLoadList = ResData
+          }
+          this.$apply()
+        })
+      }
+    }
     onHide(){
       clearInterval(timer)
     }
@@ -650,6 +658,11 @@
   .bannerpic{
     width:750rpx;
     height: 590rpx;
+    opacity: 0;
+  }
+  .showBannerpic{
+    opacity: 1;
+    transition: .5s;
   }
   .undercarriage{
     position: fixed;
@@ -707,6 +720,8 @@
     top: 430rpx;
     right: 20rpx;
     z-index: 1;
+    opacity: 0;
+    transform: scale(.5);
     &::after{
       content:none;
     }
@@ -725,6 +740,11 @@
         margin: 3rpx 0;
       }
     }
+  }
+  .showposterText{
+    opacity: 1;
+    transform: scale(1);
+    transition: .5s .3s;
   }
   .container{
     display: flex;
@@ -747,6 +767,7 @@
         background-repeat: no-repeat;
         background-size: 750rpx 287rpx;
         background-position: center;
+        opacity: 0;
         .title{
           width: 600rpx;
           text-align: center;
@@ -812,12 +833,17 @@
           }
         }
       }
+      .show-mainBoxB-top{
+        opacity: 1;
+        transition: .5s .1s;
+      }
       .mainBoxB-bottom{
         border-radius: 10rpx;
         background-color: #fff;
         box-sizing: border-box;
         padding: 30rpx;
         position: relative;
+        opacity: 0;
         .priceNow{
           position: absolute;
           top: -45rpx;
@@ -923,8 +949,7 @@
               pointer-events: none;
             }
             .kanyidao{
-              padding: 0;
-              width: 400rpx;
+              padding: 0 25rpx;
               height: 75rpx;
               border-radius: 10rpx;
               color: #fff;
@@ -941,7 +966,7 @@
               }
             }
             .qiuzu{
-              width: 210rpx;
+              padding: 0 25rpx;
               height: 75rpx;
               border-radius: 10rpx;
               color: #fff;
@@ -993,6 +1018,10 @@
           display: block;
         }
       }
+      .show-mainBoxB-bottom{
+        opacity: 1;
+        transition: .5s .2s;
+      }
     }
     .shop-address{
       width: 710rpx;
@@ -1006,6 +1035,7 @@
       background-color: #fff;
       border-radius: 10rpx;
       margin-bottom: 20rpx;
+      opacity: 0;
       .shop-address-txt{
         display: flex;
         flex-direction: column;
@@ -1043,6 +1073,10 @@
           border:1rpx solid #2C2D2C;
         }
       }
+    }
+    .show-shop-address{
+      opacity: 1;
+      transition: .5s .4s;
     }
     .jpdescbox{
       width:710rpx;

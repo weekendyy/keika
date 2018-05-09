@@ -69,18 +69,26 @@ export default class extends wepy.app {
     ],
     "subPackages": [
       {
-        "root": "TimeLimitActivity",
+        "root": "TimeLimitActivity",  //专题活动
         "pages": [
           "TimeLimitActivityDetail"
         ]
       }, {
-        "root": "lotteryDraw",
+        "root": "lotteryDraw",  //抽奖
         "pages": [
           "lotteryDrawIndex",
           "lotteryDrawDetail",
-          "lotteryDrawPeople"
+          "lotteryDrawPeople",
+          "chooseAddress",
+          "lotteryOrderList",
+          "sponsor"   //成为赞助商
         ]
-    }
+      }, {
+        "root": "niceShop",  //新版好店
+        "pages": [
+          "niceShopIndex"
+        ]
+      }
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -139,7 +147,18 @@ export default class extends wepy.app {
     this.globalData.phoneWidth = res.windowWidth
     this.globalData.phoneHeight = res.windowHeight
     this.globalData.pxRadio = this.globalData.phoneWidth/750
-    // AddressModel.getGeoAndUserInfo()
+    // wx.getUserInfo({
+    //   success: function(res) {
+    //     var userInfo = res.userInfo
+    //     wx.setStorage({
+    //       key: "userInfo",
+    //       data: userInfo
+    //     })
+    //   }
+    // })
+  }
+  onError(err){
+    console.log(err)
   }
   constructor () {
     super()

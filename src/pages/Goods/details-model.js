@@ -16,7 +16,8 @@ class Details extends Base{
       url:'v2/promotion/promotion_detail',
       data: {
         promotion_id: query.goods_id,
-        version: 'vip3'
+        version: 'vip3',
+        magic_form_id: query.formId
       },
       sCallback: function (data) {
         callback && callback(data)
