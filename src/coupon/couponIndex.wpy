@@ -1,0 +1,197 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="couponList">
+    <view class="couponItem">
+      <text>本人可使用（1张）</text>
+      <image src="http://p55e536k6.bkt.clouddn.com/canuse.png" mode="aspectFill" class="mainIcon"></image>
+      <image src="http://p55e536k6.bkt.clouddn.com/bg1.png" mode="widthFix" class="backgroundPic1"></image>
+      <image src="http://p55e536k6.bkt.clouddn.com/bg2.png" mode="widthFix" class="backgroundPic2"></image>
+    </view>
+    <view class="couponItem">
+      <text>本人可使用（1张）</text>
+      <image src="http://p55e536k6.bkt.clouddn.com/hygt.png" mode="aspectFill" class="mainIcon"></image>
+      <image src="http://p55e536k6.bkt.clouddn.com/bg1.png" mode="widthFix" class="backgroundPic1"></image>
+      <image src="http://p55e536k6.bkt.clouddn.com/bg2.png" mode="widthFix" class="backgroundPic2"></image>
+    </view>
+    <view class="couponItem">
+      <text>本人可使用（1张）</text>
+      <image src="http://p55e536k6.bkt.clouddn.com/toshare.png" mode="aspectFill" class="mainIcon"></image>
+      <image src="http://p55e536k6.bkt.clouddn.com/bg1.png" mode="widthFix" class="backgroundPic1"></image>
+      <image src="http://p55e536k6.bkt.clouddn.com/bg2.png" mode="widthFix" class="backgroundPic2"></image>
+    </view>
+  </view>
+  <view class="gussYouLike">
+    <view class="titleBox">
+      <text class="titleTxt">猜你喜欢</text>
+      <view class="moreBox">
+        <image src="images/moreicon.png" mode="widthFix"></image>
+        <text>换一批</text>
+      </view>
+    </view>
+    <view class="likeBox">
+      <view class="likeItem" wx:for="{{3}}">
+        <image src="http://p55e536k6.bkt.clouddn.com/asdasd.png" mode="aspectFill"></image>
+        <text class="goods-title">特色鸡公煲大套餐</text>
+        <text class="goods-number">(4-6人份)</text>
+        <text class="goods-price">¥<text class="priceTxt">130</text></text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '我的优惠券',
+      backgroundColorTop: '#FBF5FA',
+      backgroundColorBottom: '#FBF5FA'
+    }
+    data = {
+      loadingHidden: true
+    }
+    computed = {
+        
+    }
+    methods = {
+     
+    }
+    onLoad(e){
+      
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #FBF5FA;
+  }
+  .couponList{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 30rpx;
+    .couponItem{
+      width: 690rpx;
+      height: 205rpx;
+      border-radius: 10rpx;
+      background: linear-gradient(90deg, #43BAFF, #2BD2FF);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 0 50rpx;
+      position: relative;
+      margin-bottom: 30rpx;
+      &:nth-child(2){
+        background: linear-gradient(90deg, #FF599E, #FFAC68);
+      }
+      &:nth-child(3){
+        background: linear-gradient(90deg, #DA59FF, #FF5AF8);
+      }
+      text{
+        font-size: 38rpx;
+        color: #fff;
+        font-weight: 550;
+      }
+      .mainIcon{
+        width:120rpx;
+        height: 120rpx;
+        border-radius: 100%;
+        background-color: #fff;
+      }
+      .backgroundPic1{
+        position: absolute;
+        top: 80rpx;
+        left: 0;
+        width: 350rpx;
+        height: 205rpx;
+      }
+      .backgroundPic2{
+        position: absolute;
+        top: 0rpx;
+        right: 0;
+        width: 100%;
+        height: 205rpx;
+      }
+    }
+  }
+  .gussYouLike{
+    background-color: #fff;
+    width: 690rpx;
+    box-sizing: border-box;
+    padding: 20rpx;
+    margin-left: 30rpx;
+    .titleBox{
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .titleTxt{
+        font-size: 27rpx;
+        color: #353535;
+      }
+      .moreBox{
+        display: flex;
+        align-items: center;
+        image{
+          width: 25rpx;
+          height: 25rpx;
+          margin-right: 10rpx;
+        }
+        text{
+          color: #999;
+          font-size: 24rpx;
+        }
+      }
+    }
+    .likeBox{
+      display: flex;
+      justify-content: space-between;
+      .likeItem{
+        margin-top: 20rpx;
+        width: 200rpx;
+        display: flex;
+        flex-direction: column;
+        font-size: 25rpx;
+        color: #363636;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        image{
+          width: 200rpx;
+          height: 200rpx;
+        }
+        .goods-title{
+          margin-top: 15rpx;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .goods-number{
+          margin-top: 10rpx;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .goods-price{
+          margin-top: 15rpx;
+          color: #FF3C3C;
+          font-size: 22rpx;
+          .priceTxt{
+            font-size: 31rpx;
+            font-weight: 600;
+            margin-left: 7rpx;
+          }
+        }
+      }
+    }
+  }
+</style>
+

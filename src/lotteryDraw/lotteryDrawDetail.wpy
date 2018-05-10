@@ -138,6 +138,10 @@
                   <image src="image/noprize.png" class="noPrizeicon" mode="widthFix"></image>
                   <text class="noprizetxt">{{fixedData.open_reward_1}}</text>
                 </block>
+                <view class="moreBox" @tap="toLotteryList">
+                  <text class="moreLottery">查看更多抽奖</text>
+                  <image src="image/moretright.png" mode="widthFix"></image>
+                </view>
                 <view class="prizePeoples">
                   <view class="cut"></view>
                   <text>{{fixedData.reward_list_str}}</text>
@@ -210,6 +214,9 @@
       toAnothorXcX(){
         Address.navTo(this.detailData.path_url)
       },
+      toLotteryList(){
+        Address.navTo('lotteryDrawIndex')
+      },
       seeMore(){
         wx.navigateTo({
           url: 'lotteryDrawPeople?id='+this.goodsId
@@ -267,7 +274,7 @@
           this.detailData.join_count = "已有 "+joinNum+" 人参与，"
           this.$apply()
           lotteryDrawModel.setPrePageState("lotteryData["+this.index+"].is_join",2)
-        } else{
+        } else {
           lotteryDrawModel.showTips(res.message)
         }
       }, () => {
@@ -276,7 +283,6 @@
           this.lotteryBtnMoveEnd = false
           this.lotterytxt = this.fixedData.join_str
           this.$apply()
-          lotteryDrawModel.showTips('网络错误，请稍后再试')
         }, 500)
       })
     }
@@ -878,6 +884,22 @@
                   font-weight: 600;
                   color: #808080;
                   margin-top: 30rpx;
+                }
+                .moreBox{
+                  display: flex;
+                  align-items: center;
+                  margin: 20rpx 0;
+                  pointer-events: auto;
+                  .moreLottery{
+                    font-size: 23rpx;
+                    font-weight: 500;
+                    color: #34679C;
+                  }
+                  image{
+                    width: 20rpx;
+                    height: 00rpx;
+                    margin-left: 00rpx;
+                  }
                 }
                 .prizePeoples{
                   display: flex;

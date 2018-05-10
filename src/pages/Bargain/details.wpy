@@ -18,7 +18,7 @@
         <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
       </view>
     </view>
-    <button class="posterText {{loadingHidden?'showposterText':''}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo" lang="en">
+    <button class="posterText {{loadingHidden?'showposterText':''}}" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
@@ -93,7 +93,7 @@
                 
                 <block wx:if="{{isOne != 0}}">
                   <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1 && bargain.launch.receive_status != 1}}">
-                    <view class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:''}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
+                    <view class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
                     <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency||0}}次)</view>
                     <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0}}">邀请好友帮我砍</button>
                   </view>
@@ -476,18 +476,14 @@
             activity_id: this.DetailData.id,
           }
           BargainModel.bargainLaunch(param,(ResData)=>{
-            if(ResData.code == 1){
-              this.bargain = ResData
-              this.DetailData.current_price = ResData.launch.now_price
-              wx.setStorage({
-                key:"launch_id",
-                data: this.bargain.launch.id
-              })
-              this.shareState = true
-              this.$apply()
-            } else {
-              BargainModel.showTips(ResData.message)
-            }
+            this.bargain = ResData
+            this.DetailData.current_price = ResData.launch.now_price
+            wx.setStorage({
+              key:"launch_id",
+              data: this.bargain.launch.id
+            })
+            this.shareState = true
+            this.$apply()
           })
         })
       },
@@ -563,7 +559,6 @@
       })
     }
     onShareAppMessage(res){
-      return false
       let that = this;
       let shareTitle = null;
       let path = '';
@@ -574,6 +569,7 @@
       if(!that.DetailData){
         path = '/pages/index/index'
       }
+      console.log(shareTitle)
       let shareObj = {
         title: shareTitle,
         path: path,
@@ -584,6 +580,7 @@
               icon: 'success',
               duration: 1500
             })
+            that.DetailData.share_num++
           })
           this.actionSheetHidden = true
           this.$apply()
@@ -966,7 +963,6 @@
               }
             }
             .qiuzu{
-              padding: 0 25rpx;
               height: 75rpx;
               border-radius: 10rpx;
               color: #fff;

@@ -8,7 +8,7 @@
       </swiper-item>
     </swiper>
     <BackHome top='20'></BackHome>
-    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+    <button class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
@@ -100,7 +100,7 @@
                   <image src="{{item}}" @tap="bigPic({{idx}},{{index}})"></image>
                 </block>
               </view>
-              <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent" data-index="{{index}}">
+              <view class="Fabulous-warpper {{item.like == 1 ? 'active': '' }}" @tap="FabulousEvent({{idx}})" data-index="{{index}}">
                 <image src="./images/Fabulous@selecd.png" wx:if="{{item.like}}"></image>
                 <image src="./images/Fabulous.png" wx:else></image>
                 <text class="Fabulous">{{item.like_count}}</text>
@@ -296,8 +296,7 @@
         this.$apply()
       },
       /* 点赞 */
-      FabulousEvent($event){
-        let i= Groups.getDataSet($event,'index')
+      FabulousEvent(i){
         let indexlike = this.EvaluateData[i].like
         let indexId = this.EvaluateData[i].id
         Groups.PostEvaluateLike(indexId, ResData=> {

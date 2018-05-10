@@ -5,6 +5,7 @@
       <image wx:for="{{joiners}}" src="{{item.wechat_portrait}}" mode="aspectFill" class="prizePeoples"></image>
     </view>
   </view>
+  <view style="height:30rpx;"></view>
 </template>
 <script>
   import wepy from 'wepy'
@@ -12,7 +13,7 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '中奖名单',
+      navigationBarTitleText: '参与名单',
     }
     data = {
       loadingHidden: true,
@@ -47,7 +48,7 @@
       this.$apply()
     }
     onReachBottom(){
-      if(!isLoadAll){
+      if(!this.isLoadAll){
         lotteryDrawModel.showTips('加载中...')
         this.pageNum++
         let query ={

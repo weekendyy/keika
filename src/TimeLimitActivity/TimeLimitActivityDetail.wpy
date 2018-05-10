@@ -9,7 +9,7 @@
         <text class="backhometxt">返回首页</text>
       </view>
     </view>
-    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+    <button class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>

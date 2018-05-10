@@ -295,10 +295,23 @@ class Base {
                 ctx.setFontSize(parseInt(posterWdith*0.04))
                 ctx.fillText("长按扫码发现惊喜", 0.5*posterWdith, 1.48*posterWdith)
                 //绘制地址
+                
+                
                 if(address){
+                  let addressL = address.length
+                  if(addressL>16){
+                    ctx.fillText('地址：' + address.slice(0,16), 0.5*posterWdith, 0.9*posterWdith,0.8*posterWdith)
+                    if(addressL>36){
+                      ctx.fillText(address.slice(16,32)+'...', 0.5*posterWdith, 0.95*posterWdith,0.8*posterWdith)
+                    } else{
+                      ctx.fillText(address.slice(16), 0.5*posterWdith, 0.95*posterWdith,0.8*posterWdith)
+                    }
+                  }else{
+                    ctx.fillText('地址：'+address, 0.5*posterWdith, 0.9*posterWdith,0.8*posterWdith)
+                  }
                   ctx.setFontSize(parseInt(posterWdith*0.05))
-                  ctx.fillText('地址：'+address, 0.5*posterWdith, 0.9*posterWdith)
                 }
+
                 ctx.draw(true)
                 wx.hideLoading()
                 that.showPosterBox = true

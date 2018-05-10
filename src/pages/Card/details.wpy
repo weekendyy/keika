@@ -12,7 +12,7 @@
         <text>{{likeNum}}人喜欢</text>
       </view>
     </swiper>
-    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+    <button class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
@@ -53,7 +53,7 @@
           <view class="card {{cardStatus == true ? 'active' : ''}}" wx:if="{{goodsInfo.raffle_num !=0}}" @tap="open()">
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
           </view>
-          <button open-type="share" class="card end" wx:if="{{goodsInfo.raffle_num == 0}}">
+          <button open-type="share" class="card" wx:if="{{goodsInfo.raffle_num == 0}}">
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
           </button>
           <button class="help" @tap="gotoIndex()">
@@ -82,7 +82,7 @@
           <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
         </view>
       </view>
-      <view class="rule-wrapper">
+      <!-- <view class="rule-wrapper">
         <view class="rule-title">
           <view class="h10"></view>
           <view class="h15 left"></view>
@@ -95,7 +95,7 @@
             <text>{{item}}</text>
           </repeat>
         </view>
-      </view>
+      </view> -->
       <view class="goods-box">
         <view class="goods-title">
           <view class="h10"></view>
@@ -260,6 +260,8 @@
             }
             this.cardStatus = false
             this.$apply()
+          } else {
+            CardModel.showTips(resData.message)
           }
         })
       },
@@ -281,6 +283,8 @@
               duration: 2000,
             })
             this.goodsInfo.check_exchange_statu = 1
+            this.goodsInfo.lucky_order_status = 1
+            this.goodsInfo.lucky_order_id = ResData.lucky_order_id
           } else {
             wx.showToast({
               title: ResData.data.message,

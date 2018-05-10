@@ -38,7 +38,7 @@
       </view>
       <view class="Result">
         <navigator url="/pages/Groups/Groups-order-details?id={{orderID}}&type=2" hover-class="none" wx:if="{{groupData.join_status == 1 && groupData.diff_person == 0}}">查看订单详情</navigator>
-        <view wx:if="{{groupData.join_status == 0 && groupData.diff_person != 0}}" @tap="addGroup()">立即参团</view>
+        <button class="addGroupBtn" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="addGroup" wx:if="{{groupData.join_status == 0 && groupData.diff_person != 0}}">立即参团</button>
         <navigator url="/pages/Groups/Groups-details?id{{groupData.goods_id}}" wx:if="{{groupData.join_status == 0 && groupData.diff_person == 0}}">拼团已经结束,查看商品,独立开团去</navigator>
         <button hover-class="none" open-type="share" class="share" wx:if="{{ groupData.diff_person != 0}}">
           <image src="./images/icon-wx-share.png"></image>
@@ -67,6 +67,7 @@
   import Groups from './Api/Groups.Api'
   import MyModel from '../My/index-model'
   import wepy from 'wepy'
+  import Address from '../../utils/address.js'
   export default class index extends wepy.page {
     config = {
       navigationBarBackgroundColor: '#000000',
@@ -89,26 +90,28 @@
         }
         return shareObj
       },
-      addGroup(){
-        let queryData = {
-          group_monad_id:this.groupData.group_monad_id,
-          pay_type: '2',
-          group_goods_id: this.groupData.goods_id,
-        }
-        Groups.createGroupsPlace(queryData,ResData=>{
-          if(ResData.code == 1){
-            let param = {
-              orderId: ResData.order_id,
-              pay_type: ResData.order_type
-            }
-            this.$navigate('/pages/Groups/Groups-Confirm-order', param)
-          } else {
-            wx.showToast({
-              title: ResData.message,
-              icon: 'none',
-              duration: 1500
-            })
+      addGroup(res){
+        Address.getUser(res,()=>{
+          let queryData = {
+            group_monad_id:this.groupData.group_monad_id,
+            pay_type: '2',
+            group_goods_id: this.groupData.goods_id,
           }
+          Groups.createGroupsPlace(queryData,ResData=>{
+            if(ResData.code == 1){
+              let param = {
+                orderId: ResData.order_id,
+                pay_type: ResData.order_type
+              }
+              this.$navigate('/pages/Groups/Groups-Confirm-order', param)
+            } else {
+              wx.showToast({
+                title: ResData.message,
+                icon: 'none',
+                duration: 1500
+              })
+            }
+          })
         })
       },
       toGroupDetail(){
@@ -338,6 +341,18 @@
   .Result{
     margin-top: 26rpx;
     margin-bottom: 24rpx;
+    .addGroupBtn{
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
+      background-color: transparent; 
+      background-color: #FE4020;
+      border-radius: 10rpx;
+      color: #fff;
+      &::after{
+        content: none;
+      }
+    }
     view,navigator{
       width: 100%;
       height:76rpx;

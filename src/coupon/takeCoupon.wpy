@@ -1,0 +1,274 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="receiveCouponBox">
+    <!-- 头部信息 -->
+    <view class="coupon-header">
+      <view class="coupon-header-top">
+        <view class="header-title">
+          <text class="title-name">牛顶鲜鲜牛肉城</text>
+          <text class="title-time">2018.07.01到期（仅限3天）</text>
+        </view>
+        <view class="coupon-info">
+          <view class="coupon-info-left">
+            <text class="couponPriceBox">¥<text class="couponPriceTxt">30</text></text>
+            <text class="couponDesc">满300可用</text>
+          </view>
+          <view class="coupon-info-right">
+            <text class="coupon-info-right-txt1">限商品：此优惠券本店全场通用</text>
+            <text class="coupon-info-right-txt2">使用说明：到店即可消费</text>
+          </view>
+        </view>
+        <view class="cut cut1"></view>
+        <view class="cut cut2"></view>
+      </view>
+      <view class="coupon-header-bottom">
+        <view class="info-item">
+          <text>牛顶羡羡牛肉城</text>
+          <image src="images/home.png"></image>
+        </view>
+        <view class="info-item">
+          <text>电话：0592-8888888</text>
+          <image src="images/phone.png"></image>
+        </view>
+        <view class="info-item" style="border-bottom: 0;">
+          <text>地址：厦门软件园B区</text>
+          <image src="images/address.png"></image>
+        </view>
+      </view>
+    </view>
+    <!-- 店铺详情 -->
+    <view class="coupon-detail">
+      <view class="ditail-title">
+        <view class="detail_cut"></view>
+        <text>店铺详情</text>
+        <view class="detail_cut"></view>
+      </view>
+      <view style="height: 900rpx;background-color: #666"></view>
+    </view>
+    <!-- 底部领取 -->
+    <view class="bottomBox">
+      <button>立即领取</button>
+    </view>
+    <view style="height: 100rpx;"></view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '优惠领取',
+      backgroundColorTop: '#F5F5F5',
+      backgroundColorBottom: '#F5F5F5'
+    }
+    data = {
+      loadingHidden: true
+    }
+    computed = {
+        
+    }
+    methods = {
+     
+    }
+    onLoad(e){
+      
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F5F5F5;
+  }
+  .receiveCouponBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx;
+    .coupon-header{
+      width: 100%;
+      .coupon-header-top{
+        width: 100%;
+        height: 270rpx;
+        background-color: rgba(170,40,255,.9);
+        border-top-right-radius: 20rpx;
+        border-top-left-radius: 20rpx;
+        background-image: url('http://p55e536k6.bkt.clouddn.com/couponbgm.png');
+        background-position: 0 0;
+        -webkit-background-size: cover;
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: relative;
+        .header-title{
+          width: 100%;
+          height: 90rpx;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          .title-name{
+            font-size: 29rpx;
+            font-weight: 600;
+            color: #fff;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+          }
+          .title-time{
+            font-size: 20rpx;
+            color: #fff;
+            margin-top: 8rpx;
+          }
+        }
+        .coupon-info{
+          width: 100%;
+          height: 180rpx;
+          background-color: rgba(120,0,212,.5);
+          display: flex;
+          align-items: center;
+          .coupon-info-left{
+            flex: 0 0 200rpx;
+            height: 125rpx;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            .couponPriceBox{
+              font-size: 20rpx;
+              display: flex;
+              align-items: baseline;
+              .couponPriceTxt{
+                font-weight: 600;
+                font-size: 46rpx;
+                margin-left: 8rpx;
+              }
+            }
+            .couponDesc{
+              font-size: 24rpx;
+              margin-top: 10rpx;
+              letter-spacing: 3rpx;
+              text-align: center;
+              line-height: 30rpx;
+            }
+          }
+          .coupon-info-right{
+            flex: 1;
+            border-left: 1px dashed #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+            padding-left: 45rpx;
+            color: #fff;
+            height: 125rpx;
+            font-size: 25rpx;
+            .coupon-info-right-txt1{
+              line-height: 33rpx;
+            }
+            .coupon-info-right-txt2{
+              line-height: 33rpx;
+              margin-top: 20rpx;
+            }
+          }
+        }
+        .cut{
+          width: 20rpx;
+          height: 20rpx;
+          background-color: #F5F5F5;
+          border-radius: 100%;
+          position: absolute;
+          top: 80rpx;
+        }
+        .cut1{
+          left: -10rpx;
+        }
+        .cut2{
+          right: -10rpx;
+        }
+      }
+      .coupon-header-bottom{
+        background-color: #fff;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 30rpx;
+        .info-item{
+          width: 100%;
+          height: 90rpx;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px dashed #D6D6D6;
+          text{
+            font-size: 28rpx;
+            color: #353535;
+            max-width: 580rpx;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          image{
+            width: 35rpx;
+            height: 35rpx;
+          }
+        }
+      }
+    }
+    .coupon-detail{
+      margin-top: 20rpx;
+      width: 100%;
+      box-sizing: border-box;
+      .ditail-title{
+        width: 100%;
+        height: 80rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        .detail_cut{
+          width: 100rpx;
+          height: 1px;
+          background-color: #A5A5A5;
+        }
+        text{
+          font-size: 30rpx;
+          color: #353535;
+          margin: 0 20rpx;
+        }
+      }
+    }
+    .bottomBox{
+      width: 100%;
+      height: 100rpx;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20rpx rgba(144,142,142,.3);
+      button{
+        margin: 0;
+        padding: 0;
+        background-color: #E74141;
+        width: 350rpx;
+        height: 75rpx;
+        border-radius: 50rpx;
+        color: #fff;
+        font-size: 35rpx;
+        line-height: 75rpx;
+        &::after{
+          content: none;
+        }
+      }
+    }
+  }
+</style>
+

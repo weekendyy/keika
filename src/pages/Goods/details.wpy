@@ -10,7 +10,7 @@
       </repeat>
     </swiper>
     <BackHome top='20'></BackHome>
-    <button class="posterText" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
+    <button class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
@@ -433,16 +433,17 @@
         })
       },
       Share(){
-        this.actionSheetHidden =  !this.actionSheetHidden
+        this.actionSheetHidden =  false
       },
       /* 取消上拉反馈 */
       actionSheetChange(){
-        this.actionSheetHidden =  !this.actionSheetHidden
+        this.actionSheetHidden =  true
       },
       closeShareBox(){
         this.actionSheetHidden =  true
       },
       getUserInfo(res){
+        this.actionSheetHidden =  true
         wx.showLoading({
           title: '生成卡片中',
         })
@@ -1133,12 +1134,18 @@
         image{
           width:340rpx;
           height:243rpx;
+          margin-left:7rpx;
+          margin-top:9rpx;
         }
         > text{
           margin-top:24rpx;
           font-size:24rpx;
           color: #323323;
           margin-left: 15rpx;
+          width: 340rpx;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
         }
         .Price-wrapper{
           display: flex;

@@ -120,8 +120,9 @@ class Address extends Base{
           iv:res.detail.iv,
           versions: "vip5",
         }
-        MyModel.postUserInfo(postdata)
-        wx.setStorageSync('userInfo', userInfo)
+        MyModel.postUserInfo(postdata,()=>{
+          wx.setStorageSync('userInfo', userInfo)
+        })
       }
     } else{
       wx.showToast({

@@ -1,0 +1,137 @@
+<template>
+  <view class="loginBox">
+    <text class="text1">授权并获取以下信息为你服务</text>
+    <text class="text2">· 获取你的公开信息（昵称，头像，性别等）</text>
+    <button loading="{{isLoading}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfo">授权并登陆</button>
+  </view>
+  <image src="http://p24lfn08v.bkt.clouddn.com/9286d6818ca7cf8287ff059bdf8f6a0d.jpg" mode="aspectFill" class="bgm"></image>
+</template>
+<script>
+  import wepy from 'wepy'
+  import MyModel from './index-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '授权登录',
+    }
+    data = {
+      isLoading: false
+    }
+    methods = {
+      getUserInfo(res){
+        let userInfo = res.detail.userInfo
+        if(userInfo){  //用户点了确定授权或者已经授权
+          this.isLoading = true
+          let postdata = {
+            wechat_name: userInfo.nickName,
+            area: userInfo.country + userInfo.province + userInfo.city,
+            portrait: userInfo.avatarUrl,
+            encryptedData:res.detail.encryptedData,
+            iv:res.detail.iv,
+            versions: "vip5",
+          }
+          MyModel.postUserInfo(postdata, ()=>{
+            wx.setStorageSync('userInfo', userInfo)
+            wx.showToast({
+              title: '登录成功！',
+              icon: 'none',
+              duration: 1000
+            })
+            this.isLoading = false
+            this.$apply()
+            setTimeout(()=>{ 
+              this.backPage()
+            },1000)
+          })
+        } else{
+          wx.showToast({
+            title: '需要获取您的用户信息才能使用该功能',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      }
+    }
+    onLoad(){
+    }
+    backPage(){
+      let pathInfo = wx.getStorageSync('launchInfo')
+      if(pathInfo.path == 'pages/Index/index' || pathInfo.path == 'pages/Activity/index' || pathInfo.path == 'pages/Shop/shopIndex' || pathInfo.path == 'pages/My/index'){
+        wx.switchTab({
+          url: '/' + pathInfo.path
+        })
+      } else {
+        wx.reLaunch({
+          url: '/' + pathInfo.path + this.encode(pathInfo.query)
+        })
+      }
+    }
+    onShow(){
+      
+    }
+    encode(json){
+      if (!json) {  
+          return '';  
+      }  
+      var tmps = [];  
+      for (var key in json) {  
+          tmps.push(key + '=' + json[key]);  
+      } 
+      return '?' + tmps.join('&');
+    }
+  }
+</script>
+<style lang="less">
+  .loginBox{
+    width: 100%;
+    height: 600rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    .userImg{
+      width: 60rpx;
+      height: 60rpx;
+      border-radius: 100%;
+    }
+    .userName{
+      font-size: 30rpx;
+      margin: 20rpx;
+    }
+    .text1{
+      font-size: 28rpx;
+    }
+    .text2{
+      font-size: 25rpx;
+      color: #666;
+    }
+    button{
+      width: 500rpx;
+      height: 90rpx;
+      background-color: #2AA146;
+      line-height: 90rpx;
+      text-align: center;
+      border-radius: 10rpx;
+      color: #fff;
+      margin-top: 20rpx;
+      &::after{
+        content: none;
+      }
+    }
+    text{
+      color: #222;
+      font-size: 28rpx;
+      margin-bottom: 20rpx;
+    }
+  }
+  .bgm{
+    width: 100%;
+    height: 100%;
+    filter: blur(30rpx);
+    opacity: .2;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+</style>
