@@ -2,27 +2,61 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="activeCouponBox">
     <!-- 头部信息 -->
-    <view class="coupon-header">
+    <view class="coupon-header {{loadingHidden?'show-coupon-header':''}}">
       <view class="coupon-header-top">
         <view class="header-title">
-          <text class="title-name">牛顶鲜鲜牛肉城</text>
-          <text class="title-time">2018.07.01到期（仅限3天）</text>
+          <text class="title-name">{{indexData.preferential.goods_name}}</text>
+          <text class="title-time">{{indexData.preferential.end_time}}{{indexData.preferential.time_status_str}}</text>
         </view>
         <view class="coupon-info">
           <view class="coupon-info-left">
-            <text class="couponPriceBox">¥<text class="couponPriceTxt">30</text></text>
-            <text class="couponDesc">满300可用</text>
+            <text class="couponPriceBox">¥<text class="couponPriceTxt">{{indexData.preferential.preferential_price}}</text></text>
+            <text class="couponDesc">{{indexData.preferential.total_price_str}}</text>
           </view>
           <view class="coupon-info-right">
-            <text class="coupon-info-right-txt1">限商品：此优惠券本店全场通用</text>
-            <text class="coupon-info-right-txt2">使用说明：到店即可消费</text>
+            <text class="coupon-info-right-txt1">限商品：{{indexData.preferential.limit_that}}</text>
+            <text class="coupon-info-right-txt2">使用说明：{{indexData.preferential.use_detail}}</text>
           </view>
         </view>
         <view class="cut cut1"></view>
         <view class="cut cut2"></view>
       </view>
     </view>
-    
+    <!-- 帮忙信息 -->
+    <view class="helpBox beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .1s">
+      <view class="help-title" wx:if="{{!activeSuccess}}">
+        <text>{{fixedData.header_str}}<text class="help-title-number">{{indexData.gap_num}}</text>{{fixedData.end_str}}</text>
+      </view>
+      <view class="help-title" wx:if="{{activeSuccess}}">
+        <text>{{fixedData.success_str}}</text>
+      </view>
+      <view class="help-desc">
+        <!-- <text>仅剩<text class="help-desc-time">23:59:20</text>失效</text> -->
+      </view>
+      <view class="help-peoples">
+        <block wx:for="{{helpPeoples}}" wx:key="{{index}}">
+          <image wx:if="{{item.portrait_img}}" src="{{item.portrait_img}}" mode="aspectFill"></image>
+          <view class="nonePeople" wx:if="{{!item.portrait_img}}">?</view>
+        </block>
+      </view>
+    </view>
+    <!-- 店铺信息 -->
+    <view class="shopInfo beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s" @tap="toShopDetail">
+      <view class="shopInfo-left">
+        <image src="images/home.png" mode="widthFix"></image>
+        <text>{{indexData.preferential.magic_shop_name}}</text>
+      </view>
+      <image src="./images/righticon.png" class="rightIcon"></image>
+    </view>
+    <!-- 底部领取 邀请好友 -->
+    <view wx:if="{{isOwn}}" class="bottomBox {{loadingHidden?'show-bottomBox':''}}">
+      <button open-type="share">{{fixedData.button_1}}</button>
+    </view>
+    <!-- 底部激活 帮忙激活 -->
+    <view wx:if="{{!isOwn}}" class="bottomBox {{loadingHidden?'show-bottomBox':''}}">
+      <button wx:if="{{indexData.join_status == 1}}" @tap="activeCoupon">{{fixedData.button_2}}</button>
+      <button open-type="share" wx:if="{{indexData.join_status == 2}}">已经激活过了</button>
+    </view>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -30,24 +64,115 @@
 </template>
 <script>
   import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '待激活',
       backgroundColorTop: '#F5F5F5',
-      backgroundColorBottom: '#F5F5F5'
+      backgroundColorBottom: '#F5F5F5',
+      enablePullDownRefresh: true
     }
     data = {
-      loadingHidden: true
+      loadingHidden: false,
+      userInfo: '',
+      indexData: '',
+      fixedData: '',
+      helpPeoples: [],
+      isOwn: true,
+      shopId: '',
+      getId: '',
+      helpPeopleNum: '',
+      activeSuccess: false
     }
     computed = {
         
     }
     methods = {
-     
+      activeCoupon(){
+        wx.showLoading({
+          title: '激活中'
+        })
+        let query = {
+          magic_shop_id: this.shopId,
+          get_log_id: this.getId,
+          wechat_name: this.userInfo.nickName,
+          portrait_img: this.userInfo.avatarUrl
+        }
+        CouponModel.helpActiveCoupon(query, (res)=>{
+          wx.hideLoading()
+          if(res.code == 1){
+            CouponModel.showTips('激活成功')
+            this.indexData.join_status = 2
+            this.helpPeoples.splice(this.helpPeopleNum,0,{
+              portrait_img: this.userInfo.avatarUrl
+            })
+            this.helpPeoples.pop()
+            this.indexData.gap_num--
+            if(res.data.join_status == 2){
+              this.activeSuccess = true
+            }
+            this.$apply()
+          } else {
+            CouponModel.showTips(res.message)
+          }
+        })
+      },
+      toShopDetail(){
+        CouponModel.navTo('../niceShop/niceShopIndex', {id: this.shopId})
+      }
+    }
+    onPullDownRefresh(){
+      this._loadData()
+    }
+    onShareAppMessage(){
+      return {
+        title: '快来帮好友激活【' + this.indexData.preferential.goods_name + '】优惠券',
+        path: '/coupon/activeCoupon?id='+ this.indexData.id +'&shopId='+ this.shopId +'&help=true',
+        success: function(res) {
+          CouponModel.showTips('转发成功')
+        },
+        fail: function(res) {
+          CouponModel.showTips('转发取消')
+        }
+      }
     }
     onLoad(e){
-      
+      this.userInfo = wx.getStorageSync('userInfo')
+      if(e.help){
+        this.isOwn = false
+      }
+      this.shopId = e.shopId
+      this.getId = e.id
+      this._loadData()
+    }
+    _loadData(){
+      let query = {
+        get_log_id: this.getId,
+        magic_shop_id: this.shopId,
+        wechat_name: this.userInfo.nickName,
+        portrait_img: this.userInfo.avatarUrl
+      }
+      CouponModel.getActiveCouponData(query, (res)=>{
+        wx.stopPullDownRefresh()
+        if(res.code == 1){
+          this.indexData = res.data
+          this.fixedData = res.content_str
+          this.loadingHidden = true
+          wx.setNavigationBarTitle({
+            title: res.content_str.top_str
+          })
+          this.helpPeoples = res.data.preferentialhelp
+          this.helpPeopleNum = res.data.preferentialhelp.length
+          for (let i= 0; i< this.indexData.gap_num; i++) {
+            this.helpPeoples.push({})
+          }
+          if(this.indexData.is_fill == 2){
+            this.activeSuccess = true
+          }
+          this.$apply()
+        }
+      })
     }
     onShow(){
     }
@@ -59,15 +184,20 @@
     background-color: #F5F5F5;
   }
   .activeCouponBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx;
     .coupon-header{
       width: 100%;
+      opacity: 0;
+      transform: scale(0.98);
       .coupon-header-top{
         width: 100%;
         height: 270rpx;
         background-color: rgba(170,40,255,.9);
         border-radius: 20rpx;
         overflow: hidden;
-        background-image: url('http://p55e536k6.bkt.clouddn.com/couponbgm.png');
+        background-image: url('http://applet.czsjcrm.cn/images/templete_image/couponbgm.png');
         background-position: 0 0;
         -webkit-background-size: cover;
         background-size: cover;
@@ -84,7 +214,7 @@
             font-size: 29rpx;
             font-weight: 600;
             color: #fff;
-            width: 100%;
+            width: 90%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -163,6 +293,136 @@
           right: -10rpx;
         }
       }
+    }
+    .show-coupon-header{
+      opacity: 1;
+      transform: scale(1);
+      transition: .5s;
+    }
+    .helpBox{
+      width: 710rpx;
+      box-sizing: border-box;
+      padding: 30rpx 0 10rpx;
+      background-color: #fff;
+      border-radius: 10rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 30rpx;
+      .help-title{
+        font-size: 33rpx;
+        font-weight: 600;
+        display: flex;
+        align-items: baseline;
+        color: #323434;
+        margin-bottom: 14rpx;
+        .help-title-number{
+          color: #FE4020;
+          font-size: 48rpx;
+          margin: 0 10rpx;
+        }
+      }
+      .help-desc{
+        font-size: 25rpx;
+        color: #6E6160;
+        margin-bottom: 30rpx;
+        .help-desc-time{
+          color: #FE4020;
+          margin: 0 20rpx;
+        }
+      }
+      .help-peoples{
+        width: 620rpx;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        .nonePeople{
+          width: 80rpx;
+          height: 80rpx;
+          border-radius: 100%;
+          border:1px dashed #FE4020;
+          text-align: center;
+          line-height: 80rpx;
+          color: #FE4020;
+          font-weight: 600;
+          font-size: 50rpx;
+          margin: 0 12rpx;
+          margin-bottom: 20rpx;
+        }
+        image{
+          width: 80rpx;
+          height: 80rpx;
+          border-radius: 100%;
+          border:1px solid #FE4020;
+          margin: 0 12rpx;
+          margin-bottom: 20rpx;
+        }
+      }
+    }
+    .shopInfo{
+      width: 100%;
+      height: 90rpx;
+      box-sizing: border-box;
+      padding: 0 20rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #fff;
+      margin-top: 20rpx;
+      .shopInfo-left{
+        display: flex;
+        align-items: center;
+        image{
+          width: 35rpx;
+          height: 35rpx;
+          margin-right: 20rpx;
+        }
+        text{
+          font-size: 32rpx;
+          color: #353535;
+          width: 560rpx;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+      }
+      .rightIcon{
+        width: 30rpx;
+        height: 30rpx;
+      }
+    }
+    .bottomBox{
+      width: 100%;
+      height: 100rpx;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20rpx rgba(144,142,142,.3);
+      transform: translateY(100rpx);
+      button{
+        margin: 0;
+        padding: 0;
+        background-color: #30CF27;
+        width: 350rpx;
+        height: 75rpx;
+        border-radius: 50rpx;
+        color: #fff;
+        font-size: 35rpx;
+        line-height: 75rpx;
+        &::after{
+          content: none;
+        }
+      }
+    }
+    .show-bottomBox{
+      transition: .5s .1s;
+      transform: translateY(0);
     }
   }
 </style>

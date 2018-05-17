@@ -1,0 +1,240 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="verificationBox">
+    <!-- 优惠券信息 -->
+    <view class="verification-coupon beforeShow {{loadingHidden?'show-detailItem':''}}" @tap="toCouponDetail">
+      <image src="{{indexData.preferential.img_url}}" mode="widthFix" class="mainPic"></image>
+      <view class="coupon-info">
+        <text class="coupon-title">{{indexData.preferential.goods_name}}</text>
+        <view class="coupin-content">
+          <text class="coupon-number">数量：1</text>
+          <view class="coupon-price">
+            <text>¥13.8</text>
+            <image src="images/righticon.png" mode="widthFix"></image>
+          </view>
+        </view>
+        <text class="coupon-time">有效期：{{indexData.preferential.from_time}}-{{indexData.preferential.end_time}}</text>
+      </view>
+    </view>
+    <!-- 用户信息 -->
+    <view class="userInfo beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .1s">
+      <text class="userInfo-title">{{fixedData.user_info}}</text>
+      <view class="user-name" style="margin-top: 10rpx;">
+        <view class="user-txt1"><text>姓</text><text>名：</text></view>
+        <text class="user-txt2">卤蛋</text>
+      </view>
+      <!-- <view class="user-name">
+        <view class="user-txt1"><text>手</text><text>机：</text></view>
+        <text class="user-txt2">15659265706</text>
+      </view> -->
+    </view>
+    <!-- 核销按钮 -->
+    <button class="confirmBtn {{loadingHidden?'show-button':''}} {{isVerification?'hidden':''}}" @tap="confirmVerification">确认核销</button>
+    <button class="confirmBtn hasVer {{loadingHidden?'show-button':''}} {{isVerification?'':'hidden'}}">已核销</button>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '商家核销',
+      backgroundColorTop: '#F0F2F5',
+      backgroundColorBottom: '#F0F2F5'
+    }
+    data = {
+      loadingHidden: false,
+      indexData: '',
+      fixedData: '',
+      query: '',
+      isVerification: false
+    }
+    computed = {
+        
+    }
+    methods = {
+      confirmVerification(){
+        wx.showLoading({
+          title: '核销中'
+        })
+        CouponModel.comfirmVerification(this.query, (res)=>{
+          wx.hideLoading()
+          if(res.code == 1){
+            CouponModel.showTips(res.message)
+            this.isVerification = true
+            this.$apply()
+          } else {
+            CouponModel.showTips(res.message)
+          }
+        })
+      },
+      toCouponDetail(){
+        CouponModel.navTo('../coupon/takeCoupon', {
+          into_type: this.indexData.get_type,
+          admin_id: this.indexData.assistant_id,
+          goods_id: this.indexData.preferential.id
+        })
+      }
+    }
+    onLoad(e){
+      this.query = {
+        magic_shop_id: e.magic_shop_id,
+        user_id: e.user_id,
+        get_log_id: e.get_log_id
+      }
+      CouponModel.getVerificationBness(this.query, (res)=>{
+        if(res.code == 1){
+          this.indexData = res.data
+          this.fixedData = res.content_str
+          this.loadingHidden = true
+          if(this.indexData.use_status == 2){
+            this.isVerification = true
+          }
+          this.$apply()
+        } else {
+          wx.showModal({
+            title: res.message,
+            complete: ()=>{
+              wx.navigateBack({
+                delta: 1
+              })
+            }
+          })
+        }
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F0F2F5;
+  }
+  .verificationBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx;
+    .verification-coupon{
+      width: 100%;
+      height: 200rpx;
+      border-radius: 8rpx;
+      background-color: #fff;
+      box-sizing: border-box;
+      padding: 40rpx 20rpx;
+      padding-right: 30rpx;
+      display: flex;
+      .mainPic{
+        flex: 0 0 120rpx;
+        height: 120rpx;
+        border-radius: 10rpx;
+      }
+      .coupon-info{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-sizing: border-box;
+        padding-left: 20rpx;
+        overflow: hidden;
+        .coupon-title{
+          font-size: 28rpx;
+          color: #323332;
+        }
+        .coupin-content{
+          display: flex;
+          align-items: center;
+          width: 100%;
+          justify-content: space-between;
+          .coupon-number{
+            color: #9D9D9D;
+            font-size: 26rpx;
+          }
+          .coupon-price{
+            display: flex;
+            align-items: center;
+            text{
+              font-size: 28rpx;
+              color: #323332;
+            }
+            image{
+              width: 23rpx;
+              height: 23rpx;
+              margin-left: 15rpx;
+            }
+          }
+        }
+        .coupon-time{
+          font-size: 26rpx;
+          color: #9D9D9D;
+        }
+      }
+    }
+    .userInfo{
+      width: 100%;
+      height: 150rpx;
+      background-color: #fff;
+      border-radius: 8rpx;
+      box-sizing: border-box;
+      padding: 30rpx;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-top: 20rpx;
+      .userInfo-title{
+        font-size: 30rpx;
+        font-weight: 600;
+      }
+      .user-name{
+        display: flex;
+        align-items: center;
+        .user-txt1{
+          width: 140rpx;
+          font-size: 26rpx;
+          font-weight: 600rpx;
+          display: flex;
+          justify-content: space-between;
+        }
+        .user-txt2{
+          font-size: 26rpx;
+          color: #A0A0A0;
+        }
+      }
+    }
+    .confirmBtn{
+      width: 100%;
+      height: 85rpx;
+      margin: 0;
+      padding: 0;
+      border-radius: 8rpx;
+      background: linear-gradient(to right, #FF8230, #FF453E);
+      font-size: 30rpx;
+      color: #fff;
+      text-align: center;
+      line-height: 85rpx;
+      margin-top: 30rpx;
+      opacity: 0;
+      transform: scale(.9);
+      &::after{
+        content: none;
+      }
+    }
+    .hasVer{
+      background: #999;
+    }
+    .show-button{
+      transition: .5s .2s;
+      transform: scale(1);
+      opacity: 1;
+    }
+    .hidden{
+      display: none;
+    }
+  }
+</style>
+

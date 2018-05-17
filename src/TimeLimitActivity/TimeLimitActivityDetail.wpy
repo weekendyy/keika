@@ -132,7 +132,7 @@
     methods = {
       gotoShop(index){
         const i = this.shopData[index].id
-        this.$navigate('../pages/Shop/shopDetails',{id:i})
+        this.$navigate('../niceShop/niceShopIndex',{id:i})
       },
       gotoWelfare(index){
         this.$navigate('../pages/Shop/welfareDetails',{id:index})

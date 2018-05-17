@@ -138,7 +138,7 @@
       },
       gotoShop(index){
         const i = this.shopData[index].id
-        this.$navigate('./shopDetails',{id:i})
+        this.$navigate('../../niceShop/niceShopIndex',{id:i})
       },
       gotoWelfare(id, idx, index){
         this.$navigate('../Shop/welfareDetails',{id:id, idx: idx, index: index})

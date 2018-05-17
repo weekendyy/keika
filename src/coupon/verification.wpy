@@ -1,0 +1,306 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="verificationBox">
+    <!-- 优惠券信息 -->
+    <view class="verification-coupon beforeShow {{loadingHidden?'show-detailItem':''}}" @tap="toCouponDetail">
+      <image src="{{indexData.preferential.img_url}}" mode="aspectFill" class="mainPic"></image>
+      <view class="coupon-info">
+        <text class="coupon-title">{{indexData.preferential.goods_name}}</text>
+        <view class="coupin-content">
+          <text class="coupon-number">数量：1</text>
+          <view class="coupon-price">
+            <text>¥{{indexData.preferential.preferential_price}}</text>
+            <image src="images/righticon.png" mode="widthFix"></image>
+          </view>
+        </view>
+        <text class="coupon-time">有效期：{{indexData.preferential.from_time}}-{{indexData.preferential.end_time}}</text>
+      </view>
+    </view>
+    <!-- 核销数字 -->
+    <view class="verification-number beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .1s">
+      <view class="verification-number-title">
+        <image src="images/coupon.png" mode="widthFix" class="titleIcon"></image>
+        <text>{{fixedData.cancel_password_str}}</text>
+      </view>
+      <view class="codeNumber">
+        <text>{{fixedData.password_input}}</text>
+        <input type="number" name="" placeholder="******" @input="passwardInp" />
+      </view>
+      <button @tap="numberVerification" loading="{{verificationing}}">{{fixedData.button_1}}</button>
+      <text class="tips">{{fixedData.button_tip}}</text>
+    </view>
+    <!-- 核销二维码 -->
+    <view class="verification-qrCode beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s">
+      <view class="qrCode-title">
+        <image src="images/scope.png" mode="widthFix"></image>
+        <text>{{fixedData.qr_code_str}}</text>
+      </view>
+      <view class="qrCode-center">
+        <image src="{{indexData.qr_code_img}}" mode="widthFix"></image>
+        <text>{{fixedData.qr_num}}：1521069042300</text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '',
+      backgroundColorTop: '#F0F2F5',
+      backgroundColorBottom: '#F0F2F5'
+    }
+    data = {
+      loadingHidden: false,
+      shopId: '',
+      indexData: '',
+      fixedData: '',
+      getId: '',
+      passward: '',
+      verificationing: false
+    }
+    computed = {
+        
+    }
+    methods = {
+      numberVerification(){
+        this.verificationing = true
+        let query = {
+          magic_shop_id: this.shopId,
+          get_log_id: this.getId,
+          cancel_password: this.passward
+        }
+        CouponModel.postVerificationNumber(query, (res)=>{
+          if(res.code == 1){
+            this.verificationing = false
+            CouponModel.showTips('核销成功')
+            setTimeout(()=>{
+              wx.navigateBack({
+                delta: 1
+              })
+            },1000)
+          } else {
+            this.verificationing = false
+            this.$apply()
+            CouponModel.showTips(res.message)
+          }
+        })
+      },
+      passwardInp(res){
+        this.passward = res.detail.value
+      },
+      toCouponDetail(){
+        let query = {
+          into_type: this.indexData.indexData,
+          admin_id: this.indexData.assistant_id,
+          goods_id: this.indexData.preferential_id
+        }
+        CouponModel.navTo('./takeCoupon', query)
+      }
+    }
+    onLoad(e){
+      this.getId = e.getId
+      this.shopId = e.shopId
+      let query = {
+        magic_shop_id: e.shopId,
+        get_log_id: e.getId
+      }
+      CouponModel.getVerificationData(query, (res)=>{
+        if(res.code == 1){
+          this.indexData = res.data
+          this.fixedData = res.content_str
+          this.loadingHidden = true
+          this.$apply()
+          wx.setNavigationBarTitle({
+            title: res.content_str.top_str
+          })
+        }
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F0F2F5;
+  }
+  .verificationBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx;
+    .verification-coupon{
+      width: 100%;
+      height: 200rpx;
+      border-radius: 8rpx;
+      background-color: #fff;
+      box-sizing: border-box;
+      padding: 40rpx 20rpx;
+      padding-right: 30rpx;
+      display: flex;
+      .mainPic{
+        flex: 0 0 120rpx;
+        height: 120rpx;
+        border-radius: 10rpx;
+      }
+      .coupon-info{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-sizing: border-box;
+        padding-left: 20rpx;
+        overflow: hidden;
+        .coupon-title{
+          font-size: 28rpx;
+          color: #323332;
+        }
+        .coupin-content{
+          display: flex;
+          align-items: center;
+          width: 100%;
+          justify-content: space-between;
+          .coupon-number{
+            color: #9D9D9D;
+            font-size: 26rpx;
+          }
+          .coupon-price{
+            display: flex;
+            align-items: center;
+            text{
+              font-size: 28rpx;
+              color: #323332;
+            }
+            image{
+              width: 23rpx;
+              height: 23rpx;
+              margin-left: 15rpx;
+            }
+          }
+        }
+        .coupon-time{
+          font-size: 26rpx;
+          color: #9D9D9D;
+        }
+      }
+    }
+    .verification-number{
+      width: 100%;
+      margin-top: 20rpx;
+      height: 400rpx;
+      border-radius: 8rpx;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 0 30rpx;
+      .verification-number-title{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        height: 110rpx;
+        .titleIcon{
+          flex: 0 0 32rpx;
+          height: 32rpx;
+          margin-right: 25rpx;
+        }
+        text{
+          font-size: 34rpx;
+          font-weight: 600;
+          color: #323332;
+          display: block;
+          height: 100%;
+          flex: 1;
+          line-height: 114rpx;
+          border-bottom: 1px solid #E0E0E0;
+        }
+      }
+      .codeNumber{
+        width: 100%;
+        height: 90rpx;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #DFDFDF;
+        justify-content: space-between;
+        text{
+          font-size: 29rpx;
+          color: #323332;
+        } 
+        input{
+          width: 400rpx;
+          height: 80rpx;
+          line-height: 80rpx;
+          font-size: 30rpx;
+          color: #323332;
+          text-align: right;
+        }
+      }
+      button{
+        width: 100%;
+        height: 85rpx;
+        background:linear-gradient(to right, #FF8230, #FF453E);
+        line-height: 85rpx;
+        color: #fff;
+        font-size: 33rpx;
+        text-align: center;
+        margin: 30rpx 0 25rpx;
+        &::after{
+          content: none;
+        }
+      }
+      .tips{
+        font-size: 25rpx;
+        color: #888;
+      }
+    }
+    .verification-qrCode{
+      width: 100%;
+      height: 500rpx;
+      margin-top: 20rpx;
+      border-radius: 8rpx;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      .qrCode-title{
+        width: 100%;
+        height: 110rpx;
+        display: flex;
+        align-items: center;
+        image{
+          width: 33rpx;
+          height: 33rpx;
+          margin-right: 20rpx;
+          margin-left: 30rpx;
+        }
+        text{
+          font-size: 33rpx;
+          color: #323332;
+        }
+      }
+      .qrCode-center{
+        flex: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        image{
+          width: 280rpx;
+          height: 280rpx;
+          margin-bottom: 20rpx;
+        }
+        text{
+          font-size: 24rpx;
+          color: #888;
+        }
+      }
+    }
+  }
+</style>
+

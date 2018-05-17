@@ -39,7 +39,7 @@
       <view class="Result">
         <navigator url="/pages/Groups/Groups-order-details?id={{orderID}}&type=2" hover-class="none" wx:if="{{groupData.join_status == 1 && groupData.diff_person == 0}}">查看订单详情</navigator>
         <button class="addGroupBtn" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="addGroup" wx:if="{{groupData.join_status == 0 && groupData.diff_person != 0}}">立即参团</button>
-        <navigator url="/pages/Groups/Groups-details?id{{groupData.goods_id}}" wx:if="{{groupData.join_status == 0 && groupData.diff_person == 0}}">拼团已经结束,查看商品,独立开团去</navigator>
+        <navigator url="/pages/Groups/Groups-details?id={{groupData.goods_id}}" wx:if="{{groupData.join_status == 0 && groupData.diff_person == 0}}">拼团已经结束,查看商品,独立开团去</navigator>
         <button hover-class="none" open-type="share" class="share" wx:if="{{ groupData.diff_person != 0}}">
           <image src="./images/icon-wx-share.png"></image>
           <text>分享给微信好友</text>

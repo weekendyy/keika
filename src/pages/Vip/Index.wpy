@@ -7,7 +7,7 @@
     </view>
     <view class="tab-content">
       <view class="left-content" wx:if="{{ currentTabsIndex == 0 }}">
-        <repeat for="{{VipType}}" wx:for-item="item" key:index="index">
+        <repeat for="{{VipType}}" wx:for-item="item" key:index="index" wx:if="{{item[3] == 1}}">
           <view class="item">
             <view class="item-left">
               <view class="first">{{item[0]}} <text>{{item[1]}}/张</text></view>

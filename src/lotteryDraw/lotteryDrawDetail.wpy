@@ -19,7 +19,7 @@
             <view class="info-top-title">
               <text>{{fixedData.reward_str}}：{{detailData.goods_name}} </text>
               <text style="font-size:20rpx;">X</text>
-              <text style="font-size:32rpx;">{{detailData.goods_num}}</text>
+              <text style="font-size:32rpx;">{{detailData.reward_num}}</text>
             </view>
           </view>
           <view class="lottery-info-bottom">
@@ -384,9 +384,7 @@
             .info-top-title{
               font-size: 32rpx;
               width: 680rpx;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
+              line-height: 45rpx;
             }
           }
           .lottery-info-bottom{

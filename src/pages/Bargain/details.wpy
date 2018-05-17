@@ -29,7 +29,7 @@
         <text class="title">{{DetailData.title}}</text>
         <swiper indicator-dots="{{false}}" class="league-swiper" circular
         autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}" wx:if="{{floor_data.length}}">
-          <block wx:for="{{floor_data}}">
+          <block wx:for="{{floor_data}}" wx:key="{{index}}">
             <swiper-item>
               <view class="bargainTips">
                 <text class="bargainTips-name">{{item.name}}</text>
@@ -93,7 +93,11 @@
                 
                 <block wx:if="{{isOne != 0}}">
                   <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1 && bargain.launch.receive_status != 1}}">
-                    <view class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
+                    <!-- 没到底价能购买 -->
+                    <view wx:if="{{DetailData.pay_status == 2}}" class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
+                    <!-- 没到底价不能购买 -->
+                    <view wx:if="{{DetailData.pay_status == 1}}" class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoIndex()">查看更多</view>
+
                     <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency||0}}次)</view>
                     <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0}}">邀请好友帮我砍</button>
                   </view>
@@ -188,7 +192,7 @@
         <view class="cut"></view>
       </view>
       <view class="desc-wrapper">
-        <view wx:for="{{rules.content}}">
+        <view wx:for="{{rules.content}}" wx:key="{{index}}">
           {{item}}
         </view>
       </view>
@@ -363,6 +367,9 @@
     methods = {
       gotoBuy(){
         this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
+      },
+      gotoIndex(){
+        Address.navTo('/pages/Index/index')
       },
       gotoMy(){
         this.$navigate('/pages/Bargain/Bargain-coupon',{id:this.bargain.launch.id});
@@ -559,12 +566,13 @@
       })
     }
     onShareAppMessage(res){
+      this.userInfo = wx.getStorageSync('userInfo')
       let that = this;
       let shareTitle = null;
       let path = '';
       if(that.DetailData){
         path = '/pages/Bargain/details?id='+that.activity_id+"&"+'launch_id='+that.bargain.launch.id
-        shareTitle = that.DetailData.title
+        shareTitle = '帮好友['+ this.userInfo.nickName + ']砍价 ' + that.DetailData.title
       }
       if(!that.DetailData){
         path = '/pages/index/index'

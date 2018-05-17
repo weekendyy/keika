@@ -1,39 +1,39 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="couponList">
-    <view class="couponItem">
-      <text>本人可使用（1张）</text>
-      <image src="http://p55e536k6.bkt.clouddn.com/canuse.png" mode="aspectFill" class="mainIcon"></image>
-      <image src="http://p55e536k6.bkt.clouddn.com/bg1.png" mode="widthFix" class="backgroundPic1"></image>
-      <image src="http://p55e536k6.bkt.clouddn.com/bg2.png" mode="widthFix" class="backgroundPic2"></image>
+    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .1s" @tap="toSendCoupon(1)">
+      <text>{{indexData.can_use_num_str}}</text>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/59a38fa022937.png" mode="aspectFill" class="mainIcon"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/bg1.png" mode="widthFix" class="backgroundPic1"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
-    <view class="couponItem">
-      <text>本人可使用（1张）</text>
-      <image src="http://p55e536k6.bkt.clouddn.com/hygt.png" mode="aspectFill" class="mainIcon"></image>
-      <image src="http://p55e536k6.bkt.clouddn.com/bg1.png" mode="widthFix" class="backgroundPic1"></image>
-      <image src="http://p55e536k6.bkt.clouddn.com/bg2.png" mode="widthFix" class="backgroundPic2"></image>
+    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .2s" @tap="toSendCoupon(2)">
+      <text>{{indexData.no_use_num}}</text>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/hygt.png" mode="aspectFill" class="mainIcon"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/bg1.png" mode="widthFix" class="backgroundPic1"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
-    <view class="couponItem">
-      <text>本人可使用（1张）</text>
-      <image src="http://p55e536k6.bkt.clouddn.com/toshare.png" mode="aspectFill" class="mainIcon"></image>
-      <image src="http://p55e536k6.bkt.clouddn.com/bg1.png" mode="widthFix" class="backgroundPic1"></image>
-      <image src="http://p55e536k6.bkt.clouddn.com/bg2.png" mode="widthFix" class="backgroundPic2"></image>
+    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .3s" @tap="toSendCoupon(3)">
+      <view class="sendCoupon"><text>{{indexData.present_num}}</text><text class="tips">{{fixedData.present_str}}</text></view>
+      
+      <image src="http://applet.czsjcrm.cn/images/templete_image/59a38fa022995.png" mode="aspectFill" class="mainIcon"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/bg1.png" mode="widthFix" class="backgroundPic1"></image>
+      <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
   </view>
-  <view class="gussYouLike">
-    <view class="titleBox">
-      <text class="titleTxt">猜你喜欢</text>
-      <view class="moreBox">
+  <view class="gussYouLike {{loadingHidden?'show-likeItem':''}}">
+    <view class="titleBox" wx:if="{{likeArr.length !== 0}}">
+      <text class="titleTxt">{{fixedData.guess_like}}</text>
+      <view class="moreBox" @tap="changeLike">
         <image src="images/moreicon.png" mode="widthFix"></image>
-        <text>换一批</text>
+        <text>{{fixedData.next_one}}</text>
       </view>
     </view>
     <view class="likeBox">
-      <view class="likeItem" wx:for="{{3}}">
-        <image src="http://p55e536k6.bkt.clouddn.com/asdasd.png" mode="aspectFill"></image>
-        <text class="goods-title">特色鸡公煲大套餐</text>
-        <text class="goods-number">(4-6人份)</text>
-        <text class="goods-price">¥<text class="priceTxt">130</text></text>
+      <view class="likeItem" wx:for="{{likeArr[likeIndex%likeArr.length]}}" wx:key="{{index}}" wx:if="{{index<3}}" @tap="toGoodsDetail({{item.goods_type}},{{item.id}})">
+        <image src="{{item.banner_url}}" mode="aspectFill"></image>
+        <text class="goods-title">{{item.goods_name}}</text>
+        <text class="goods-price">¥<text class="priceTxt">{{item.goods_price}}</text></text>
       </view>
     </view>
   </view>
@@ -43,6 +43,7 @@
 </template>
 <script>
   import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -51,18 +52,66 @@
       backgroundColorBottom: '#FBF5FA'
     }
     data = {
-      loadingHidden: true
+      loadingHidden: false,
+      shopId: '',
+      indexData: '',
+      fixedData: '',
+      youLikeData: [],
+      likeIndex: 0
     }
     computed = {
-        
+      likeArr () {
+        let result = [];
+        for(let i=0,len=this.youLikeData.length;i<len;i+=3){
+           result.push(this.youLikeData.slice(i,i+3))
+        }
+        return result
+      }
     }
     methods = {
-     
+      toSendCoupon(type){
+        CouponModel.navTo('./giveToFriends', {type: type, id: this.shopId})
+      },
+      toGoodsDetail(goodsType, id){
+        if(goodsType == 1){  //抢购
+          CouponModel.navTo('../pages/Goods/details?id='+id)
+          return false
+        }
+        if(goodsType == 2){  //拼团
+          CouponModel.navTo('../pages/Groups/Groups-details?id='+id)
+          return false
+        }
+        if(goodsType == 5){  //集卡
+          CouponModel.navTo('../pages/Card/details?id='+id)
+          return false
+        }
+        if(goodsType == 4){  //砍价
+          CouponModel.navTo('../pages/Bargain/details?id='+id)
+          return false
+        }
+      },
+      changeLike(){
+        this.likeArr = []
+        this.likeIndex++
+        this.$apply()
+        // if(this.likeIndex%this.likeArr.length == this.likeArr.length-1){
+        //   CouponModel.showTips('没有更多了哦')
+        // }
+      }
     }
     onLoad(e){
-      
+      this.shopId = e.id
     }
     onShow(){
+      CouponModel.getCouponData({magic_shop_id: this.shopId}, (res)=>{
+        if(res.code == 1){
+          this.indexData = res.data
+          this.fixedData = res.content_str
+          this.youLikeData = res.data.today_recommend_arr
+          this.loadingHidden = true
+          this.$apply()
+        }
+      })
     }
   }
 </script>
@@ -76,6 +125,8 @@
     box-sizing: border-box;
     padding: 30rpx;
     .couponItem{
+      opacity: 0;
+      transform: scale(0.98) translateX(100rpx);
       width: 690rpx;
       height: 205rpx;
       border-radius: 10rpx;
@@ -87,6 +138,16 @@
       padding: 0 50rpx;
       position: relative;
       margin-bottom: 30rpx;
+      .sendCoupon{
+        display: flex;
+        flex-direction: column;
+        .tips{
+          font-size: 24rpx;
+          margin-top: 15rpx;
+          font-weight: 400;
+          margin-left: -10rpx;
+        }
+      }
       &:nth-child(2){
         background: linear-gradient(90deg, #FF599E, #FFAC68);
       }
@@ -119,6 +180,10 @@
         height: 205rpx;
       }
     }
+    .show-couponItem{
+      opacity: 1;
+      transform: scale(1) translateX(0);
+    }
   }
   .gussYouLike{
     background-color: #fff;
@@ -126,6 +191,8 @@
     box-sizing: border-box;
     padding: 20rpx;
     margin-left: 30rpx;
+    opacity: 0;
+    transform: translateY(20rpx);
     .titleBox{
       width: 100%;
       display: flex;
@@ -157,21 +224,22 @@
         width: 200rpx;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         font-size: 25rpx;
         color: #363636;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
         image{
           width: 200rpx;
           height: 200rpx;
         }
         .goods-title{
           margin-top: 15rpx;
-          width: 100%;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          display:-webkit-box; 
+          -webkit-box-orient:vertical;
+          -webkit-line-clamp:2;
+          width: 200rpx;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          line-height: 35rpx;
         }
         .goods-number{
           margin-top: 10rpx;
@@ -192,6 +260,11 @@
         }
       }
     }
+  }
+  .show-likeItem{
+    transform: translateY(0);
+    opacity: 1;
+    transition: .5s .4s;
   }
 </style>
 

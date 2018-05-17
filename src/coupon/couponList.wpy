@@ -1,0 +1,122 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="couponListBox">
+    <view class="couponItem beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s {{index*0.1}}s" wx:for="{{couponList}}" wx:key="{{index}}" @tap="toVerification">
+      <image src="{{item.magicshop.banner_img}}" mode="aspectFill"></image>
+      <view class="infoBox">
+        <text class="couponTitle">{{item.magicshop.magic_shop_name}}</text>
+        <text class="shopAddress">地址：{{item.magicshop.address}}</text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '优惠券列表',
+      backgroundColorTop: '#F0F2F5',
+      backgroundColorBottom: '#F0F2F5'
+    }
+    data = {
+      loadingHidden: false,
+      pageNum: 1,
+      couponList: '',
+      isLoadAll: false
+    }
+    computed = {
+        
+    }
+    methods = {
+     toVerification(){
+      wx.navigateTo({
+        url: './verification'
+      })
+     }
+    }
+    onLoad(e){
+      let query = {
+        pageNum: this.pageNum
+      }
+      CouponModel.getCouponListData(query, (res)=>{
+        if(res.code == 1){
+          this.loadingHidden = true
+          this.couponList = res.data
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        this.pageNum++
+        let query = {
+          pageNum: this.pageNum
+        }
+        CouponModel.getCouponListData(query, (res)=>{
+          if(res.code == 1){
+            if(res.data.length == 0){
+              this.isLoadAll = true
+              CouponModel.showTips('已经到底了')
+            }else{
+              this.couponList = [...this.couponList, ...res.data]
+            }
+            this.$apply()
+          } else {
+            CouponModel.showTips(res.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F0F2F5;
+  }
+  .couponListBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx;
+    .couponItem{
+      width: 100%;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      border-radius: 7rpx;
+      height: 200rpx;
+      overflow: hidden;
+      margin-bottom: 20rpx;
+      image{
+        flex: 0 0 200rpx;
+        height: 200rpx;
+      }
+      .infoBox{
+        flex: 1;
+        box-sizing: border-box;
+        padding-left: 30rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .couponTitle{
+          font-size: 33rpx;
+          color: #323332;
+          line-height: 45rpx;
+        }
+        .shopAddress{
+          font-size: 24rpx;
+          color: #999;
+          margin-top: 20rpx;
+        }
+      }
+    }
+  }
+</style>
+

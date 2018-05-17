@@ -1,53 +1,81 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
+  <import src="../wxParse/wxParse.wxml"/>
   <view class="receiveCouponBox">
     <!-- 头部信息 -->
     <view class="coupon-header">
-      <view class="coupon-header-top">
+      <view class="coupon-header-top {{loadingHidden?'show-coupon-top':''}}">
         <view class="header-title">
-          <text class="title-name">牛顶鲜鲜牛肉城</text>
-          <text class="title-time">2018.07.01到期（仅限3天）</text>
+          <text class="title-name">{{indexData.goods_name}}</text>
+          <text class="title-time">{{indexData.to_time}}{{indexData.time_status_str}}</text>
         </view>
         <view class="coupon-info">
           <view class="coupon-info-left">
-            <text class="couponPriceBox">¥<text class="couponPriceTxt">30</text></text>
-            <text class="couponDesc">满300可用</text>
+            <text class="couponPriceBox">¥<text class="couponPriceTxt">{{indexData.preferential_price}}</text></text>
+            <text class="couponDesc">{{indexData.preferential_price_str}}</text>
           </view>
           <view class="coupon-info-right">
-            <text class="coupon-info-right-txt1">限商品：此优惠券本店全场通用</text>
-            <text class="coupon-info-right-txt2">使用说明：到店即可消费</text>
+            <text class="coupon-info-right-txt1">{{fixedData.limit_goods}}：{{indexData.limit_that}}</text>
+            <text class="coupon-info-right-txt2">{{fixedData.use_say}}：{{indexData.use_detail}}</text>
           </view>
         </view>
         <view class="cut cut1"></view>
         <view class="cut cut2"></view>
       </view>
-      <view class="coupon-header-bottom">
-        <view class="info-item">
-          <text>牛顶羡羡牛肉城</text>
+      <view class="coupon-header-bottom {{loadingHidden?'show-coupon-bottom':''}}">
+        <view class="info-item" @tap="toShopDetail">
+          <text>{{indexData.magicshop.magic_shop_name}}</text>
           <image src="images/home.png"></image>
         </view>
-        <view class="info-item">
-          <text>电话：0592-8888888</text>
+        <view class="info-item" @tap="callPhone">
+          <text>电话：{{indexData.magicshop.link_tel}}</text>
           <image src="images/phone.png"></image>
         </view>
-        <view class="info-item" style="border-bottom: 0;">
-          <text>地址：厦门软件园B区</text>
+        <view class="info-item" style="border-bottom: 0;" @tap="toMap">
+          <text>地址：{{indexData.magicshop.address}}</text>
           <image src="images/address.png"></image>
         </view>
       </view>
     </view>
     <!-- 店铺详情 -->
-    <view class="coupon-detail">
+    <view class="coupon-detail {{loadingHidden?'show-coupon-detail':''}}">
       <view class="ditail-title">
         <view class="detail_cut"></view>
-        <text>店铺详情</text>
+        <text>{{fixedData.goods_detail_str}}</text>
         <view class="detail_cut"></view>
       </view>
-      <view style="height: 900rpx;background-color: #666"></view>
+      <view class="ditail-content">
+        <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+      </view>
     </view>
     <!-- 底部领取 -->
-    <view class="bottomBox">
-      <button>立即领取</button>
+    <view class="bottomBox {{loadingHidden?'show-bottomBox':''}}">
+      <!-- 活动未开始 -->
+      <view class="status" wx:if="{{couponStatus == 1}}">
+        活动未开始
+      </view>
+      <!-- 活动中可以领取 -->
+      <block wx:if="{{couponStatus == 3}}">
+        <!-- 用户未登录 -->
+        <button class="status" wx:if="{{!hasUserInfo}}" loading="{{isReceiveIng}}" open-type="getUserInfo" bindgetuserinfo="receiveCoupon">立即领取</button>
+        <!-- 用户已经登录 -->
+        <form report-submit="true" bindsubmit="gotoCoupon">
+          <button class="status" wx:if="{{hasUserInfo}}" form-type="submit">立即领取</button>
+        </form>
+      </block>
+      <!-- 活动中已经领取过了 -->
+      <view class="status" wx:if="{{couponStatus == 4}}">
+        已经领取过了哦
+      </view>
+      <!-- 活动结束 -->
+      <view class="status" wx:if="{{couponStatus == 5}}">
+        活动已结束
+      </view>
+      <!-- 优惠券已经被领完 -->
+      <view class="status" wx:if="{{couponStatus == 6}}">
+        已经被领完了哦
+      </view>
+      <image src="./images/couponhome.png" class="home" mode="aspectFill" @tap="toCouponList"></image>
     </view>
     <view style="height: 100rpx;"></view>
   </view>
@@ -57,6 +85,9 @@
 </template>
 <script>
   import wepy from 'wepy'
+  import Address from '../utils/address.js'
+  import couponModel from './coupon-model.js'
+  import wxParse from '../wxParse/wxParse'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -65,16 +96,112 @@
       backgroundColorBottom: '#F5F5F5'
     }
     data = {
-      loadingHidden: true
+      loadingHidden: false,
+      isReceiveIng: false,
+      hasUserInfo: false,
+      indexData: '',
+      fixedData: '',
+      couponStatus: '',
+      isTakeCoupon: false,
+      into_type: '',
+      admin_id: '',
+      goods_id: '',
+      get_log_id: ''
     }
     computed = {
         
     }
     methods = {
-     
+      receiveCoupon(res){
+        wx.showLoading({
+          title: '登录中'
+        })
+        Address.getUser(res,()=>{
+          wx.hideLoading()
+          Address.showTips("登录成功，可以领取了哦~")
+          this.hasUserInfo = true
+          this.$apply()
+        })
+      },
+      gotoCoupon(res){ //领取优惠券
+        if(this.isTakeCoupon){
+          return false
+        }
+        wx.showLoading({
+          title: '领取中..',
+          icon: 'loading'
+        })
+        this.isTakeCoupon = true
+        let userInfo = wx.getStorageSync('userInfo')
+        let query = {
+          into_type: this.into_type,
+          admin_id: this.admin_id,
+          goods_id: this.goods_id,
+          userName: userInfo.nickName,
+          userImg: userInfo.avatarUrl,
+          get_log_id: this.get_log_id
+        }
+        couponModel.postCoupon(query, (resData)=>{
+          if(resData.code == 1){
+            wx.hideLoading()
+            Address.showTips("领取成功")
+            this.couponStatus = 4
+            this.$apply() 
+            setTimeout(()=>{
+              Address.navTo('./couponIndex', {formId: res.detail.formId, id: this.indexData.magicshop.id})
+            }, 1000)
+          } else {
+            wx.hideLoading()
+            Address.showTips(resData.message)
+          }
+        },()=>{
+          Address.showTips("网络异常，请稍后再试")
+        })
+      },
+      toMap(){
+        Address.openMap(this.indexData.magicshop.longitude, this.indexData.magicshop.magic_shop_name, this.indexData.magicshop.address)
+      },
+      callPhone(){
+        Address.makePhoneCall(this.indexData.magicshop.link_tel)
+      },
+      toShopDetail(){
+        Address.navTo('../niceShop/niceShopIndex', {id: this.indexData.magicshop.id})
+      },
+      toCouponList(){
+        Address.navTo('./couponIndex', {id: this.indexData.magicshop.id})
+      }
     }
     onLoad(e){
-      
+      // 判断用户是否授权
+      let userInfo = wx.getStorageSync('userInfo')
+      if(userInfo){
+        this.hasUserInfo = true
+      } else {
+        this.hasUserInfo = false
+      }
+      this.$apply()
+      // 发送请求
+      this.into_type = e.into_type
+      this.admin_id = e.admin_id
+      this.goods_id = e.goods_id
+      if(e.get_log_id){
+        this.get_log_id = e.get_log_id
+      }
+      let query = {
+        into_type: e.into_type,
+        admin_id: e.admin_id,
+        goods_id: e.goods_id
+      }
+      couponModel.getTakeCouponData(query,(res)=>{
+        if(res.code === 1){
+          wxParse.wxParse('article', 'html', res.data.detail, this, 5)
+          this.indexData = res.data
+          this.fixedData = res.content_str
+          this.couponStatus = res.data.check_status
+          this.loadingHidden = true
+          this.$apply()
+        }
+      })
     }
     onShow(){
     }
@@ -92,12 +219,14 @@
     .coupon-header{
       width: 100%;
       .coupon-header-top{
+        opacity: 0;
+        transform: scale(0.98);
         width: 100%;
         height: 270rpx;
         background-color: rgba(170,40,255,.9);
         border-top-right-radius: 20rpx;
         border-top-left-radius: 20rpx;
-        background-image: url('http://p55e536k6.bkt.clouddn.com/couponbgm.png');
+        background-image: url('http://applet.czsjcrm.cn/images/templete_image/couponbgm.png');
         background-position: 0 0;
         -webkit-background-size: cover;
         background-size: cover;
@@ -114,7 +243,7 @@
             font-size: 29rpx;
             font-weight: 600;
             color: #fff;
-            width: 100%;
+            width: 90%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -193,11 +322,18 @@
           right: -10rpx;
         }
       }
+      .show-coupon-top{
+        opacity: 1;
+        transition: .5s;
+        transform: scale(1);
+      }
       .coupon-header-bottom{
         background-color: #fff;
         width: 100%;
         box-sizing: border-box;
         padding: 0 30rpx;
+        opacity: 0;
+        transform: scale(0.98);
         .info-item{
           width: 100%;
           height: 90rpx;
@@ -219,11 +355,18 @@
           }
         }
       }
+      .show-coupon-bottom{
+        opacity: 1;
+        transition: .5s .1s;
+        transform: scale(1);
+      }
     }
     .coupon-detail{
       margin-top: 20rpx;
       width: 100%;
       box-sizing: border-box;
+      opacity: 0;
+      transform: scale(0.98);
       .ditail-title{
         width: 100%;
         height: 80rpx;
@@ -242,6 +385,21 @@
           margin: 0 20rpx;
         }
       }
+      .ditail-content{
+        box-sizing: border-box;
+        width: 100%;
+        padding: 20rpx;
+        background-color: #fff;
+        .wxParse-p image{
+          width: 100%;
+          margin-bottom: 10rpx;
+        }
+      }
+    }
+    .show-coupon-detail{
+      opacity: 1;
+      transform: scale(1);
+      transition: .5s .2s;
     }
     .bottomBox{
       width: 100%;
@@ -254,7 +412,8 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 0 20rpx rgba(144,142,142,.3);
-      button{
+      transform: translateY(100rpx);
+      .status{
         margin: 0;
         padding: 0;
         background-color: #E74141;
@@ -262,12 +421,27 @@
         height: 75rpx;
         border-radius: 50rpx;
         color: #fff;
-        font-size: 35rpx;
+        font-size: 33rpx;
         line-height: 75rpx;
+        text-align: center;
         &::after{
           content: none;
         }
       }
+      .home{
+        width: 50rpx;
+        height: 50rpx;
+        position: absolute;
+        bottom: 15rpx;
+        right: 30rpx;
+        background-color: #E74141;
+        padding: 10rpx;
+        border-radius: 10rpx;
+      }
+    }
+    .show-bottomBox{
+      transform: translateY(0);
+      transition: .5s .4s;
     }
   }
 </style>

@@ -168,7 +168,7 @@
       </view>
       <!--进行中  -->
       <block wx:if="{{DetailsData.new_time_status == 1}}">
-        <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="buyGoods" wx:if="{{buy_log == 1}}" class="Buy">
+        <button loading="{{isBuying}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="buyGoods" wx:if="{{buy_log == 1}}" class="Buy">
           立即抢购
         </button> 
         <view wx:if="{{buy_log == 2}}" class="Buy" bindtap="gotoUse">
@@ -326,7 +326,8 @@
       posterPic:'',
       showPosterBox: false,
       posterImg: '',
-      formId: ''
+      formId: '',
+      isBuying: false
     }
     methods= {
       /* tab切换 */
@@ -362,8 +363,10 @@
       },
       /* 下单 */
       buyGoods(res){
+        this.isBuying = true
         Address.getUser(res,()=>{
           DetailsModel.delOrder(this.goods_id,ResData=>{
+            this.isBuying = false
             if(Number(ResData.code) == ERR_OK) {
               wx.showToast({
                 title: '抢购成功',

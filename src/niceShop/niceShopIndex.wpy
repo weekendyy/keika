@@ -42,14 +42,14 @@
       </view>
     </view>
     <!-- 会员权益 -->
-    <view class="couponBox {{showContent?'{{showCouponBox}}':''}}">
-      <view class="couponBox-title">
+    <view class="couponBox {{showContent?'showCouponBox':''}}">
+      <view class="couponBox-title" wx:if="{{couponData.length != 0}}">
         <text class="couponTitle">{{fixedData.vip_str_1}}</text>
         <text class="couponDesc">{{fixedData.vip_str_2}}</text>
       </view>
-      <view class="coupons">
+      <view class="coupons" wx:if="{{couponData.length != 0}}">
         <swiper class="swiperBox" indicator-dots="true" circular="true" next-margin="40rpx"
-          autoplay="{{false}}" interval="5000" duration="500">
+          autoplay="{{true}}" interval="5000" duration="500">
           <block wx:for="{{couponData}}" wx:key="{{index}}">
             <swiper-item class="swiperItem">
               <view class="couponItem" @tap="toCouponDetail({{index}})">
@@ -73,8 +73,8 @@
       </view>
     </view>
     <!-- 今日推荐 -->
-    <view class="couponBox todayRM {{showContent?'{{showTodayRM}}':''}} {{todayData.length == 0?'hidden':''}}">
-      <view class="couponBox-title">
+    <view class="couponBox todayRM {{showContent?'showTodayRM':''}}">
+      <view class="couponBox-title" wx:if="{{todayData.length != 0}}">
         <view class="couponBox-title_left">
           <text class="couponTitle">{{fixedData.today_recommond_1}}</text>
           <text class="couponDesc">{{fixedData.today_recommond_2}}</text>
@@ -84,7 +84,7 @@
           <text class="itemAllNum">/{{todayData.length}}</text>
         </view>
       </view>
-      <view class="rmToday">
+      <view class="rmToday" wx:if="{{todayData.length != 0}}">
         <swiper class="swiperBox" indicator-dots="{{false}}" circular="true" bindchange="todaySwiper"
           autoplay="{{false}}" interval="5000" duration="500">
           <block wx:for="{{todayData}}" wx:key="{{index}}">
@@ -97,7 +97,7 @@
                     <text class="item-desc">{{item.new_title}}</text>
                   </view>
                   <button open-type="share" data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">
-                    <image src="images/share.png" mode="widthFix" class="todayShare"></image>
+                    <image src="images/share.png" mode="aspectFill" class="todayShare"></image>
                   </button>
                 </view>
               </view>
@@ -109,13 +109,13 @@
     </view>
     <!-- 精选推荐 -->
     <view class="couponBox todayRM choice {{showContent?'showChoice':''}}">
-      <view class="couponBox-title">
+      <view class="couponBox-title" wx:if="{{choiceness.length != 0}}">
         <view class="couponBox-title_left">
           <text class="couponTitle">{{fixedData.choose_recommond_1}}</text>
           <text class="couponDesc">{{fixedData.choose_recommond_2}}</text>
         </view>
       </view>
-      <view class="rmToday choiceBox">
+      <view class="rmToday choiceBox" wx:if="{{choiceness.length != 0}}">
         <view class="swiperBox" indicator-dots="{{false}}" circular="true"
           autoplay="{{false}}" interval="5000" duration="500">
           <block wx:for="{{choiceness}}" wx:key="{{index}}">
@@ -216,13 +216,12 @@
           wx.setNavigationBarTitle({
             title: res.data.magic_shop_name
           })
+          this.showContent = true
           this.$apply()
         }
       })
     }
     onShow(){
-      this.showContent = true
-      this.$apply()
     }
     onReachBottom(){
       
@@ -292,6 +291,7 @@
       overflow: hidden;
       background-color: #fff;
       opacity: 0;
+      transform: scale(0.98);
       .shop-slogan{
         width:660rpx;
         display: -webkit-box;
@@ -350,10 +350,12 @@
     }
     .showShopHead{
       opacity: 1;
-      transition: .5s .1s;
+      transition: .5s .2s;
+      transform: scale(1);
     }
     .shop-address{
       opacity: 0;
+      transform: scale(0.98);
       width: 750rpx;
       box-sizing: border-box;
       height: 126rpx;
@@ -410,13 +412,15 @@
     }
     .show-shop-address{
       opacity: 1;
-      transition: .5s .2s;
+      transition: .5s .3s;
+      transform: scale(1);
     }
     .couponBox{
       width: 100%;
       margin-top: 20rpx;
       background-color: #fff;
       opacity: 0;
+      transform: scale(0.98);
       .couponBox-title{
         background-color: #fff;
         box-sizing: border-box;
@@ -537,7 +541,8 @@
     }
     .showCouponBox{
       opacity: 1;
-      transition: .5s .3s;
+      transition: .5s .4s;
+      transform: scale(1);
     }
     .todayRM{
       margin-top: 0rpx;
@@ -615,15 +620,19 @@
                 }
                 button{
                   padding: 0;
-                  margin: 0;
+                  margin: 0rpx;
                   background-color: transparent;
                   border-radius: 0;
+                  width: 250rpx;
+                  height: 100rpx;
+                  margin-top: -20rpx;
                   &::after{
                     content: none;
                   }
                   .todayShare{
                     width: 45rpx;
                     height: 45rpx;
+                    margin-top: 20rpx;
                   }
                 }
               }
@@ -637,7 +646,8 @@
     }
     .showTodayRM{
       opacity: 1;
-      transition: .5s .4s;
+      transition: .5s .5s;
+      transform: scale(1);
     }
     .hidden{
     	display: none;
@@ -661,14 +671,17 @@
     }
     .showChoice{
       opacity: 1;
-      transition: .5s .5s;
+      transition: .5s .6s;
+      transform: scale(1);
     }
     .bannerTop{
       opacity: 0;
+      transform: scale(0.98);
     }
     .showBanner{
       opacity: 1;
-      transition: .5s;
+      transition: .5s .1s;
+      transform: scale(1);
     }
   }
 </style>

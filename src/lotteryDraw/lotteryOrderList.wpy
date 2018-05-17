@@ -20,7 +20,7 @@
       <template is="emptyGoodsTips" data="{{tipsTxt:'暂无抽奖活动'}}"></template>
     </view>
     <view wx:if="{{isEmpty.lotteryOrderEmpty && tabIndex == 1}}">
-      <template is="emptyGoodsTips" data="{{tipsTxt:'暂无抽奖活动'}}"></template>
+      <template is="emptyGoodsTips" data="{{tipsTxt:'暂无中奖纪录'}}"></template>
     </view>
   </view>
 </template>

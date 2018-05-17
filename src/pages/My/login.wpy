@@ -4,7 +4,7 @@
     <text class="text2">· 获取你的公开信息（昵称，头像，性别等）</text>
     <button loading="{{isLoading}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfo">授权并登陆</button>
   </view>
-  <image src="http://p24lfn08v.bkt.clouddn.com/9286d6818ca7cf8287ff059bdf8f6a0d.jpg" mode="aspectFill" class="bgm"></image>
+  <image src="http://applet.czsjcrm.cn/images/templete_image/9286d6818ca7cf8287ff059bdf8f6a0d.jpg" mode="aspectFill" class="bgm"></image>
 </template>
 <script>
   import wepy from 'wepy'

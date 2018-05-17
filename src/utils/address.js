@@ -111,7 +111,6 @@ class Address extends Base{
         sCallBack && sCallBack()
         return false
       } else {
-        sCallBack && sCallBack()
         let postdata = {
           wechat_name: userInfo.nickName,
           area: userInfo.country + userInfo.province + userInfo.city,
@@ -121,14 +120,15 @@ class Address extends Base{
           versions: "vip5",
         }
         MyModel.postUserInfo(postdata,()=>{
+          sCallBack && sCallBack()
           wx.setStorageSync('userInfo', userInfo)
         })
       }
     } else{
       wx.showToast({
-        title: '需要获取您的用户信息才能使用该功能',
+        title: '需要您的授权才能继续使用哦~',
         icon: 'none',
-        duration: 2000
+        duration: 3000
       })
     }
   }

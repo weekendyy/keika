@@ -354,10 +354,6 @@
         this.loadingHidden = true
         this.$apply()
       })
-    }
-    onShow(){
-      this.pageNum = 1
-      this.preventRepeatReuqest = true
       indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
         if(ResData.code == 1){
           this.welfareData = ResData.data
@@ -365,6 +361,8 @@
           this.$apply()
         }
       })
+    }
+    onShow(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
         if(ResData.code == 1){
           this.headerinfo = ResData.data

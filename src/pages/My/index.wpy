@@ -48,6 +48,13 @@
           <text>{{center_index_str[3]}}</text>
         </button>
       </form>
+      <form style="height:100%" report-submit bindsubmit="gotoCoupon">
+        <button class="nav" form-type="submit">
+          <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
+          <image src="./images/coupon.png"></image>
+          <text>优惠券</text>
+        </button>
+      </form>
     </view>
     <view class="desc-wrapper {{loadingHidden?'show-desc-wrapper':''}}" @longpress="showVersion" @touchend="hideVersion">
       <view class="title-wrapper">
@@ -92,7 +99,7 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.13.8</text>
+        <text>V 1.13.9</text>
       </view>
     </view>
   </view>
@@ -128,6 +135,10 @@
       gotoOrder(e){
         this.formId = e.detail.formId
         this.$navigate('./order/order',{id:0,formId:this.formId})
+      },
+      gotoCoupon(e){
+        this.formId = e.detail.formId
+        this.$navigate('../../coupon/couponList')
       },
       gotoDetail(index){
         this.$navigate('./articleDetails',{id:index})

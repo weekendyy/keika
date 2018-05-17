@@ -18,7 +18,7 @@
             <view class="info-top-title">
               <text>{{fixedData.reward_str}}：{{item.goods_name}} </text>
               <text style="font-size:20rpx;">X</text>
-              <text style="font-size:32rpx;">{{item.goods_num}}</text>
+              <text style="font-size:32rpx;">{{item.reward_num}}</text>
             </view>
             <text class="info-top-desc">{{item.sponsor_name}} {{fixedData.sponsor_name_str}}</text>
           </view>

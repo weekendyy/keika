@@ -50,9 +50,9 @@
           </view>
         </view>
         <view class="card-box" wx:if="{{goodsInfo.check_collect_status == 2 && goodsInfo.check_exchange_statu == 2 && goodsInfo.first_join == 2 && goodsInfo.status == 1}}">
-          <view class="card {{cardStatus == true ? 'active' : ''}}" wx:if="{{goodsInfo.raffle_num !=0}}" @tap="open()">
+          <button loading="{{isOpen}}" class="card {{cardStatus == true ? 'active' : ''}}" wx:if="{{goodsInfo.raffle_num !=0}}" @tap="open()">
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
-          </view>
+          </button>
           <button open-type="share" class="card" wx:if="{{goodsInfo.raffle_num == 0}}">
             <text>抽一张（剩余{{goodsInfo.raffle_num}}次)</text>
           </button>
@@ -174,7 +174,8 @@
       actionSheetHidden: true,
       showPosterBox: false,
       pricePre:'',
-      posterImg: ''
+      posterImg: '',
+      isOpen: false
     }
     methods = {
       onShareAppMessage(){
@@ -241,12 +242,14 @@
         CardModel.savePoste(this,'luckyCanvas',this.goodsInfo.id)
       },
       open(){
+        this.isOpen = true
         this.cardStatus = true
         let parm = {
           lucky_goods_id: this.queryData.lucky_goods_id
         }
         CardModel.getLuckDraw(parm, resData=>{
           this.LuckStatus = false
+          this.isOpen = false
           if(Number(resData.code)===1){
             let k = resData.data.key
             this.goodsInfo.check_collect_status = resData.data.check_collect_status

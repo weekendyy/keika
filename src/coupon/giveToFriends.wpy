@@ -1,0 +1,344 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="giveToFriends">
+    <view class="couponBox {{loadingHidden?'show-couponBox':''}}">
+      <block wx:for="{{couponData}}" wx:key="{{index}}">
+        <!-- 后面多张 -->
+        <view @tap="nextCoupon" @touchstart="moveStart" @touchmove="moveCoupon" @touchend="moveEnd" class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transform: translateX({{ ((index-changeNum)%couponData.length) == 0 ? couponMoveX+'px' : ((index-changeNum)%couponData.length)*50+'rpx'}}) translateY({{(index-changeNum)%couponData.length == 0 ? (couponMoveY+'px') : 0}}) scale({{(1-(index-changeNum)%couponData.length*0.1)}});background-image: url({{backGroundImg[index%4]}}); z-index:{{10-(index-changeNum)%couponData.length}}; opacity:{{(index-changeNum)%couponData.length == 0 ? 1 : 0.8}}; transition: {{(index-changeNum)%couponData.length == 0 ? '0.3':'0.5'}}s">
+          <image src="./images/couponhome.png" mode="widthFix" class="homeIcon"></image>
+          <view class="couponTop">
+            <image src="{{item.preferential.img_url}}" mode="aspectFill" class="couponPic"></image>
+            <text class="coupontitle">{{item.magicshop.magic_shop_name}}</text>
+            <text class="couponAddress">地址：{{item.magicshop.address}}</text>
+            <text class="couponTel">电话：{{item.magicshop.link_tel}}</text>
+          </view>
+          <view class="couponBottom">
+            <text class="couponDesc">{{item.total_price_str}}</text>
+            <text class="couponName">{{item.preferential_str}}</text>
+            <view class="cut"></view>
+            <text class="couponTime">{{item.preferential.end_time}}{{item.time_status_str}}</text>
+          </view>
+        </view>
+      </block>
+      <text class="empty" wx:if="{{couponData.length == 0}}">空空如也~</text>
+    </view>
+    <!-- 立即使用 -->
+    <button wx:if="{{order_type == 1}}" class="toFriends {{loadingHidden?'show-toFriends':''}}" @tap="useCoupon">{{fixedData.use_str}}</button>
+    <!-- 去激活优惠券 -->
+    <button wx:if="{{order_type == 2}}" class="toFriends {{loadingHidden?'show-toFriends':''}}" @tap="toActiveCoupon">{{fixedData.activate_str}}</button>
+    <!-- 分享给好友 -->
+    <button wx:if="{{order_type == 3}}" open-type="share" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.send_frind}}</button>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '',
+      backgroundColorTop: '#fff',
+      backgroundColorBottom: '#fff',
+      disableScroll: true
+    }
+    data = {
+      loadingHidden: false,
+      backGroundImg: [
+        'http://applet.czsjcrm.cn/images/templete_image/couponbg1.png',
+        'http://applet.czsjcrm.cn/images/templete_image/couponbg2.png',
+        'http://applet.czsjcrm.cn/images/templete_image/couponbg3.png',
+        'http://applet.czsjcrm.cn/images/templete_image/couponbg4.png',
+        'http://applet.czsjcrm.cn/images/templete_image/couponbg5.png'
+      ],
+      couponMoveYBegin: 0,
+      couponMoveYNow: 0,
+      changeNum: -1,
+      couponMoveY: 0,
+      couponData: [],
+      order_type: '',
+      fixedData: '',
+      shopId: ''
+    }
+    computed = {
+      couponMoveY () {
+        if(this.couponMoveYNow){
+          return this.couponMoveYNow - this.couponMoveYBegin
+        } else {
+          return 0
+        }
+      },
+      couponMoveX () {
+        if(this.couponMoveXNow){
+          return this.couponMoveXNow - this.couponMoveXBegin
+        } else {
+          return 0
+        }
+      },
+      couponIndex () {
+        let index = this.couponData.length + this.changeNum%this.couponData.length
+        if(index == this.couponData.length){
+          index = 0
+        }
+        return index
+      }
+    }
+    methods = {
+      moveCoupon(res){
+        this.couponMoveYNow = res.changedTouches[0].clientY
+        this.couponMoveXNow = res.changedTouches[0].clientX
+        this.couponMoveY = this.couponMoveYNow - this.couponMoveYBegin
+        this.couponMoveX = this.couponMoveXNow - this.couponMoveXBegin
+      },
+      moveStart(res){
+        this.couponMoveYBegin = res.changedTouches[0].clientY
+        this.couponMoveXBegin = res.changedTouches[0].clientX
+      },
+      moveEnd(){
+        if(this.couponMoveY < -50 || this.couponMoveY > 50 || this.couponMoveX<-50 || this.couponMoveX>50){
+          this.changeNum--
+          this.couponMoveYBegin = 0
+          this.couponMoveYNow = 0
+          this.couponMoveXBegin = 0
+          this.couponMoveXNow = 0
+          this.$apply()
+        } else {
+          this.couponMoveYBegin = 0
+          this.couponMoveYNow = 0
+          this.couponMoveXBegin = 0
+          this.couponMoveXNow = 0
+        }
+      },
+      nextCoupon(){
+        this.changeNum--
+        this.$apply()
+      },
+      useCoupon(){
+        if(this.couponData[this.couponIndex].time_status == 2){
+          CouponModel.showTips('该优惠券已过期')
+          return false
+        }
+        console.log(this.couponData[this.couponIndex].time_status)
+        CouponModel.navTo('./verification', {getId: this.couponData[this.couponIndex].id, shopId: this.shopId})
+      },
+      toActiveCoupon(){
+        if(this.couponData.length === 0){
+          CouponModel.showTips('没有可以激活的优惠券')
+          return false
+        }
+        let coupon = this.couponData[this.couponIndex]
+        CouponModel.navTo('./activeCoupon', {id: coupon.id, shopId: coupon.magicshop.id})
+      }
+    }
+    onLoad(e){
+      this.order_type = e.type
+      this.shopId = e.id
+      if(e.type == 1){
+        wx.setNavigationBarTitle({
+          title: '可使用'
+        })
+      }
+      if(e.type == 2){
+        wx.setNavigationBarTitle({
+          title: '待激活'
+        })
+      }
+      if(e.type == 3){
+        wx.setNavigationBarTitle({
+          title: '赠送好友'
+        })
+      }
+    }
+    onShow(){
+      if(this.order_type != 3 ){
+        wx.hideShareMenu()
+      }
+      let query = {
+        magic_shop_id: this.shopId,
+        order_type: this.order_type
+      }
+      CouponModel.getCouponDetail(query, (res)=>{
+        if(res.code == 1){
+          if(this.order_type === '3' && res.data.length !== 0){
+            for(let k=0; k<res.data.length; k++){
+              for(let i=0; i<res.data[k].present_num; i++){
+                this.couponData.push(res.data[k])
+              }
+            }
+          } else {
+            this.couponData = res.data
+          }
+          this.fixedData = res.content_str
+          this.loadingHidden = true
+          this.$apply()
+        }
+      })
+    }
+    onShareAppMessage(){
+      let userInfo = wx.getStorageSync('userInfo')
+      let that = this
+      let currentCoupon = this.couponData[this.couponIndex]
+      let title = userInfo.nickName + '送你一张【' + currentCoupon.preferential_str + '】优惠券，' + '赶快来领'
+      let path = '/coupon/takeCoupon?into_type=' + currentCoupon.get_type + '&admin_id=' + currentCoupon.assistant_id + '&goods_id=' + currentCoupon.preferential_id + '&get_log_id=' + currentCoupon.id
+      console.log(path)
+      return {
+        title: title,
+        path: path,
+        success: function(res) {
+          CouponModel.showTips('转发成功')
+        },
+        fail: function(res) {
+          CouponModel.showTips('转发取消')
+        }
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #fff;
+  }
+  .giveToFriends{
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+    .couponBox{
+      width: 100%;
+      height: 890rpx;
+      position: relative;
+      opacity: 0;
+      transform: scale(0.98);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .couponItem{
+        width: 550rpx;
+        height: 890rpx;
+        border-radius: 10rpx;
+        position: absolute;
+        left: 100rpx;
+        top: 0;
+        background-repeat: no-repeat;
+        background-position: 0 0;
+        -webkit-background-size: cover;
+        background-size: cover;
+        box-shadow: 0 40rpx 30rpx -30rpx rgba(118,118,118,.8);
+        .homeIcon{
+          position: absolute;
+          right: 35rpx;
+          width: 33rpx;
+          height: 33rpx;
+          top: 33rpx;
+        }
+        .couponTop{
+          width: 100%;
+          height: 600rpx;
+          box-sizing: border-box;
+          padding: 0 30rpx;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          border-bottom: 1px solid #fff;
+          .couponPic{
+            width: 200rpx;
+            height: 200rpx;
+            background-color: #fff;
+            border-radius: 100%;
+            margin-top: 60rpx;
+          }
+          .coupontitle{
+            font-size: 35rpx;
+            font-weight: 600;
+            text-align: center;
+            line-height: 45rpx;
+            margin: 70rpx 0 40rpx;
+          }
+          .couponAddress{
+            font-size: 24rpx;
+            margin-bottom: 30rpx;
+            text-align: center;
+            line-height: 35rpx;
+          }
+          .couponTel{
+            font-size: 24rpx;
+          }
+        }
+        .couponBottom{
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 290rpx;
+          color: #fff;
+          .couponDesc{
+            font-size: 24rpx;
+            margin-top: 20rpx;
+            text-align: center;
+          }
+          .couponName{
+            font-size: 45rpx;
+            font-weight: 600;
+            margin: 28rpx 0 40rpx;
+            text-align: center;
+          }
+          .cut{
+            width: 50rpx;
+            height: 2px;
+            background-color: #fff;
+          }
+          .couponTime{
+            font-size: 22rpx;
+            margin-top: 26rpx;
+          }
+        }
+      }
+    }
+    .show-couponBox{
+      opacity: 1;
+      transition: 0.5s 0.2s;
+      transform: scale(1);
+    }
+    .toFriends{
+      width: 550rpx;
+      height: 85rpx;
+      text-align: center;
+      line-height: 82rpx;
+      border:1px solid #DCDCDC;
+      border-radius: 5rpx;
+      color: #8E8E8E;
+      font-size: 32rpx;
+      margin-top: 100rpx;
+      opacity: 0;
+      transform: scale(0.9);
+      background-color: #fff;
+      &::after{
+        content: none;
+      }
+    }
+    .show-toFriends{
+      opacity: 1;
+      transition: 0.5s .3s;
+      transform: scale(1);
+    }
+    .empty{
+      font-size: 40rpx;
+      font-weight: 500;
+      color: #666;
+    }
+  }
+</style>
+

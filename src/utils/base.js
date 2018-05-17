@@ -428,14 +428,25 @@ class Base {
     })
   }
   //小程序跳转
-  navTo(url){
+  navTo(url,query){
     if(url == '/pages/Index/index' || url == '/pages/Activity/index' || url == '/pages/Shop/shopIndex' || url == '/pages/My/index'){
       wx.switchTab({url:url})
     } else {
       wx.navigateTo({
-        url: url
+        url: url + this._encode(query)
       })
     }
+  }
+  // 路径参数转换
+  _encode(json){
+    if (!json) {  
+        return '';  
+    }  
+    var tmps = [];  
+    for (var key in json) {  
+        tmps.push(key + '=' + json[key]);  
+    } 
+    return '?' + tmps.join('&');
   }
 }
 
