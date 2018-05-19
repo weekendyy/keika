@@ -27,7 +27,8 @@ class takeCoupon extends Base {
         admin_id: queryData.admin_id,
         goods_id: queryData.goods_id,
         wechat_name: queryData.userName,
-        portrait_img: queryData.userImg
+        portrait_img: queryData.userImg,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -57,7 +58,8 @@ class takeCoupon extends Base {
       url: 'v9/preferential_order/order_detail',
       data: {
         magic_shop_id: queryData.magic_shop_id,
-        order_type: queryData.order_type
+        order_type: queryData.order_type,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -71,7 +73,8 @@ class takeCoupon extends Base {
       url: 'v9/preferential_order/cancel_index',
       data: {
         magic_shop_id: queryData.magic_shop_id,
-        get_log_id: queryData.get_log_id
+        get_log_id: queryData.get_log_id,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -86,7 +89,8 @@ class takeCoupon extends Base {
       data: {
         magic_shop_id: queryData.magic_shop_id,
         get_log_id: queryData.get_log_id,
-        cancel_password: queryData.cancel_password
+        cancel_password: queryData.cancel_password,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -159,7 +163,8 @@ class takeCoupon extends Base {
         get_log_id: queryData.get_log_id,
         magic_shop_id: queryData.magic_shop_id,
         wechat_name: queryData.wechat_name,
-        portrait_img: queryData.portrait_img
+        portrait_img: queryData.portrait_img,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -175,7 +180,8 @@ class takeCoupon extends Base {
         magic_shop_id: queryData.magic_shop_id,
         get_log_id: queryData.get_log_id,
         wechat_name: queryData.wechat_name,
-        portrait_img: queryData.portrait_img
+        portrait_img: queryData.portrait_img,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)

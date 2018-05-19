@@ -1,4 +1,4 @@
-<template>
+  <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../wxParse/wxParse.wxml"/>
   <view class="receiveCouponBox">
@@ -23,7 +23,10 @@
         <view class="cut cut2"></view>
       </view>
       <view class="coupon-header-bottom {{loadingHidden?'show-coupon-bottom':''}}">
-        <view class="info-item" @tap="toShopDetail">
+        <view class="info-item">
+          <form class="formBox" report-submit="true" bindsubmit="toShopDetail">
+            <button form-type="submit" class="formIdBtn"></button>
+          </form>
           <text>{{indexData.magicshop.magic_shop_name}}</text>
           <image src="images/home.png"></image>
         </view>
@@ -124,6 +127,7 @@
         })
       },
       gotoCoupon(res){ //领取优惠券
+        let formId = res.detail.formId
         if(this.isTakeCoupon){
           return false
         }
@@ -139,7 +143,8 @@
           goods_id: this.goods_id,
           userName: userInfo.nickName,
           userImg: userInfo.avatarUrl,
-          get_log_id: this.get_log_id
+          get_log_id: this.get_log_id,
+          formId: formId
         }
         couponModel.postCoupon(query, (resData)=>{
           if(resData.code == 1){
@@ -164,15 +169,17 @@
       callPhone(){
         Address.makePhoneCall(this.indexData.magicshop.link_tel)
       },
-      toShopDetail(){
-        Address.navTo('../niceShop/niceShopIndex', {id: this.indexData.magicshop.id})
+      toShopDetail(res){
+        let formId = res.detail.formId
+        Address.navTo('../niceShop/niceShopIndex', {id: this.indexData.magicshop.id, formId: formId})
       },
       toCouponList(){
-        Address.navTo('./couponIndex', {id: this.indexData.magicshop.id})
+        Address.navTo('./couponIndex', {id: this.indexData.magicshop.id, shopName: this.indexData.magicshop.magic_shop_name})
       }
     }
     onLoad(e){
       // 判断用户是否授权
+      console.log(e)
       let userInfo = wx.getStorageSync('userInfo')
       if(userInfo){
         this.hasUserInfo = true
@@ -200,6 +207,8 @@
           this.couponStatus = res.data.check_status
           this.loadingHidden = true
           this.$apply()
+        } else {
+          couponModel.showTips(res.message)
         }
       })
     }
@@ -341,6 +350,26 @@
           align-items: center;
           justify-content: space-between;
           border-bottom: 1px dashed #D6D6D6;
+          position: relative;
+          .formBox{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            .formIdBtn{
+              width: 100%;
+              height: 100%;
+              position: absolute;
+              top: 0;
+              left: 0;
+              background:transparent;
+              &::after{
+                content:none;
+              }
+            }
+          }
           text{
             font-size: 28rpx;
             color: #353535;

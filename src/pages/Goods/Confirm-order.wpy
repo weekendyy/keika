@@ -5,7 +5,7 @@
       <image src="./img/icon_evaluate.png"></image>
       <text>等待使用</text>
     </view>
-    <view class="Confirm_header {{goods_info.status == 1 ? 'active': ''}}" wx:if="{{goods_info.status == 1}}">
+    <view class="Confirm_header {{goods_info.status == 1 ? 'active': ''}}" wx:if="{{goods_info.status == 1 && goods_info.address_options == 1}}">
       <view class="no-address" wx:if="{{!AddressInfo.shipping_name}}" @tap="getAddress">
         <image src="./img/icon_address.png"></image>
         <text>可以选择添加收货地址</text>

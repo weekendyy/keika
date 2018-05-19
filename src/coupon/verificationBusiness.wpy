@@ -3,7 +3,7 @@
   <view class="verificationBox">
     <!-- 优惠券信息 -->
     <view class="verification-coupon beforeShow {{loadingHidden?'show-detailItem':''}}" @tap="toCouponDetail">
-      <image src="{{indexData.preferential.img_url}}" mode="widthFix" class="mainPic"></image>
+      <image src="{{indexData.preferential.img_url}}" mode="aspectFill" class="mainPic"></image>
       <view class="coupon-info">
         <text class="coupon-title">{{indexData.preferential.goods_name}}</text>
         <view class="coupin-content">
@@ -21,7 +21,7 @@
       <text class="userInfo-title">{{fixedData.user_info}}</text>
       <view class="user-name" style="margin-top: 10rpx;">
         <view class="user-txt1"><text>姓</text><text>名：</text></view>
-        <text class="user-txt2">卤蛋</text>
+        <text class="user-txt2">{{indexData.wechat_name}}</text>
       </view>
       <!-- <view class="user-name">
         <view class="user-txt1"><text>手</text><text>机：</text></view>
@@ -29,7 +29,10 @@
       </view> -->
     </view>
     <!-- 核销按钮 -->
-    <button class="confirmBtn {{loadingHidden?'show-button':''}} {{isVerification?'hidden':''}}" @tap="confirmVerification">确认核销</button>
+    <!-- 没用户信息的 -->
+    <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfo" wx:if="{{!userInfo}}" class="confirmBtn {{loadingHidden?'show-button':''}} {{isVerification?'hidden':''}}">确认核销</button>
+
+    <button wx:if="{{userInfo}}" class="confirmBtn {{loadingHidden?'show-button':''}} {{isVerification?'hidden':''}}" @tap="confirmVerification">确认核销</button>
     <button class="confirmBtn hasVer {{loadingHidden?'show-button':''}} {{isVerification?'':'hidden'}}">已核销</button>
   </view>
   <view wx:if="{{!loadingHidden}}">
@@ -39,6 +42,7 @@
 <script>
   import wepy from 'wepy'
   import CouponModel from './coupon-model.js'
+  import Address from '../utils/address.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -51,7 +55,8 @@
       indexData: '',
       fixedData: '',
       query: '',
-      isVerification: false
+      isVerification: false,
+      userInfo: ''
     }
     computed = {
         
@@ -72,6 +77,13 @@
           }
         })
       },
+      getUserInfo(res){
+        Address.getUser(res, ()=>{
+          this.userInfo = true
+          this.$apply()
+          Address.showTips('登录成功，可以核销了哦')
+        })
+      },
       toCouponDetail(){
         CouponModel.navTo('../coupon/takeCoupon', {
           into_type: this.indexData.get_type,
@@ -81,6 +93,8 @@
       }
     }
     onLoad(e){
+      console.log(e)
+      this.userInfo = wx.getStorageSync('userInfo')
       this.query = {
         magic_shop_id: e.magic_shop_id,
         user_id: e.user_id,

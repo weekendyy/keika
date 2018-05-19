@@ -23,9 +23,13 @@
       <text class="empty" wx:if="{{couponData.length == 0}}">空空如也~</text>
     </view>
     <!-- 立即使用 -->
-    <button wx:if="{{order_type == 1}}" class="toFriends {{loadingHidden?'show-toFriends':''}}" @tap="useCoupon">{{fixedData.use_str}}</button>
+    <form report-submit="true" bindsubmit="useCoupon">
+      <button form-type="submit" wx:if="{{order_type == 1}}" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.use_str}}</button>
+    </form>
     <!-- 去激活优惠券 -->
-    <button wx:if="{{order_type == 2}}" class="toFriends {{loadingHidden?'show-toFriends':''}}" @tap="toActiveCoupon">{{fixedData.activate_str}}</button>
+    <form report-submit="true" bindsubmit="toActiveCoupon">
+      <button form-type="submit" wx:if="{{order_type == 2}}" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.activate_str}}</button>
+    </form>
     <!-- 分享给好友 -->
     <button wx:if="{{order_type == 3}}" open-type="share" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.send_frind}}</button>
   </view>
@@ -60,7 +64,8 @@
       couponData: [],
       order_type: '',
       fixedData: '',
-      shopId: ''
+      shopId: '',
+      formId: ''
     }
     computed = {
       couponMoveY () {
@@ -115,26 +120,35 @@
         this.changeNum--
         this.$apply()
       },
-      useCoupon(){
+      useCoupon(res){
+        let formId = res.detail.formId
+        if(this.couponData.length == 0){
+          CouponModel.showTips('还没有优惠券哦')
+          return false
+        }
         if(this.couponData[this.couponIndex].time_status == 2){
           CouponModel.showTips('该优惠券已过期')
           return false
         }
-        console.log(this.couponData[this.couponIndex].time_status)
-        CouponModel.navTo('./verification', {getId: this.couponData[this.couponIndex].id, shopId: this.shopId})
+        CouponModel.navTo('./verification', {getId: this.couponData[this.couponIndex].id, shopId: this.shopId, formId: formId})
       },
-      toActiveCoupon(){
+      toActiveCoupon(res){
+        let formId = res.detail.formId
         if(this.couponData.length === 0){
           CouponModel.showTips('没有可以激活的优惠券')
           return false
         }
         let coupon = this.couponData[this.couponIndex]
-        CouponModel.navTo('./activeCoupon', {id: coupon.id, shopId: coupon.magicshop.id})
+        CouponModel.navTo('./activeCoupon', {id: coupon.id, shopId: coupon.magicshop.id, formId: formId})
       }
     }
     onLoad(e){
+      console.log(e)
       this.order_type = e.type
       this.shopId = e.id
+      if(e.formId){
+        this.formId = e.formId
+      }
       if(e.type == 1){
         wx.setNavigationBarTitle({
           title: '可使用'
@@ -152,12 +166,16 @@
       }
     }
     onShow(){
+      wx.showNavigationBarLoading()
       if(this.order_type != 3 ){
         wx.hideShareMenu()
       }
       let query = {
         magic_shop_id: this.shopId,
         order_type: this.order_type
+      }
+      if(this.formId){
+        query.formId = this.formId
       }
       CouponModel.getCouponDetail(query, (res)=>{
         if(res.code == 1){
@@ -173,6 +191,7 @@
           this.fixedData = res.content_str
           this.loadingHidden = true
           this.$apply()
+          wx.hideNavigationBarLoading()
         }
       })
     }

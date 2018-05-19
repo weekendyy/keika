@@ -1,12 +1,17 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="couponListBox">
-    <view class="couponItem beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s {{index*0.1}}s" wx:for="{{couponList}}" wx:key="{{index}}" @tap="toVerification">
+    <view class="couponItem beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s {{index*0.1}}s" wx:for="{{couponList}}" wx:key="{{index}}" @tap="toVerification({{item.magic_shop_id}},{{item.magicshop.magic_shop_name}})">
       <image src="{{item.magicshop.banner_img}}" mode="aspectFill"></image>
       <view class="infoBox">
         <text class="couponTitle">{{item.magicshop.magic_shop_name}}</text>
         <text class="shopAddress">地址：{{item.magicshop.address}}</text>
       </view>
+    </view>
+    <view style="height:1000rpx;"></view>
+    <view wx:if="{{couponList.length == 0}}">
+      <template is="emptyGoodsTips"></template>
     </view>
   </view>
   <view wx:if="{{!loadingHidden}}">
@@ -19,7 +24,7 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '优惠券列表',
+      navigationBarTitleText: '商家优惠券',
       backgroundColorTop: '#F0F2F5',
       backgroundColorBottom: '#F0F2F5'
     }
@@ -33,10 +38,8 @@
         
     }
     methods = {
-     toVerification(){
-      wx.navigateTo({
-        url: './verification'
-      })
+     toVerification(id,shopName){
+      CouponModel.navTo('./couponIndex', {id: id, shopName: shopName})
      }
     }
     onLoad(e){
@@ -48,6 +51,8 @@
           this.loadingHidden = true
           this.couponList = res.data
           this.$apply()
+        } else {
+          CouponModel.showTips(res.message)
         }
       })
     }
@@ -78,6 +83,7 @@
 </script>
 <style lang="less">
   @import '../pages/tpls/loading/loading.wxss';
+  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   Page{
     background-color: #F0F2F5;
   }

@@ -41,22 +41,33 @@
       </view>
     </view>
     <!-- 店铺信息 -->
-    <view class="shopInfo beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s" @tap="toShopDetail">
+    <view class="shopInfo beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s">
+      <form class="formBox" report-submit="true" bindsubmit="toShopDetail">
+        <button form-type="submit" class="formIdBtn"></button>
+      </form>
       <view class="shopInfo-left">
         <image src="images/home.png" mode="widthFix"></image>
-        <text>{{indexData.preferential.magic_shop_name}}</text>
+        <text>{{indexData.magicshop.magic_shop_name}}</text>
       </view>
       <image src="./images/righticon.png" class="rightIcon"></image>
     </view>
     <!-- 底部领取 邀请好友 -->
-    <view wx:if="{{isOwn}}" class="bottomBox {{loadingHidden?'show-bottomBox':''}}">
+    <view class="bottomBox {{loadingHidden?'show-bottomBox':''}}">
       <button open-type="share">{{fixedData.button_1}}</button>
     </view>
     <!-- 底部激活 帮忙激活 -->
-    <view wx:if="{{!isOwn}}" class="bottomBox {{loadingHidden?'show-bottomBox':''}}">
-      <button wx:if="{{indexData.join_status == 1}}" @tap="activeCoupon">{{fixedData.button_2}}</button>
-      <button open-type="share" wx:if="{{indexData.join_status == 2}}">已经激活过了</button>
-    </view>
+    <!-- <view wx:if="{{!isOwn}}" class="bottomBox {{loadingHidden?'show-bottomBox':''}}"> -->
+      <!-- 没获取用户信息 -->
+      <!-- <button wx:if="{{indexData.join_status == 1 && !hasUserInfo}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfo">{{fixedData.button_2}}</button> -->
+      <!-- 已经获取用户信息 -->
+      <!-- <form report-submit="true" bindsubmit="activeCoupon">
+        <button wx:if="{{indexData.join_status == 1 && hasUserInfo && indexData.gap_num > 0}}" form-type="submit">{{fixedData.button_2}}</button>
+      </form> -->
+      <!-- 已经满激活满了 -->
+      <!-- <button wx:if="{{indexData.join_status == 1 && hasUserInfo && indexData.gap_num == 0}}">已经全部激活了</button> -->
+      <!-- 已经激活过了 -->
+      <!-- <button open-type="share" wx:if="{{indexData.join_status == 2}}">已经激活过了</button> -->
+    <!-- </view> -->
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -65,6 +76,7 @@
 <script>
   import wepy from 'wepy'
   import CouponModel from './coupon-model.js'
+  import Address from '../utils/address.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -79,17 +91,19 @@
       indexData: '',
       fixedData: '',
       helpPeoples: [],
-      isOwn: true,
       shopId: '',
       getId: '',
       helpPeopleNum: '',
-      activeSuccess: false
+      activeSuccess: false,
+      hasUserInfo: false,
+      formId: ''
     }
     computed = {
         
     }
     methods = {
-      activeCoupon(){
+      activeCoupon(res){
+        let formId = res.detail.formId
         wx.showLoading({
           title: '激活中'
         })
@@ -97,7 +111,8 @@
           magic_shop_id: this.shopId,
           get_log_id: this.getId,
           wechat_name: this.userInfo.nickName,
-          portrait_img: this.userInfo.avatarUrl
+          portrait_img: this.userInfo.avatarUrl,
+          formId: formId
         }
         CouponModel.helpActiveCoupon(query, (res)=>{
           wx.hideLoading()
@@ -118,8 +133,16 @@
           }
         })
       },
-      toShopDetail(){
-        CouponModel.navTo('../niceShop/niceShopIndex', {id: this.shopId})
+      toShopDetail(res){
+        let formId = res.detail.formId
+        CouponModel.navTo('../niceShop/niceShopIndex', {id: this.shopId, formId: formId})
+      },
+      getUserInfo(res){
+        Address.getUser(res, ()=>{
+          this.hasUserInfo = true
+          CouponModel.showTips('登录成功，可以激活了哦')
+          this.$apply()
+        })
       }
     }
     onPullDownRefresh(){
@@ -128,7 +151,7 @@
     onShareAppMessage(){
       return {
         title: '快来帮好友激活【' + this.indexData.preferential.goods_name + '】优惠券',
-        path: '/coupon/activeCoupon?id='+ this.indexData.id +'&shopId='+ this.shopId +'&help=true',
+        path: '/coupon/takeCoupon?into_type='+ this.indexData.get_type +'&admin_id='+ this.indexData.assistant_id + '&goods_id=' + this.indexData.preferential_id +'&get_log_id=' + this.indexData.id,
         success: function(res) {
           CouponModel.showTips('转发成功')
         },
@@ -139,8 +162,11 @@
     }
     onLoad(e){
       this.userInfo = wx.getStorageSync('userInfo')
-      if(e.help){
-        this.isOwn = false
+      if(this.userInfo){
+        this.hasUserInfo = true
+      }
+      if(e.formId){
+        this.formId = e.formId
       }
       this.shopId = e.shopId
       this.getId = e.id
@@ -152,6 +178,9 @@
         magic_shop_id: this.shopId,
         wechat_name: this.userInfo.nickName,
         portrait_img: this.userInfo.avatarUrl
+      }
+      if(this.formId){
+        query.formId = this.formId
       }
       CouponModel.getActiveCouponData(query, (res)=>{
         wx.stopPullDownRefresh()
@@ -371,6 +400,25 @@
       justify-content: space-between;
       background-color: #fff;
       margin-top: 20rpx;
+      .formBox{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        .formIdBtn{
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          background:transparent;
+          &::after{
+            content:none;
+          }
+        }
+      }
       .shopInfo-left{
         display: flex;
         align-items: center;

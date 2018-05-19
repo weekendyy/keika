@@ -26,7 +26,7 @@
       </view>
     </view>
     <!-- 入驻栏 -->
-    <view class="league {{loadingHidden?'showleague':''}}">
+    <!-- <view class="league {{loadingHidden?'showleague':''}}">
       <image src="{{magic_from_str.today_in_img}}" mode="widthFix" class="leagueImg"></image>
       <swiper indicator-dots="{{false}}" class="league-swiper" circular
         autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}">
@@ -39,9 +39,9 @@
         </block>
       </swiper>
       <button open-type="getUserInfo" lang="zh_CN" class="leaguebtn" wx:if="{{check_join==2}}" hover-class="leaguebtn-hover" hover-start-time="0" hover-stay-time="0" bindgetuserinfo="openLeagueBox">{{magic_from_str.in_shop_str}}</button>
-    </view>
+    </view> -->
     <!-- 入驻弹窗 -->
-    <view class="leagueWindow">
+    <!-- <view class="leagueWindow">
       <view class="leagueBox {{showLeagueWindow?'showLeagueBox':''}}">
         <image src="{{magic_from_str.form_in_img}}" class="leagueBoxImg"></image>
         <view class="leagueBox-title">
@@ -62,7 +62,7 @@
       </view>
       <view class="leagueBox-cover" wx:if="{{showLeagueWindow}}" ></view>
       <image src="images/close.png" mode="aspectFill" wx:if="{{showLeagueWindow}}" class="closeIcon" @tap="closeleagueBox"></image>
-    </view>
+    </view> -->
     <view class="tab-box {{loadingHidden?'show-tab-box':''}}">
       <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
         <view class="tab-list">

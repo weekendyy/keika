@@ -1,19 +1,28 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="couponList">
-    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .1s" @tap="toSendCoupon(1)">
+    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .1s">
+      <form report-submit="true" bindsubmit="toSendCoupon" data-type="1">
+        <button form-type="submit" class="formIdBtn"></button>
+      </form>
       <text>{{indexData.can_use_num_str}}</text>
       <image src="http://applet.czsjcrm.cn/images/templete_image/59a38fa022937.png" mode="aspectFill" class="mainIcon"></image>
       <image src="http://applet.czsjcrm.cn/images/templete_image/bg1.png" mode="widthFix" class="backgroundPic1"></image>
       <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
-    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .2s" @tap="toSendCoupon(2)">
+    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .2s">
+      <form report-submit="true" bindsubmit="toSendCoupon" data-type="2">
+        <button form-type="submit" class="formIdBtn"></button>
+      </form>
       <text>{{indexData.no_use_num}}</text>
       <image src="http://applet.czsjcrm.cn/images/templete_image/hygt.png" mode="aspectFill" class="mainIcon"></image>
       <image src="http://applet.czsjcrm.cn/images/templete_image/bg1.png" mode="widthFix" class="backgroundPic1"></image>
       <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
-    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .3s" @tap="toSendCoupon(3)">
+    <view class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transition: .6s .3s">
+      <form report-submit="true" bindsubmit="toSendCoupon" data-type="3">
+        <button form-type="submit" class="formIdBtn"></button>
+      </form>
       <view class="sendCoupon"><text>{{indexData.present_num}}</text><text class="tips">{{fixedData.present_str}}</text></view>
       
       <image src="http://applet.czsjcrm.cn/images/templete_image/59a38fa022995.png" mode="aspectFill" class="mainIcon"></image>
@@ -30,7 +39,10 @@
       </view>
     </view>
     <view class="likeBox">
-      <view class="likeItem" wx:for="{{likeArr[likeIndex%likeArr.length]}}" wx:key="{{index}}" wx:if="{{index<3}}" @tap="toGoodsDetail({{item.goods_type}},{{item.id}})">
+      <view class="likeItem" wx:for="{{likeArr[likeIndex%likeArr.length]}}" wx:key="{{index}}" wx:if="{{index<3}}">
+        <form report-submit="true" bindsubmit="toGoodsDetail" data-goodstype="{{item.goods_type}}" data-id="{{item.id}}">
+          <button form-type="submit" class="formIdBtn"></button>
+        </form>
         <image src="{{item.banner_url}}" mode="aspectFill"></image>
         <text class="goods-title">{{item.goods_name}}</text>
         <text class="goods-price">¥<text class="priceTxt">{{item.goods_price}}</text></text>
@@ -69,24 +81,29 @@
       }
     }
     methods = {
-      toSendCoupon(type){
-        CouponModel.navTo('./giveToFriends', {type: type, id: this.shopId})
+      toSendCoupon(res){
+        let formId = res.detail.formId
+        let type = res.currentTarget.dataset.type
+        CouponModel.navTo('./giveToFriends', {type: type, id: this.shopId, formId: formId})
       },
-      toGoodsDetail(goodsType, id){
+      toGoodsDetail(res){
+        let formId = res.detail.formId
+        let goodsType = res.currentTarget.dataset.goodstype
+        let id = res.currentTarget.dataset.id
         if(goodsType == 1){  //抢购
-          CouponModel.navTo('../pages/Goods/details?id='+id)
+          CouponModel.navTo('../pages/Goods/details', {id: id, formID: formId})
           return false
         }
         if(goodsType == 2){  //拼团
-          CouponModel.navTo('../pages/Groups/Groups-details?id='+id)
+          CouponModel.navTo('../pages/Groups/Groups-details', {id: id, formID: formId})
           return false
         }
         if(goodsType == 5){  //集卡
-          CouponModel.navTo('../pages/Card/details?id='+id)
+          CouponModel.navTo('../pages/Card/details', {id: id, formID: formId})
           return false
         }
         if(goodsType == 4){  //砍价
-          CouponModel.navTo('../pages/Bargain/details?id='+id)
+          CouponModel.navTo('../pages/Bargain/details', {id: id, formID: formId})
           return false
         }
       },
@@ -101,8 +118,14 @@
     }
     onLoad(e){
       this.shopId = e.id
+      if(e.shopName){
+        wx.setNavigationBarTitle({
+          title: e.shopName
+        })
+      }
     }
     onShow(){
+      wx.showNavigationBarLoading()
       CouponModel.getCouponData({magic_shop_id: this.shopId}, (res)=>{
         if(res.code == 1){
           this.indexData = res.data
@@ -110,6 +133,7 @@
           this.youLikeData = res.data.today_recommend_arr
           this.loadingHidden = true
           this.$apply()
+          wx.hideNavigationBarLoading()
         }
       })
     }
@@ -218,15 +242,20 @@
     }
     .likeBox{
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
+      width: 100%;
       .likeItem{
-        margin-top: 20rpx;
+        margin-top: 30rpx;
         width: 200rpx;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         font-size: 25rpx;
         color: #363636;
+        position: relative;
+        &:nth-child(2){
+          margin: 30rpx 25rpx 0;
+        }
         image{
           width: 200rpx;
           height: 200rpx;
@@ -265,6 +294,25 @@
     transform: translateY(0);
     opacity: 1;
     transition: .5s .4s;
+  }
+  form{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    .formIdBtn{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background:transparent;
+      &::after{
+        content:none;
+      }
+    }
   }
 </style>
 

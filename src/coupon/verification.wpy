@@ -26,7 +26,9 @@
         <text>{{fixedData.password_input}}</text>
         <input type="number" name="" placeholder="******" @input="passwardInp" />
       </view>
-      <button @tap="numberVerification" loading="{{verificationing}}">{{fixedData.button_1}}</button>
+      <form report-submit="true" bindsubmit="numberVerification">
+        <button form-type="submit" loading="{{verificationing}}">{{fixedData.button_1}}</button>
+      </form>
       <text class="tips">{{fixedData.button_tip}}</text>
     </view>
     <!-- 核销二维码 -->
@@ -62,18 +64,21 @@
       fixedData: '',
       getId: '',
       passward: '',
-      verificationing: false
+      verificationing: false,
+      formId: ''
     }
     computed = {
         
     }
     methods = {
-      numberVerification(){
+      numberVerification(res){
+        let formId = res.detail.formId
         this.verificationing = true
         let query = {
           magic_shop_id: this.shopId,
           get_log_id: this.getId,
-          cancel_password: this.passward
+          cancel_password: this.passward,
+          formId: formId
         }
         CouponModel.postVerificationNumber(query, (res)=>{
           if(res.code == 1){
@@ -96,7 +101,7 @@
       },
       toCouponDetail(){
         let query = {
-          into_type: this.indexData.indexData,
+          into_type: this.indexData.get_type,
           admin_id: this.indexData.assistant_id,
           goods_id: this.indexData.preferential_id
         }
@@ -104,11 +109,16 @@
       }
     }
     onLoad(e){
+      console.log(e)
       this.getId = e.getId
       this.shopId = e.shopId
+      this.formId = e.formId
       let query = {
         magic_shop_id: e.shopId,
         get_log_id: e.getId
+      }
+      if(this.formId){
+        query.formId = this.formId
       }
       CouponModel.getVerificationData(query, (res)=>{
         if(res.code == 1){
@@ -300,6 +310,10 @@
           color: #888;
         }
       }
+    }
+    form{
+      width: 100%;
+      height: 85rpx;
     }
   }
 </style>

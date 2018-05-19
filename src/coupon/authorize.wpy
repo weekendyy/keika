@@ -22,7 +22,10 @@
     <!-- 按钮 -->
     <view class="authorize-button">
     	<button loading="{{authorizing}}" wx:if="{{indexData.impower_status == 2}}" class="cancleBtn beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s" @tap="confirmBtn(2)">取消授权</button>
-    	<button loading="{{authorizing}}" wx:if="{{indexData.impower_status == 1}}" class="comfirmBtn beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s" @tap="confirmBtn(1)">确认授权</button>
+      <!-- 未授权登录 -->
+      <button loading="{{authorizing}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfo" wx:if="{{indexData.impower_status == 1 && !hasUserInfo}}" class="comfirmBtn beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s">确认授权</button>
+      <!-- 已经授权登录 -->
+    	<button loading="{{authorizing}}" wx:if="{{indexData.impower_status == 1 && hasUserInfo}}" class="comfirmBtn beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s" @tap="confirmBtn(1)">确认授权</button>
     </view>
   </view>
   <view wx:if="{{!loadingHidden}}">
@@ -32,6 +35,7 @@
 <script>
   import wepy from 'wepy'
   import CouponModel from './coupon-model.js'
+  import Address from '../utils/address.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -43,7 +47,9 @@
       loadingHidden: false,
       indexData: '',
       shopId: '',
-      authorizing: false
+      authorizing: false,
+      hasUserInfo: false,
+      userInfo: ''
     }
     computed = {
         
@@ -58,6 +64,13 @@
     	toMap(){
     		CouponModel.openMap(this.indexData.longitude, this.indexData.magic_shop_name, this.indexData.address)
     	},
+      getUserInfo(res){
+        Address.getUser(res, ()=>{
+          Address.showTips('登录成功，可以进行授权了哦')
+          this.hasUserInfo = true
+          this.$apply()
+        })
+      },
     	confirmBtn(type){
     		this.authorizing = true
     		if(type == 1){
@@ -94,6 +107,12 @@
     	}
     }
     onLoad(e){
+      console.log(e)
+      this.userInfo = wx.getStorageSync('userInfo')
+      if(this.userInfo){
+        this.hasUserInfo = true
+      }
+      this.$apply()
     	this.shopId = e.magic_shop_id
       CouponModel.getBindWeChatData({magic_shop_id: e.magic_shop_id}, (res)=>{
       	if(res.code == 1){

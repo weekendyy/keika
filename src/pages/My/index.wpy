@@ -48,7 +48,7 @@
           <text>{{center_index_str[3]}}</text>
         </button>
       </form>
-      <form style="height:100%" report-submit bindsubmit="gotoCoupon">
+      <form style="height:100%" report-submit bindsubmit="gotoCoupon" wx:if="{{vipInfo.is_preferential == 2}}">
         <button class="nav" form-type="submit">
           <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
           <image src="./images/coupon.png"></image>
@@ -315,12 +315,14 @@
   }
   .nav-wrapper{
     width: 100%;
+    box-sizing:border-box;
+    padding:0 40rpx;
     height: 126rpx;
     background-color: #fff;
     position: relative;
     z-index: 2;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     opacity: 0;
     .nav{
       margin: 0;
@@ -329,8 +331,6 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding-left:30rpx;
-      padding-right:30rpx;
       position: relative;
       height: 100%;
       &::after{

@@ -14,6 +14,9 @@ class NiceShop extends Base {
         callback && callback(ResData)
       }
     }
+    if(queryData.formId){
+      param.data.magic_form_id = queryData.formId
+    }
     this.request(param)
   }
 
