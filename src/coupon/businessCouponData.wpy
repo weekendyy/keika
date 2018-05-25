@@ -1,0 +1,472 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="couponListData">
+    <view class="businessName">
+      <view class="nametxt"><open-data type="userNickName"></open-data>{{fixedData.wechat_name_str}}</view>
+      <view class="zhuxiao" @tap="toLogin">注销</view>
+    </view>
+    <view class="totle-data">
+      <block>
+        <view class="dataItem">
+          <text class="itemNumber">{{indexData.bill_total.qr_code_get_num}}</text>
+          <text class="itemtxt">{{fixedData.qr_get_num}}</text>
+        </view>
+        <view class="cut1"></view>
+        <view class="dataItem">
+          <text class="itemNumber">{{indexData.bill_total.qr_code_into_num}}</text>
+          <text class="itemtxt">{{fixedData.qr_num}}</text>
+        </view>
+        <!-- 老板账号 -->
+        <block wx:if="{{couponInfo.auth_data == 1}}">
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber">{{indexData.bill_total.send_get_num}}</text>
+            <text class="itemtxt">{{fixedData.send_get}}</text>
+          </view>
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber">{{indexData.bill_total.send_into_num}}</text>
+            <text class="itemtxt">{{fixedData.send_num}}</text>
+          </view>
+        </block>
+
+        <view class="cut1"></view>
+        <view class="dataItem">
+          <text class="itemNumber">{{indexData.bill_total.use_num}}</text>
+          <text class="itemtxt">{{fixedData.use_num}}</text>
+        </view>
+      </block>
+    </view>
+    <view class="couponContentData">
+      <view class="titleBox">
+        <image src="./images/active.png" mode="widthFix" class="titleIcon"></image>
+        <text>{{fixedData.activate_list}}</text>
+      </view>
+      <block wx:for="{{indexData.data}}" wx:key="{{index}}">
+        <view class="couponDataItem">
+          <view class="couponDataItem-top">
+            <image src="{{item.img_url}}" mode="aspectFill" class="couponDataPic"></image>
+            <view class="couponDescBox">
+              <text class="title">{{item.activity_name}}</text>
+              <text class='discount'>{{item.preferential[0].goods_name}}</text>
+              <view class='receive-condition'>
+                <text>已领取：{{item.get_num}}</text>
+                <text>核销：{{item.use_num}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="couponDataItem-bottom">
+            <view class="bottom-item" @tap="toMyData({{item.id}})">
+              <image src="./images/data.png" mode="widthFix"></image>
+              <text>{{fixedData.my_data}}</text>
+            </view>
+            <view class="cut2" wx:if="{{couponInfo.auth_data == 2}}"></view>
+            <view class="bottom-item" wx:if="{{couponInfo.auth_data == 2}}" @tap="myQRCode({{item.preferential[0].activity_id}})">
+              <image src="./images/qrcode.png" mode="widthFix"></image>
+              <text>{{fixedData.qr_code}}</text>
+            </view>
+            <view class="cut2"></view>
+            <view class="bottom-item" @tap="toCouponData({{item.id}})">
+              <image src="./images/laiwang.png" mode="widthFix"></image>
+              <text>{{fixedData.show_activity}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+      <view style="height: 40rpx;"></view>
+      <view class="noneAvtive" wx:if="{{indexData.data.length == 0}}">未添加活动</view>
+    </view>
+    <view class="qrCodeBox">
+      <view class="shadow" wx:if="{{showQR}}" @tap="closeQr"></view>
+      <image src="{{qrImg}}" mode="widthFix" class="qrPic {{showQR?'showQr':''}}"></image>
+      <view @tap="savePic" class="savePic {{showQR?'showsavePic':''}}">保存图片</view>
+    </view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#2781FB",
+      navigationBarTitleText: '商家名称',
+      backgroundColorTop: '#2781FB',
+      backgroundColorBottom: '2781FB',
+      navigationBarTextStyle: 'white'
+    }
+    data = {
+      loadingHidden: false,
+      pageNum: 1,
+      indexData: '',
+      fixedData: '',
+      couponInfo: '',
+      isLoadAll: false,
+      qrImg: '',
+      showQR: false
+    }
+    computed = {
+        
+    }
+    methods = {
+      myQRCode(id){
+        console.log(id)
+        if(typeof(id) == 'object'){
+          CouponModel.showTips("未创建优惠券")
+          return false
+        }
+        let qrPic = wx.getStorageSync('qrPic_'+ id + this.couponInfo.admin_id)
+        if(qrPic){
+          this.qrImg = qrPic
+          this.showQR = true
+          this.$apply()
+          return false
+        }
+        CouponModel.showTips('二维码下载中..')
+        let query = {
+          adminId: this.couponInfo.admin_id,
+          activeId: id
+        }
+        CouponModel.getMyQrCode(query, (res)=>{
+          if(res.code == 1){
+            wx.hideLoading()
+            wx.downloadFile({
+              url: res.data.data,
+              success: (res1)=>{
+                wx.setStorageSync('qrPic_'+ id + this.couponInfo.admin_id, res1.tempFilePath)
+                this.qrImg = res1.tempFilePath
+                this.showQR = true
+                this.$apply()
+              },
+              fail: (res2)=>{
+                console.log(res2)
+              }
+            })
+          }
+        })
+      },
+      toLogin(){
+        wx.redirectTo({
+          url: './couponLogin'
+        })
+      },
+      closeQr(){
+        this.showQR = false
+        this.$apply()
+      },
+      savePic(){
+        let that = this
+        wx.showLoading({title:'保存中...'})
+        let posterPic =  this.qrImg
+        console.log(posterPic)
+        wx.saveImageToPhotosAlbum({
+          filePath: posterPic,
+          success:()=>{
+            wx.showToast({
+              title: '保存成功！',
+              icon: 'success',
+              duration: 1000
+            })
+            that.showQR = false
+            that.$apply()
+          },
+          fail:(e)=>{
+            that.showQR = false
+            that.$apply()
+            wx.showToast({
+              title: '保存失败！',
+              icon: 'success',
+              duration: 1000
+            })
+          }
+        })
+      },
+      toMyData(activeId){
+        CouponModel.navTo("./myCouponData", {adminId: this.couponInfo.admin_id, activeId: activeId})
+      },
+      toCouponData(activeId){
+        CouponModel.navTo("./activeCouponData", {adminId: this.couponInfo.admin_id, activeId: activeId})
+      }
+    }
+    onLoad(e){
+      this.couponInfo = wx.getStorageSync('couponInfo')
+      let query = {
+        admin_id: this.couponInfo.admin_id,
+        pageNum: this.pageNum
+      }
+      CouponModel.getCouponDataList(query, (res)=>{
+        if(res.code == 1){
+          this.indexData = res.data
+          this.fixedData = res.content_str
+          wx.setNavigationBarTitle({
+            title: res.data.data[0].magicshop.magic_shop_name
+          })
+          this.loadingHidden = true
+          this.$apply()
+        } else {
+          CouponModel.showTips(res.message)
+        }
+      })
+    }
+    onShow(){
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        this.pageNum++
+        let query = {
+          admin_id: this.couponInfo.admin_id,
+          pageNum: this.pageNum
+        }
+        CouponModel.getCouponDataList(query, (res)=>{
+          if(res.code == 1){
+            if(res.data.data.length == 0){
+              CouponModel.showTips("已经到底了")
+              this.isLoadAll = true
+              this.$apply()
+            }
+            this.indexData.data = [...this.indexData.data, ...res.data.data]
+            this.$apply()
+          } else {
+            CouponModel.showTips(res.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F9F9;
+  }
+  .couponListData{
+    width: 100%;
+    .businessName{
+      width: 100%;
+      height: 240rpx;
+      background-color: #2781FB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .nametxt{
+        font-size: 50rpx;
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 30rpx;
+        margin-left: 60rpx;
+      }
+      .zhuxiao{
+        width: 70rpx;
+        height: 40rpx;
+        border-radius: 4rpx;
+        border: 1px solid #fff;
+        color: #fff;
+        font-size: 25rpx;
+        line-height: 40rpx;
+        text-align: center;
+        margin-right: 20rpx;
+      }
+    }
+    .totle-data{
+      width: 710rpx;
+      height: 120rpx;
+      border-radius: 10rpx;
+      box-shadow: 0 0 20rpx rgba(5,41,93,.2);
+      margin-left: 20rpx;
+      margin-top: -60rpx;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      .dataItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        justify-content: center;
+        flex: 1;
+        .itemNumber{
+          color: #3E4552;
+          font-size: 38rpx;
+          font-weight: 600;
+        }
+        .itemtxt{
+          font-size: 25rpx;
+          color: #A0A8B8;
+          margin-top: 10rpx;
+        }
+      }
+      .cut1{
+        width: 1px;
+        height: 70rpx;
+        background-color: #F0F2F6;
+      }
+    }
+    .couponContentData{
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 20rpx;      
+      .titleBox{
+        width: 100%;
+        height: 90rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .titleIcon{
+          width: 40rpx;
+          height: 40rpx;
+          margin-right: 10rpx;
+          margin-top: 5rpx;
+        } 
+        text{
+          font-size: 30rpx;
+          font-weight: 600;
+        } 
+      }
+      .couponDataItem{
+        width: 100%;
+        height: 280rpx;
+        border-radius: 10rpx;
+        box-shadow: 0rpx 0rpx 20rpx rgba(165,170,170,.2);
+        background-color: #fff;
+        margin-bottom: 20rpx;
+        .couponDataItem-top{
+          width: 100%;
+          height: 200rpx;
+          box-sizing: border-box;
+          padding: 20rpx;
+          display: flex;
+          .couponDataPic{
+            flex: 0 0 160rpx;
+            height: 160rpx;
+          }
+          .couponDescBox{
+            flex: 1;
+            box-sizing: border-box;
+            padding-left: 30rpx;
+            font-size: 25rpx;
+            color: #959595;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            .title{
+              font-size: 30rpx;
+              font-weight: 400;
+              line-height: 40rpx;
+              color: #3E4552;
+            }
+            .discount{
+              margin: 10rpx 0;
+              display: block;
+            }
+            .receive-condition{
+              width: 90%;
+              display: flex;
+              text{
+                margin-right: 30rpx;
+              }
+            }
+          }
+        }
+        .couponDataItem-bottom{
+          width: 100%;
+          height: 80rpx;
+          border-top: 1px solid #F1F3F6;
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          .bottom-item{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            image{
+              width: 30rpx;
+              height: 30rpx;
+            }
+            text{
+              font-size: 28rpx;
+              color: #999;
+              margin-left: 10rpx;
+            }
+          }
+          .cut2{
+            width: 1px;
+            height: 80rpx;
+            background-color: #F1F3F6;
+          }
+        }
+      }
+    }
+    .qrCodeBox{
+      width: 750rpx;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      .shadow{
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(0,0,0,.7);
+        width: 100%;
+        height: 100%;
+        pointer-events: auto;
+      }
+      .qrPic{
+        width: 600rpx;
+        height: 600rpx;
+        background-color: #fff;
+        border-radius: 8rpx;
+        position: relative;
+        z-index: 1;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: .3s;
+      }
+      .showQr{
+        opacity: 1;
+        transform: scale(1);
+      }
+      .savePic{
+        width: 600rpx;
+        height: 80rpx;
+        background: #2781FB;
+        color: #fff;
+        line-height: 80rpx;
+        text-align: center;
+        border-radius: 9rpx;
+        position: relative;
+        z-index: 1;
+        margin-top: 40rpx;
+        opacity: 0;
+        transform: scale(0.98);
+        transition: .3s .1s;
+        pointer-events: none;
+      }
+      .showsavePic{
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+      }
+    }
+  }
+  .noneAvtive{
+    width: 100%;
+    height: 600rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35rpx;
+    color: #999;
+    font-weight: 600;
+  }
+</style>
+

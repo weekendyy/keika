@@ -69,7 +69,9 @@
       indexData: '',
       fixedData: '',
       youLikeData: [],
-      likeIndex: 0
+      likeIndex: 0,
+      goodsId: '',
+      activeId: ''
     }
     computed = {
       likeArr () {
@@ -84,7 +86,7 @@
       toSendCoupon(res){
         let formId = res.detail.formId
         let type = res.currentTarget.dataset.type
-        CouponModel.navTo('./giveToFriends', {type: type, id: this.shopId, formId: formId})
+        CouponModel.navTo('./giveToFriends', {type: type, id: this.shopId, formId: formId, goodsId: this.goodsId, activeId: this.activeId})
       },
       toGoodsDetail(res){
         let formId = res.detail.formId
@@ -118,6 +120,8 @@
     }
     onLoad(e){
       this.shopId = e.id
+      this.goodsId = e.goodsId
+      this.activeId = e.activeId
       if(e.shopName){
         wx.setNavigationBarTitle({
           title: e.shopName
@@ -126,7 +130,7 @@
     }
     onShow(){
       wx.showNavigationBarLoading()
-      CouponModel.getCouponData({magic_shop_id: this.shopId}, (res)=>{
+      CouponModel.getCouponData({magic_shop_id: this.shopId, goods_id: this.goodsId, activeId: this.activeId}, (res)=>{
         if(res.code == 1){
           this.indexData = res.data
           this.fixedData = res.content_str

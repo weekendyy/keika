@@ -44,7 +44,9 @@ class takeCoupon extends Base {
     let param = {
       url: 'v9/preferential_order/order_center',
       data: {
-        magic_shop_id: queryData.magic_shop_id
+        magic_shop_id: queryData.magic_shop_id,
+        goods_id: queryData.goods_id,
+        activity_id: queryData.activeId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -59,7 +61,9 @@ class takeCoupon extends Base {
       data: {
         magic_shop_id: queryData.magic_shop_id,
         order_type: queryData.order_type,
-        magic_form_id: queryData.formId
+        magic_form_id: queryData.formId,
+        goods_id: queryData.goodsId,
+        activity_id: queryData.activeId
       },
       sCallback(ResData) {
         callback && callback(ResData)
@@ -194,6 +198,106 @@ class takeCoupon extends Base {
     let param = {
       url: 'v9/preferential_order/show_order_shop',
       data: {
+        page_num: queryData.pageNum
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 获取优惠券列表
+  getCouponList(queryData, callback){
+    let param = {
+      url: 'v9/preferential_order/show_activity_list',
+      data: {
+        page_num: queryData.pageNum,
+        magic_shop_id: queryData.shopId
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 登录
+  couponLogin(queryData, callback){
+    let param = {
+      url: 'v9/preferential/preferential_login',
+      data: {
+        user_name: queryData.userName,
+        password: queryData.password
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 获取优惠券列表
+  getCouponDataList(queryData, callback){
+    let param = {
+      url: 'v9/preferential/show_all_activity',
+      data: {
+        admin_id: queryData.admin_id,
+        page_num: queryData.pageNum
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 我的二维码
+  getMyQrCode(queryData, callback){
+    let param = {
+      url: 'v9/preferential/get_qr_code',
+      data: {
+        admin_id: queryData.adminId,
+        activity_id: queryData.activeId
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 查看我的数据
+  seeMyData(queryData, callback){
+    let param = {
+      url: 'v9/preferential/show_get_log',
+      data: {
+        admin_id: queryData.adminId,
+        activity_id: queryData.activeId,
+        page_num: queryData.pageNum
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 查看活动
+  showPreferential(queryData, callback){
+    let param = {
+      url: 'v9/preferential/show_preferential',
+      data: {
+        admin_id: queryData.adminId,
+        activity_id: queryData.activeId
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 员工数据
+  getEmpolyeeData(queryData, callback){
+    let param = {
+      url: 'v9/preferential/show_share_data',
+      data: {
+        admin_id: queryData.adminId,
+        activity_id: queryData.activeId,
         page_num: queryData.pageNum
       },
       sCallback(ResData) {

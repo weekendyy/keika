@@ -146,6 +146,108 @@ class lotteryDraw extends Base {
     }
     this.request(param)
   }
+  // 生成海报
+  buildPoster(that, canvasId, goodsName, lotteryZanzu, lotteryTime, goodsId){
+    const posterWdith = that.$parent.globalData.pxRadio*650
+    const poserHeight = that.$parent.globalData.pxRadio*1000
+    const ctx = wx.createCanvasContext(canvasId)
+    wx.downloadFile({
+      url: 'http://p55e536k6.bkt.clouddn.com/posterbg2.jpg',
+      success: function (res) {
+        let lotteryBgp = res.tempFilePath
+        wx.downloadFile({
+          url: 'http://p55e536k6.bkt.clouddn.com/2256fda586ef7c05366598ca0a201c66.jpg',
+          success: function(res2){
+            let goodsPic = res2.tempFilePath
+            wx.downloadFile({
+              url: 'http://p55e536k6.bkt.clouddn.com/qrcode.png',
+              success: function(res3){
+                let QrPic = res3.tempFilePath
+                // 绘制背景图
+                ctx.drawImage(lotteryBgp, 0, 0, posterWdith, poserHeight)
+                // 绘制产品图
+                ctx.drawImage(goodsPic, 0.08*posterWdith, 0.33*posterWdith, 0.26*posterWdith, 0.26*posterWdith)
+                // 绘制二维码图
+                ctx.drawImage(QrPic, 0.35*posterWdith, 0.79*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
+                // 绘制标题
+                ctx.setFillStyle('black')
+                ctx.setFontSize(parseInt(posterWdith*0.05))
+                let metrics = goodsName.length
+                if(metrics>11){
+                  ctx.fillText(goodsName.slice(0,11), 0.4*posterWdith, 0.38*posterWdith,0.8*posterWdith)
+                  if(metrics>22){
+                    ctx.fillText(goodsName.slice(11,21)+'...', 0.4*posterWdith, 0.44*posterWdith,0.8*posterWdith)
+                  } else{
+                    ctx.fillText(goodsName.slice(11), 0.4*posterWdith, 0.44*posterWdith,0.8*posterWdith)
+                  }
+                }else{
+                  ctx.fillText(goodsName.slice(0,11), 0.4*posterWdith, 0.40*posterWdith,0.8*posterWdith)
+                }
+                // 绘制赞助商
+                ctx.setFontSize(parseInt(posterWdith*0.04))
+                ctx.setFillStyle('#888888')
+                ctx.fillText(lotteryZanzu+' 赞助', 0.4*posterWdith, 0.51*posterWdith,0.8*posterWdith)
+                // 绘制开奖日期
+                ctx.fillText(lotteryTime, 0.4*posterWdith, 0.57*posterWdith,0.8*posterWdith)
+                ctx.draw(true)
+                wx.hideLoading()
+                that.showPosterBox = true
+                that.$apply()
+                setTimeout(()=>{
+                  wx.canvasToTempFilePath({
+                    x: 0,
+                    y: 0,
+                    width: that.$parent.globalData.pxRadio*650,
+                    height: that.$parent.globalData.pxRadio*1000,
+                    destWidth: 650,
+                    destHeight: 1000,
+                    canvasId: canvasId,
+                    fileType: 'jpg',
+                    quality: 1,
+                    success: (res)=> {
+                      wx.setStorage({
+                        key: 'posterPic_'+canvasId+'_'+goodsId,
+                        data: res.tempFilePath
+                      })
+                    },
+                    fail: (res)=>{
+                      console.log(res)
+                    }
+                  })
+                },300)
+              }
+            })
+          }
+        })
+      }
+    })
+  }
+  // 保存海报
+  savePoste(that,canvasId,postPicId){
+    wx.showLoading({title:'保存中...'})
+    let posterPic =  wx.getStorageSync('posterPic_'+canvasId+'_'+postPicId)
+    wx.saveImageToPhotosAlbum({
+      filePath: posterPic,
+      success:()=>{
+        wx.showToast({
+          title: '保存成功！',
+          icon: 'success',
+          duration: 1000
+        })
+        that.showPosterBox = false
+        that.$apply()
+      },
+      fail:(e)=>{
+        that.showPosterBox = false
+        that.$apply()
+        wx.showToast({
+          title: '保存失败！',
+          icon: 'success',
+          duration: 1000
+        })
+      }
+    })
+  }
 }
 const lotteryDrawModel = new lotteryDraw()
 export default lotteryDrawModel

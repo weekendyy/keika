@@ -1,0 +1,139 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="couponLogin">
+    <text class="loginTxt">欢迎登录</text>
+    <view class="inpBox">
+      <input bindinput="acountInp" value="{{accountNumber}}" placeholder="请输入账号" />
+      <input bindinput="passwordInp" value="{{accountPasswod}}" placeholder="请输入密码" />
+    </view>
+    <button @tap="login">登录</button>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '登录',
+      backgroundColorTop: '#F0F2F5',
+      backgroundColorBottom: '#F0F2F5'
+    }
+    data = {
+      loadingHidden: false,
+      accountNumber: '',
+      accountPasswod: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      login(){
+        if(!this.accountNumber){
+          CouponModel.showTips('请输入账号')
+          return false
+        }
+        if(!this.accountPasswod){
+          CouponModel.showTips('请输入密码')
+          return false
+        }
+        wx.showLoading({
+          title: '登录中..'
+        })
+        let query = {
+          userName: this.accountNumber,
+          password: this.accountPasswod
+        }
+        CouponModel.couponLogin(query, (res)=>{
+          wx.hideLoading()
+          if(res.code == 1){
+            console.log(res)
+            CouponModel.showTips('登录成功')
+            wx.setStorage({
+              key: "couponInfo",
+              data: res.data
+            })
+            wx.setStorage({
+              key: "couponAccount",
+              data: this.accountNumber
+            })
+            wx.setStorage({
+              key: "couponPassword",
+              data: this.accountPasswod
+            })
+            setTimeout(()=>{
+              wx.redirectTo({
+                url: './businessCouponData'
+              })
+            },1000)
+          } else {
+            CouponModel.showTips(res.message)
+          }
+        })
+      },
+      acountInp(e){
+        this.accountNumber = e.detail.value
+        this.$apply()
+      },
+      passwordInp(e){
+        this.accountPasswod = e.detail.value
+        this.$apply()
+      }
+    }
+    onLoad(e){
+      let couponAccount = wx.getStorageSync('couponAccount')
+      let couponPassword = wx.getStorageSync('couponPassword')
+      if(couponAccount){
+        this.accountNumber = couponAccount
+      }
+      if(couponPassword){
+        this.accountPasswod = couponPassword
+      }
+      this.loadingHidden = true
+      this.$apply()
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #fff;
+  }
+  .couponLogin{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx 40rpx;
+    .loginTxt{
+      font-size: 45rpx;
+      font-weight: 600;
+    }
+    .inpBox{
+      width: 100%;
+      margin-top: 50rpx;
+      input{
+        width: 100%;
+        height: 90rpx;
+        border-bottom: 1px solid #F1F1F1;
+        font-size: 29rpx;
+      }
+    }
+    button{
+      width: 100%;
+      height: 80rpx;
+      background: linear-gradient(90deg, #2FC9FF, #33CAFF);
+      border-radius: 10rpx;
+      color: #fff;
+      margin-top: 60rpx;
+      line-height: 80rpx;
+      &:after{
+        content:none;
+      }
+    }
+  }
+</style>
+

@@ -1,0 +1,215 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="employeeBox">
+    <block wx:for="{{empolyeeData}}">
+      <view class="empolyeeItem">
+        <view class="empolyeeHead">
+          <text class="zhangaho">员工账号：{{item.admindata.username}}</text>
+          <text style="margin-left: 0;">姓名：{{item.admindata.user_name}}</text>
+        </view>
+        <view class="empolyeeCenter">
+          <view class="dataItem">
+            <text class="itemNumber">{{item.qr_code_get_num}}</text>
+            <text class="itemtxt">扫码领取</text>
+          </view>
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber">{{item.qr_code_into_num}}</text>
+            <text class="itemtxt">扫码浏览</text>
+          </view>
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber">{{item.use_num}}</text>
+            <text class="itemtxt">核销数量</text>
+          </view>
+          <view class="cut1"></view>
+        </view>
+        <view class="empolyeeBottom">
+          <text>{{item.preferential.goods_name}}</text>
+        </view>
+        <view class="cut2"></view>
+        <view class="cut3"></view>
+      </view>
+    </block>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#2781FB",
+      navigationBarTextStyle: 'white',
+      navigationBarTitleText: '员工数据',
+      backgroundColorTop: '#F8F9F9',
+      backgroundColorBottom: '#F8F9F9'
+    }
+    data = {
+      loadingHidden: false,
+      empolyeeData: '',
+      pageNum: 1,
+      isLoadAll: false,
+      adminId: '',
+      activeId: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      
+    }
+    onLoad(e){
+      this.adminId = e.adminId
+      this.activeId = e.activeId
+      let query = {
+        adminId: e.adminId,
+        activeId: e.activeId,
+        pageNum: this.pageNum
+      }
+      CouponModel.getEmpolyeeData(query, (res)=>{
+        if(res.code == 1){
+          this.empolyeeData = res.data
+          this.loadingHidden = true
+          this.$apply()
+        } else {
+          CouponModel.showTips(res.message)
+        }
+      })
+    }
+    onShow(){
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        this.pageNum++
+        let query = {
+          adminId: this.adminId,
+          activeId: this.activeId,
+          pageNum: this.pageNum
+        }
+        CouponModel.getEmpolyeeData(query, (res)=>{
+          if(res.code == 1){
+            if(res.data.length == 0){
+              CouponModel.showTips('已经到底了')
+              this.isLoadAll = true
+            }
+            this.empolyeeData = [...this.empolyeeData, ...res.data]
+            this.$apply()
+          } else {
+            CouponModel.showTips(res.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F9F9;
+  }
+  .employeeBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding:30rpx 20rpx;
+    .empolyeeItem{
+      width: 100%;
+      border-radius: 10rpx;
+      box-shadow: 0 0 20rpx rgba(152,152,152,.4);
+      margin-bottom: 30rpx;
+      background-color: #fff;
+      position: relative;
+      .empolyeeHead{
+        width: 100%;
+        height: 100rpx;
+        border-bottom: 1px dashed #E1E1E1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text{
+          margin-left: 40rpx;
+          font-size: 30rpx;
+          color: #3E4552;
+          margin-right: 40rpx;
+        }
+        .zhangaho{
+          max-width: 420rpx;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          margin-right: 0;
+        }
+      }
+      .empolyeeCenter{
+        width: 100%;
+        height: 160rpx;
+        border-radius: 10rpx;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        .dataItem{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100%;
+          justify-content: center;
+          flex: 1;
+          .itemNumber{
+            color: #3E4552;
+            font-size: 38rpx;
+            font-weight: 600;
+          }
+          .itemtxt{
+            font-size: 25rpx;
+            color: #A0A8B8;
+            margin-top: 10rpx;
+          }
+        }
+        .cut1{
+          width: 1px;
+          height: 70rpx;
+          background-color: #F0F2F6;
+        }
+      }
+      .cut2{
+        position: absolute;
+        width: 32rpx;
+        height: 32rpx;
+        top: 84rpx;
+        left: -16rpx;
+        border-radius: 100%;
+        background-color: #F8F9F9;
+        box-shadow: -10rpx 0 20rpx rgba(152,152,152,0.2) inset;
+      }
+      .cut3{
+        position: absolute;
+        width: 32rpx;
+        height: 32rpx;
+        top: 84rpx;
+        right: -16rpx;
+        border-radius: 100%;
+        background-color: #F8F9F9;
+        box-shadow: 10rpx 0 20rpx rgba(152,152,152,0.2) inset;
+      }
+      .empolyeeBottom{
+        width: 100%;
+        height: 70rpx;
+        background-color: #EDEDED;
+        color: #909193;
+        font-size: 27rpx;
+        display: flex;
+        align-items: center;
+        border-bottom-left-radius: 10rpx;
+        border-bottom-right-radius: 10rpx;
+        box-shadow: 0 10rpx 20rpx rgba(152,152,152,0.3);
+        text{
+          margin-left: 40rpx;
+        }
+      }
+    }
+  }
+</style>
+

@@ -110,7 +110,13 @@ export default class extends wepy.app {
           "verificationBusiness",
           "giveToFriends",
           "authorize",
-          "couponList"
+          "couponShopList",
+          "couponList",
+          "couponLogin",
+          "businessCouponData",
+          "myCouponData",
+          "activeCouponData",
+          "employeeData"
         ]
       }
     ],

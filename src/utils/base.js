@@ -337,7 +337,7 @@ class Base {
                       console.log(res)
                     }
                   })
-                },300)
+                },500)
               }
             })
           }

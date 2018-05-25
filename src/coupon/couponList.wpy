@@ -2,16 +2,22 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="couponListBox">
-    <view class="couponItem beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s {{index*0.1}}s" wx:for="{{couponList}}" wx:key="{{index}}" @tap="toVerification({{item.magic_shop_id}},{{item.magicshop.magic_shop_name}})">
-      <image src="{{item.magicshop.banner_img}}" mode="aspectFill"></image>
-      <view class="infoBox">
-        <text class="couponTitle">{{item.magicshop.magic_shop_name}}</text>
-        <text class="shopAddress">地址：{{item.magicshop.address}}</text>
+    <block wx:for="{{couponList}}" wx:key="{{index}}">
+      <view class="coupon-header {{loadingHidden?'show-coupon-header':''}}" @tap="toCouponDetail({{item.preferential_id}},{{item.magic_shop_id}}, {{item.activity_id}})">
+        <view class="coupon-header-top">
+          <view class="half-round"></view>
+          <image src="./images/quan.png" mode="widthFix" class="quanPic"></image>
+          <text class="coupon-title">{{item.preferential.limit_that}}</text>
+          <view class="coupon-desc">
+            <text>有效期至：</text> <text>{{item.end_time}}</text>
+          </view>
+          <text class="coupon-other">使用说明：{{item.preferential.use_detail}}</text>
+          <!-- <text class="coupon-other">{{indexData.preferential.limit_that}}</text> -->
+        </view>
       </view>
-    </view>
-    <view style="height:1000rpx;"></view>
+    </block>
     <view wx:if="{{couponList.length == 0}}">
-      <template is="emptyGoodsTips"></template>
+      <template is="emptyGoodsTips" data="{{tipsTxt:'暂无优惠券'}}"></template>
     </view>
   </view>
   <view wx:if="{{!loadingHidden}}">
@@ -24,36 +30,41 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '商家优惠券',
+      navigationBarTitleText: '优惠券列表',
       backgroundColorTop: '#F0F2F5',
       backgroundColorBottom: '#F0F2F5'
     }
     data = {
       loadingHidden: false,
       pageNum: 1,
-      couponList: '',
-      isLoadAll: false
+      couponList: [],
+      isLoadAll: false,
+      shopId: ''
     }
     computed = {
         
     }
     methods = {
-     toVerification(id,shopName){
-      CouponModel.navTo('./couponIndex', {id: id, shopName: shopName})
-     }
+      toCouponDetail(couponId, shopId, activeId){
+        // id=182&shopName=令狐冲烤鱼&goodsId=47
+        CouponModel.navTo('./couponIndex', {id: shopId, goodsId: couponId, activeId: activeId})
+      }
     }
     onLoad(e){
+      this.shopId = e.id
       let query = {
-        pageNum: this.pageNum
+        pageNum: this.pageNum,
+        shopId: this.shopId
       }
-      CouponModel.getCouponListData(query, (res)=>{
+      CouponModel.getCouponList(query, (res)=>{
         if(res.code == 1){
-          this.loadingHidden = true
           this.couponList = res.data
           this.$apply()
         } else {
           CouponModel.showTips(res.message)
         }
+        this.loadingHidden = true
+        this.$apply()
       })
     }
     onShow(){
@@ -62,20 +73,21 @@
       if(!this.isLoadAll){
         this.pageNum++
         let query = {
-          pageNum: this.pageNum
+          pageNum: this.pageNum,
+          shopId: this.shopId
         }
-        CouponModel.getCouponListData(query, (res)=>{
+        CouponModel.getCouponList(query, (res)=>{
           if(res.code == 1){
             if(res.data.length == 0){
-              this.isLoadAll = true
               CouponModel.showTips('已经到底了')
-            }else{
-              this.couponList = [...this.couponList, ...res.data]
+              this.isLoadAll = true
             }
+            this.couponList = [...this.couponList, ...res.data]
             this.$apply()
           } else {
             CouponModel.showTips(res.message)
           }
+          this.$apply()
         })
       }
     }
@@ -91,37 +103,71 @@
     width: 100%;
     box-sizing: border-box;
     padding: 20rpx;
-    .couponItem{
+    .coupon-header{
       width: 100%;
-      background-color: #fff;
-      display: flex;
-      align-items: center;
-      border-radius: 7rpx;
-      height: 200rpx;
-      overflow: hidden;
+      opacity: 0;
+      transform: scale(0.98);
       margin-bottom: 20rpx;
-      image{
-        flex: 0 0 200rpx;
-        height: 200rpx;
-      }
-      .infoBox{
-        flex: 1;
-        box-sizing: border-box;
-        padding-left: 30rpx;
+      .coupon-header-top{
+        width: 100%;
+        height: 350rpx;
+        background-color: rgba(0,183,255,.9);
+        background-image: url('http://p24lfn08v.bkt.clouddn.com/couponbgm.png');
+        background-position: 0 0;
+        -webkit-background-size: cover;
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: relative;
+        z-index: 2;
         display: flex;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
-        .couponTitle{
-          font-size: 33rpx;
-          color: #323332;
-          line-height: 45rpx;
+        color: #fff;
+        .half-round{
+          width: 90rpx;
+          height: 90rpx;
+          background-color: #0E7DB6;
+          border-bottom-left-radius: 90rpx;
+          position: absolute;
+          right: 0;
+          top: 0;
         }
-        .shopAddress{
-          font-size: 24rpx;
-          color: #999;
+        .quanPic{
+          width:  45rpx;
+          height: 45rpx;
+          position: absolute;
+          right: 13rpx;
+          top: 13rpx;
+        }
+        .coupon-title{
+          font-size: 40rpx;
+          font-weight: 600;
           margin-top: 20rpx;
         }
+        .coupon-desc{
+          width: 350rpx;
+          height: 65rpx;
+          background-color: #0E7DB6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 40rpx;
+          font-size: 25rpx;
+          margin: 50rpx 0 30rpx;
+        }
+        .coupon-other{
+          font-size: 23rpx;
+          margin: 10rpx;
+          line-height: 35rpx;
+          text-align: center;
+        }
       }
+    }
+    .show-coupon-header{
+      opacity: 1;
+      transform: scale(1);
+      transition: .5s;
     }
   }
 </style>

@@ -1,0 +1,265 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="businessName">
+    <view class="nametxt"><open-data type="userNickName"></open-data>，您好</view>
+  </view>
+  <view class="totle-data">
+    <block>
+      <view class="dataItem">
+        <text class="itemNumber">{{billData.qr_code_get_num}}</text>
+        <text class="itemtxt">扫码领取</text>
+      </view>
+      <view class="cut1"></view>
+      <view class="dataItem">
+        <text class="itemNumber">{{billData.qr_code_into_num}}</text>
+        <text class="itemtxt">扫码浏览</text>
+      </view>
+      <!-- 老板账号 -->
+      <block wx:if="{{authData == 1}}">
+        <view class="cut1"></view>
+        <view class="dataItem">
+          <text class="itemNumber">{{billData.send_get_num}}</text>
+          <text class="itemtxt">模板领取</text>
+        </view>
+        <view class="cut1"></view>
+        <view class="dataItem">
+          <text class="itemNumber">{{billData.send_into_num}}</text>
+          <text class="itemtxt">模板浏览</text>
+        </view>
+      </block>
+      <view class="cut1"></view>
+      <view class="dataItem">
+        <text class="itemNumber">{{billData.use_num}}</text>
+        <text class="itemtxt">核销数量</text>
+      </view>
+    </block>
+  </view>
+  <view class="myCouponDataBox">
+    <block wx:for="{{userData}}" wx:key="{{index}}">
+      <view class="dataItem">
+        <view class="itemTop">
+          <view class="itemTop-left">
+            <image src="{{item.portrait_img}}" mode="aspectFill" class="itemPic"></image>
+            <text>{{item.wechat_name}}</text>
+          </view>
+          <view class="useStatue noUse" wx:if="{{item.use_status == 1}}">未使用</view>
+          <view class="useStatue" wx:if="{{item.use_status == 2}}">已使用</view>
+          <view class="useStatue noUse" wx:if="{{item.use_status == 0}}">未激活</view>
+        </view>
+        <view class="itemBottom">
+          <view class="itemBottom-view">
+            <text>领取状态</text>
+            <text>已领取</text>
+          </view>
+          <view class="itemBottom-view">
+            <text>领取时间</text>
+            <text>{{item.create_time}}</text>
+          </view>
+          <view class="itemBottom-view">
+            <text>使用时间</text>
+            <text wx:if="{{item.use_status == 2}}">{{item.use_time}}</text>
+            <text wx:if="{{item.use_status == 1}}">待使用</text>
+            <text wx:if="{{item.use_status == 0}}">待激活</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view class="noneAvtive" wx:if="{{userData.length == 0}}">未添加优惠券</view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#2781FB",
+      navigationBarTitleText: '我的数据',
+      backgroundColorTop: '#2781FB',
+      backgroundColorBottom: '#2781FB',
+      navigationBarTextStyle: 'white'
+    }
+    data = {
+      loadingHidden: false,
+      activeId: '',
+      adminId: '',
+      pageNum: 1,
+      userData: '',
+      billData: '',
+      authData: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      
+    }
+    onLoad(e){
+      this.authData = wx.getStorageSync('couponInfo').auth_data
+      this.adminId = e.adminId
+      this.activeId = e.activeId
+      let query = {
+        adminId: this.adminId,
+        activeId :this.activeId,
+        pageNum: this.pageNum
+      }
+      CouponModel.seeMyData(query, (res)=>{
+        if(res.code == 1){
+          this.userData = res.data.user_data
+          this.billData = res.data.bill_data
+          this.loadingHidden = true
+        } else {
+          CouponModel.showTips(res.message)
+        }
+        this.$apply()
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F9F9;
+  }
+  .businessName{
+    width: 100%;
+    height: 240rpx;
+    background-color: #2781FB;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .nametxt{
+      font-size: 50rpx;
+      color: #fff;
+      font-weight: 600;
+      margin-bottom: 30rpx;
+      margin-left: 60rpx;
+    }
+    .zhuxiao{
+      width: 70rpx;
+      height: 40rpx;
+      border-radius: 4rpx;
+      border: 1px solid #fff;
+      color: #fff;
+      font-size: 25rpx;
+      line-height: 40rpx;
+      text-align: center;
+      margin-right: 20rpx;
+    }
+  }
+  .totle-data{
+    width: 710rpx;
+    height: 120rpx;
+    border-radius: 10rpx;
+    box-shadow: 0 0 20rpx rgba(5,41,93,.2);
+    margin-left: 20rpx;
+    margin-top: -60rpx;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    .dataItem{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: center;
+      flex: 1;
+      .itemNumber{
+        color: #3E4552;
+        font-size: 38rpx;
+        font-weight: 600;
+      }
+      .itemtxt{
+        font-size: 25rpx;
+        color: #A0A8B8;
+        margin-top: 10rpx;
+      }
+    }
+    .cut1{
+      width: 1px;
+      height: 70rpx;
+      background-color: #F0F2F6;
+    }
+  }
+  .myCouponDataBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20rpx;
+    .dataItem{
+      width: 100%;
+      height: 300rpx;
+      background-color: #fff;
+      margin-bottom: 20rpx;
+      .itemTop{
+        width: 100%;
+        height: 100rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        border-bottom: 1px dashed #E1E1E1;
+        .itemTop-left{
+          display: flex;
+          align-items: center;
+          .itemPic{
+            width: 60rpx;
+            height: 60rpx;
+            border-radius: 40rpx;
+            margin-right: 15rpx;
+          }
+          text{
+            font-size: 29rpx;
+            font-weight: 600;
+          }
+        }
+        .useStatue{
+          width: 100rpx;
+          height: 40rpx;
+          color: #fff;
+          background-color: #2781FB;
+          border-radius: 20rpx;
+          font-size: 24rpx;
+          text-align: center;
+          line-height: 40rpx;
+        }
+        .noUse{
+          background-color: #FFAB2E;
+        }
+      }
+      .itemBottom{
+        width: 100%;
+        height: 200rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        box-sizing: border-box;
+        padding: 20rpx;
+        .itemBottom-view{
+          display: flex;
+          justify-content: space-between;
+          text{
+            color: #696969;
+            font-size: 27rpx;
+          }
+        }
+      }
+    }
+  }
+  .noneAvtive{
+    width: 100%;
+    height: 600rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35rpx;
+    color: #999;
+    font-weight: 600;
+  }
+</style>
+

@@ -4,22 +4,16 @@
     <!-- 头部信息 -->
     <view class="coupon-header {{loadingHidden?'show-coupon-header':''}}">
       <view class="coupon-header-top">
-        <view class="header-title">
-          <text class="title-name">{{indexData.preferential.goods_name}}</text>
-          <text class="title-time">{{indexData.preferential.end_time}}{{indexData.preferential.time_status_str}}</text>
-        </view>
-        <view class="coupon-info">
-          <view class="coupon-info-left">
-            <text class="couponPriceBox">¥<text class="couponPriceTxt">{{indexData.preferential.preferential_price}}</text></text>
-            <text class="couponDesc">{{indexData.preferential.total_price_str}}</text>
-          </view>
-          <view class="coupon-info-right">
-            <text class="coupon-info-right-txt1">限商品：{{indexData.preferential.limit_that}}</text>
-            <text class="coupon-info-right-txt2">使用说明：{{indexData.preferential.use_detail}}</text>
-          </view>
-        </view>
         <view class="cut cut1"></view>
         <view class="cut cut2"></view>
+        <view class="half-round"></view>
+        <image src="./images/quan.png" mode="widthFix" class="quanPic"></image>
+        <text class="coupon-title">{{indexData.preferential.total_price_str}}</text>
+        <view class="coupon-desc">
+          <text>有效期至：</text> <text>{{indexData.preferential.end_time}}</text>
+        </view>
+        <text class="coupon-other">使用说明：{{indexData.preferential.use_detail}}</text>
+        <text class="coupon-other">{{indexData.preferential.limit_that}}</text>
       </view>
     </view>
     <!-- 帮忙信息 -->
@@ -222,104 +216,72 @@
       transform: scale(0.98);
       .coupon-header-top{
         width: 100%;
-        height: 270rpx;
-        background-color: rgba(170,40,255,.9);
-        border-radius: 20rpx;
-        overflow: hidden;
-        background-image: url('http://applet.czsjcrm.cn/images/templete_image/couponbgm.png');
+        height: 350rpx;
+        background-color: rgba(0,183,255,.9);
+        background-image: url('http://p24lfn08v.bkt.clouddn.com/couponbgm.png');
         background-position: 0 0;
         -webkit-background-size: cover;
         background-size: cover;
         background-repeat: no-repeat;
         position: relative;
-        .header-title{
-          width: 100%;
-          height: 90rpx;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          .title-name{
-            font-size: 29rpx;
-            font-weight: 600;
-            color: #fff;
-            width: 90%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
-          }
-          .title-time{
-            font-size: 20rpx;
-            color: #fff;
-            margin-top: 8rpx;
-          }
-        }
-        .coupon-info{
-          width: 100%;
-          height: 180rpx;
-          background-color: rgba(120,0,212,.5);
-          display: flex;
-          align-items: center;
-          .coupon-info-left{
-            flex: 0 0 200rpx;
-            height: 125rpx;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            .couponPriceBox{
-              font-size: 20rpx;
-              display: flex;
-              align-items: baseline;
-              .couponPriceTxt{
-                font-weight: 600;
-                font-size: 46rpx;
-                margin-left: 8rpx;
-              }
-            }
-            .couponDesc{
-              font-size: 24rpx;
-              margin-top: 10rpx;
-              letter-spacing: 3rpx;
-              text-align: center;
-              line-height: 30rpx;
-            }
-          }
-          .coupon-info-right{
-            flex: 1;
-            border-left: 1px dashed #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            box-sizing: border-box;
-            padding-left: 45rpx;
-            color: #fff;
-            height: 125rpx;
-            font-size: 25rpx;
-            .coupon-info-right-txt1{
-              line-height: 33rpx;
-            }
-            .coupon-info-right-txt2{
-              line-height: 33rpx;
-              margin-top: 20rpx;
-            }
-          }
-        }
+        border-bottom: 1px dashed #D6D6D6;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
         .cut{
           width: 20rpx;
           height: 20rpx;
           background-color: #F5F5F5;
-          border-radius: 100%;
           position: absolute;
-          top: 80rpx;
+          bottom: -10rpx;
+          border-radius: 20rpx;
         }
         .cut1{
           left: -10rpx;
         }
         .cut2{
           right: -10rpx;
+        }
+        .half-round{
+          width: 90rpx;
+          height: 90rpx;
+          background-color: #0E7DB6;
+          border-bottom-left-radius: 90rpx;
+          position: absolute;
+          right: 0;
+          top: 0;
+        }
+        .quanPic{
+          width:  45rpx;
+          height: 45rpx;
+          position: absolute;
+          right: 13rpx;
+          top: 13rpx;
+        }
+        .coupon-title{
+          font-size: 40rpx;
+          font-weight: 600;
+          margin-top: 20rpx;
+        }
+        .coupon-desc{
+          width: 350rpx;
+          height: 65rpx;
+          background-color: #0E7DB6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 40rpx;
+          font-size: 25rpx;
+          margin: 50rpx 0 30rpx;
+        }
+        .coupon-other{
+          font-size: 23rpx;
+          margin: 10rpx;
+          line-height: 35rpx;
+          text-align: center;
         }
       }
     }

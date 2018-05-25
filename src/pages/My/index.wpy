@@ -2,7 +2,7 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="My-container">
     <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-    <view class="open-vip {{loadingHidden?'show-open-vip':''}}">
+    <view class="open-vip {{loadingHidden?'show-open-vip':''}}" @longpress="showDebug">
       <view class="open-wrapper" style="background-image: url({{vipInfo.background_img}});">
         <view class="logo"></view>
         <view class="user-info">
@@ -27,34 +27,40 @@
           </button>
         </form>
       </view>
-      <form style="height:100%" report-submit='magic_form_id' bindsubmit="gotowelfare">
+      <form style="height:100%; flex: 0 0 167rpx;" report-submit='magic_form_id' bindsubmit="gotowelfare">
         <button class="nav" form-type="submit">
           <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
           <image src="./images/icon-fuli.png"></image>
           <text>{{center_index_str[1]}}</text>
         </button>
       </form>
-      <form style="height:100%" report-submit='magic_form_id' bindsubmit="gotoOrder">
+      <form style="height:100%; flex: 0 0 167rpx;" report-submit='magic_form_id' bindsubmit="gotoOrder">
         <button class="nav" form-type="submit">
           <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text>
           <image src="./images/icon-all.png"></image>
           <text>{{center_index_str[2]}}</text>
         </button>
       </form>
-      <form style="height:100%" report-submit bindsubmit="gotoLottery">
+      <form style="height:100%; flex: 0 0 167rpx;" report-submit bindsubmit="gotoLottery">
         <button class="nav" form-type="submit">
           <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
           <image src="./images/lottery.png"></image>
           <text>{{center_index_str[3]}}</text>
         </button>
       </form>
-      <form style="height:100%" report-submit bindsubmit="gotoCoupon" wx:if="{{vipInfo.is_preferential == 2}}">
+      <form style="height:100%; flex: 0 0 167rpx;" report-submit bindsubmit="gotoCoupon" wx:if="{{vipInfo.is_preferential == 2}}">
         <button class="nav" form-type="submit">
           <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
           <image src="./images/coupon.png"></image>
           <text>优惠券</text>
         </button>
       </form>
+      <view class="nav">
+        <button @tap="toCouponData">
+          <image src="http://p55e536k6.bkt.clouddn.com/loginIcon.png"></image>
+          <text>数据查看</text>
+        </button>
+      </view>
     </view>
     <view class="desc-wrapper {{loadingHidden?'show-desc-wrapper':''}}" @longpress="showVersion" @touchend="hideVersion">
       <view class="title-wrapper">
@@ -99,7 +105,7 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.13.9</text>
+        <text>V 1.14.1</text>
       </view>
     </view>
   </view>
@@ -125,7 +131,9 @@
       center_index_str: null,
       magic_auth_str: null,
       formId:'',
-      isVersionShow: false
+      isVersionShow: false,
+      debug: false,
+      showMoveBox: false
     }
     methods = {
       gotowelfare(e){
@@ -138,7 +146,7 @@
       },
       gotoCoupon(e){
         this.formId = e.detail.formId
-        this.$navigate('../../coupon/couponList')
+        this.$navigate('../../coupon/couponShopList')
       },
       gotoDetail(index){
         this.$navigate('./articleDetails',{id:index})
@@ -168,6 +176,24 @@
       },
       gotoLottery(){
         this.$navigate('../../lotteryDraw/lotteryOrderList',{})
+      },
+      showDebug(){
+        this.debug = !this.debug
+        wx.setEnableDebug({
+            enableDebug: this.debug
+        })
+      },
+      taggleCouponBtn(){
+        this.showMoveBox = !this.showMoveBox
+        this.$apply()
+      },
+      toCouponData(){
+        let couponInfo = wx.getStorageSync('couponInfo')
+        if(couponInfo){
+          cheaderModel.navTo('../../coupon/businessCouponData')
+        } else {
+          cheaderModel.navTo('../../coupon/couponLogin')
+        }
       }
     }
     onLoad(){
@@ -324,6 +350,8 @@
     display: flex;
     justify-content: space-between;
     opacity: 0;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
     .nav{
       margin: 0;
       padding: 0;
@@ -333,6 +361,7 @@
       align-items: center;
       position: relative;
       height: 100%;
+      flex: 0 0 167rpx;
       &::after{
         content:none;
       }

@@ -31,7 +31,10 @@
       <button form-type="submit" wx:if="{{order_type == 2}}" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.activate_str}}</button>
     </form>
     <!-- 分享给好友 -->
-    <button wx:if="{{order_type == 3}}" open-type="share" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.send_frind}}</button>
+        <!-- 没有用户信息 -->
+    <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfos" wx:if="{{order_type == 3 && !hasUserInfo}}" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.send_frind}}</button>
+        <!-- 有用户信息 -->
+    <button wx:if="{{order_type == 3 && hasUserInfo}}" open-type="share" class="toFriends {{loadingHidden?'show-toFriends':''}}">{{fixedData.send_frind}}</button>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -40,6 +43,7 @@
 <script>
   import wepy from 'wepy'
   import CouponModel from './coupon-model.js'
+  import Address from '../utils/address.js'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -65,7 +69,9 @@
       order_type: '',
       fixedData: '',
       shopId: '',
-      formId: ''
+      formId: '',
+      hasUserInfo: false,
+      goodsId: ''
     }
     computed = {
       couponMoveY () {
@@ -140,10 +146,24 @@
         }
         let coupon = this.couponData[this.couponIndex]
         CouponModel.navTo('./activeCoupon', {id: coupon.id, shopId: coupon.magicshop.id, formId: formId})
+      },
+      getUserInfos(res){
+        Address.getUser(res, ()=>{
+          Address.showTips('登录成功，可以赠送了哦')
+          this.hasUserInfo = true
+          wx.showShareMenu()
+          this.$apply()
+        })
       }
     }
     onLoad(e){
-      console.log(e)
+      this.goodsId = e.goodsId
+      this.activeId = e.activeId
+      let userInfo = wx.getStorageSync('userInfo')
+      if(userInfo.nickName){
+        this.hasUserInfo = true
+        this.$apply()
+      }
       this.order_type = e.type
       this.shopId = e.id
       if(e.formId){
@@ -167,12 +187,16 @@
     }
     onShow(){
       wx.showNavigationBarLoading()
-      if(this.order_type != 3 ){
+      if(this.order_type != 3){
+        wx.hideShareMenu()
+      } else if(this.order_type == 3 && !this.hasUserInfo){
         wx.hideShareMenu()
       }
       let query = {
         magic_shop_id: this.shopId,
-        order_type: this.order_type
+        order_type: this.order_type,
+        goodsId: this.goodsId,
+        activeId: this.activeId
       }
       if(this.formId){
         query.formId = this.formId

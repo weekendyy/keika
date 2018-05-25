@@ -1,0 +1,305 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="activeCouponDataBox">
+    <view class="businessName">
+      <view class="nametxt"><open-data type="userNickName"></open-data>，您好</view>
+    </view>
+    <view class="totle-data">
+      <block>
+        <view class="dataItem">
+          <text class="itemNumber">{{billData.qr_code_get_num}}</text>
+          <text class="itemtxt">扫码领取</text>
+        </view>
+        <view class="cut1"></view>
+        <view class="dataItem">
+          <text class="itemNumber">{{billData.qr_code_into_num}}</text>
+          <text class="itemtxt">扫码浏览</text>
+        </view>
+        <!-- 老板账号 -->
+        <block wx:if="{{authData.auth_data == 1}}">
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber">{{billData.send_get_num}}</text>
+            <text class="itemtxt">模板领取</text>
+          </view>
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber">{{billData.send_get_num}}</text>
+            <text class="itemtxt">模板浏览</text>
+          </view>
+        </block>
+
+        <view class="cut1"></view>
+        <view class="dataItem">
+          <text class="itemNumber">{{billData.use_num}}</text>
+          <text class="itemtxt">核销数量</text>
+        </view>
+      </block>
+    </view>
+    <view class="couponContentData">
+      <view class="titleBox">
+        <image src="./images/active.png" mode="widthFix" class="titleIcon"></image>
+        <text>优惠券</text>
+      </view>
+      <block wx:for="{{couponData}}" wx:key="{{index}}">
+        <view class="couponDataItem">
+          <view class="couponDataItem-top">
+            <image src="{{item.img_url}}" mode="aspectFill" class="couponDataPic"></image>
+            <view class="couponDescBox">
+              <text class="title">{{item.goods_name}}</text>
+              <text class='discount'>{{item.limit_that}}</text>
+              <view class='receive-condition'>
+                <text>已领取：{{item.get_num}}</text>
+                <text>核销：{{item.use_num}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+      <view class="noneAvtive" wx:if="{{couponData.length == 0}}">未添加优惠券</view>
+      <view class="empolyeeBtn" wx:if="{{authData.auth_data == 1 && couponData.length != 0}}" @tap="toEmployeeData">查看员工数据</view>
+      <view style="height: 40rpx;"></view>
+    </view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#2781FB",
+      navigationBarTitleText: '活动优惠券',
+      backgroundColorTop: '#2781FB',
+      backgroundColorBottom: '#2781FB',
+      navigationBarTextStyle: 'white'
+    }
+    data = {
+      loadingHidden: false,
+      adminId: '',
+      activeId: '',
+      couponData: '',
+      authData: '',
+      billData: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      toEmployeeData(){
+        CouponModel.navTo('./employeeData', {activeId: this.activeId, adminId: this.authData.admin_id})
+      }
+    }
+    onLoad(e){
+      this.authData = wx.getStorageSync('couponInfo')
+      this.activeId = e.activeId
+      this.adminId = e.adminId
+      let query = {
+        adminId: this.adminId,
+        activeId: this.activeId
+      }
+      CouponModel.showPreferential(query, (res)=>{
+        if(res.code == 1){
+          this.couponData = res.data.pre_data
+          this.billData = res.data.bill_total
+          this.loadingHidden = true
+        } else {
+          CouponModel.showTips(res.message)
+        }
+        this.$apply()
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F9F9;
+  }
+  .activeCouponDataBox{
+    width: 100%;
+    .businessName{
+      width: 100%;
+      height: 240rpx;
+      background-color: #2781FB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .nametxt{
+        font-size: 50rpx;
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 30rpx;
+        margin-left: 60rpx;
+      }
+      .zhuxiao{
+        width: 70rpx;
+        height: 40rpx;
+        border-radius: 4rpx;
+        border: 1px solid #fff;
+        color: #fff;
+        font-size: 25rpx;
+        line-height: 40rpx;
+        text-align: center;
+        margin-right: 20rpx;
+      }
+    }
+    .totle-data{
+      width: 710rpx;
+      height: 120rpx;
+      border-radius: 10rpx;
+      box-shadow: 0 0 20rpx rgba(5,41,93,.2);
+      margin-left: 20rpx;
+      margin-top: -60rpx;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      .dataItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        justify-content: center;
+        flex: 1;
+        .itemNumber{
+          color: #3E4552;
+          font-size: 38rpx;
+          font-weight: 600;
+        }
+        .itemtxt{
+          font-size: 25rpx;
+          color: #A0A8B8;
+          margin-top: 10rpx;
+        }
+      }
+      .cut1{
+        width: 1px;
+        height: 70rpx;
+        background-color: #F0F2F6;
+      }
+    }
+    .couponContentData{
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 20rpx;      
+      .titleBox{
+        width: 100%;
+        height: 90rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .titleIcon{
+          width: 40rpx;
+          height: 40rpx;
+          margin-right: 10rpx;
+          margin-top: 5rpx;
+        } 
+        text{
+          font-size: 30rpx;
+          font-weight: 600;
+        } 
+      }
+    }
+    .couponDataItem{
+      width: 100%;
+      height: 200rpx;
+      border-radius: 10rpx;
+      box-shadow: 0rpx 0rpx 20rpx rgba(165,170,170,.2);
+      background-color: #fff;
+      margin-bottom: 20rpx;
+      .couponDataItem-top{
+        width: 100%;
+        height: 200rpx;
+        box-sizing: border-box;
+        padding: 20rpx;
+        display: flex;
+        .couponDataPic{
+          flex: 0 0 160rpx;
+          height: 160rpx;
+        }
+        .couponDescBox{
+          flex: 1;
+          box-sizing: border-box;
+          padding-left: 30rpx;
+          font-size: 25rpx;
+          color: #959595;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-around;
+          .title{
+            font-size: 30rpx;
+            font-weight: 400;
+            line-height: 40rpx;
+            color: #3E4552;
+          }
+          .discount{
+            margin: 10rpx 0;
+            display: block;
+          }
+          .receive-condition{
+            width: 90%;
+            display: flex;
+            text{
+              margin-right: 30rpx;
+            }
+          }
+        }
+      }
+      .couponDataItem-bottom{
+        width: 100%;
+        height: 80rpx;
+        border-top: 1px solid #F1F3F6;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        .bottom-item{
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex: 1;
+          image{
+            width: 30rpx;
+            height: 30rpx;
+          }
+          text{
+            font-size: 28rpx;
+            color: #999;
+            margin-left: 10rpx;
+          }
+        }
+        .cut2{
+          width: 1px;
+          height: 80rpx;
+          background-color: #F1F3F6;
+        }
+      }
+    }
+  }
+  .noneAvtive{
+    width: 100%;
+    height: 600rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35rpx;
+    color: #999;
+    font-weight: 600;
+  }
+  .empolyeeBtn{
+    width: 100%;
+    height: 70rpx;
+    background-color: #2781FB;
+    border-radius: 6rpx;
+    text-align: center;
+    line-height: 70rpx;
+    color: #fff;
+    font-size: 28rpx;
+    margin-top: 30rpx;
+  }
+</style>
+

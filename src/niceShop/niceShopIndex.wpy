@@ -89,15 +89,14 @@
           autoplay="{{false}}" interval="5000" duration="500">
           <block wx:for="{{todayData}}" wx:key="{{index}}">
             <swiper-item class="swiperItem">
-              <view class="itemBox" hover-class="hoverSwiperItem" hover-start-time="0" hover-stay-time="300">
-                <image src="{{item.banner_url}}" mode="aspectFill" class="mainPic" @tap="toDetail({{item.id}},{{item.goods_type}})"></image>
+              <view @tap="toDetail({{item.id}},{{item.goods_type}})" class="itemBox" hover-class="hoverSwiperItem" hover-start-time="0" hover-stay-time="300">
+                <image src="{{item.banner_url}}" mode="aspectFill" class="mainPic"></image>
                 <view class="item-bottom">
                   <view class="item-bottom-title">
-                    <text class="item-title">{{item.goods_name}}</text>
+                    <view class="item-title">{{item.goods_name}}</view>
                     <text class="item-desc">{{item.new_title}}</text>
                   </view>
-                  <button open-type="share" data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">
-                    <image src="images/share.png" mode="aspectFill" class="todayShare"></image>
+                  <button data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">立即购买
                   </button>
                 </view>
               </view>
@@ -120,15 +119,14 @@
           autoplay="{{false}}" interval="5000" duration="500">
           <block wx:for="{{choiceness}}" wx:key="{{index}}">
             <view class="swiperItem" hover-start-time="0" hover-stay-time="300" hover-class="hoverswiperItem">
-              <view class="itemBox">
-                <image src="{{item.banner_url}}" mode="aspectFill" class="mainPic" @tap="toDetail({{item.id}},{{item.goods_type}})"></image>
+              <view class="itemBox" @tap="toDetail({{item.id}},{{item.goods_type}})">
+                <image src="{{item.banner_url}}" mode="aspectFill" class="mainPic"></image>
                 <view class="item-bottom" style="border-bottom: 1px solid {{index == choiceData.length-1? '#fff' : '#E8E8E8' }}">
                   <view class="item-bottom-title">
-                    <text class="item-title">{{item.goods_name}}</text>
+                    <view class="item-title">{{item.goods_name}}</view>
                     <text class="item-desc">{{item.new_title}}</text>
                   </view>
-                  <button open-type="share" data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">
-                    <image src="images/share.png" mode="widthFix" class="todayShare"></image>
+                  <button data-type="{{item.goods_type}}" data-id="{{item.id}}" data-title="{{item.goods_name}}">立即购买
                   </button>
                 </view>
               </view>
@@ -606,25 +604,28 @@
                 flex: 1;
                 width: 100%;
                 display: flex;
-                align-items: center;
                 justify-content: space-between;
                 border-bottom: 1px solid #E8E8E8;
+                align-items: center;
                 .item-bottom-title{
                   display: flex;
                   flex-direction: column;
                   .item-title{
                     font-size: 35rpx;
                     font-weight: 600;
-                    width:600rpx;
-                    white-space:nowrap;
+                    width:480rpx;
+                    overflow:hidden; 
                     text-overflow:ellipsis;
-                    overflow:hidden;
+                    display:-webkit-box; 
+                    -webkit-box-orient:vertical;
+                    -webkit-line-clamp:2;
+                    line-height: 45rpx;
                   }
                   .item-desc{
                     font-size: 25rpx;
                     color: #A4A4A4;
-                    margin-top: 20rpx;
-                    width:600rpx;
+                    margin-top: 7rpx;
+                    width:500rpx;
                     white-space:nowrap;
                     text-overflow:ellipsis;
                     overflow:hidden;
@@ -633,18 +634,16 @@
                 button{
                   padding: 0;
                   margin: 0rpx;
-                  background-color: transparent;
-                  border-radius: 0;
-                  width: 250rpx;
-                  height: 100rpx;
-                  margin-top: -20rpx;
+                  background-color: #FFDE09;
+                  border-radius: 6rpx;
+                  width: 160rpx;
+                  height: 60rpx;
+                  font-size: 25rpx;
+                  text-align: center;
+                  line-height: 60rpx;
+                  margin-top: -5rpx;
                   &::after{
                     content: none;
-                  }
-                  .todayShare{
-                    width: 45rpx;
-                    height: 45rpx;
-                    margin-top: 20rpx;
                   }
                 }
               }
