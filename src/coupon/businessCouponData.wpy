@@ -2,42 +2,81 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="couponListData">
     <view class="businessName">
-      <view class="nametxt"><open-data type="userNickName"></open-data>{{fixedData.wechat_name_str}}</view>
+      <view class="nametxt"><text>{{adminName}}</text>{{fixedData.wechat_name_str}}</view>
       <view class="zhuxiao" @tap="toLogin">注销</view>
     </view>
     <view class="totle-data">
       <block>
         <view class="dataItem">
-          <text class="itemNumber">{{indexData.bill_total.qr_code_get_num}}</text>
+          <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .1s;">{{indexData.bill_total.qr_code_get_num}}</text>
           <text class="itemtxt">{{fixedData.qr_get_num}}</text>
         </view>
         <view class="cut1"></view>
-        <view class="dataItem">
-          <text class="itemNumber">{{indexData.bill_total.qr_code_into_num}}</text>
+        <view class="dataItem ">
+          <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .2s;">{{indexData.bill_total.qr_code_into_num}}</text>
           <text class="itemtxt">{{fixedData.qr_num}}</text>
         </view>
         <!-- 老板账号 -->
         <block wx:if="{{couponInfo.auth_data == 1}}">
           <view class="cut1"></view>
           <view class="dataItem">
-            <text class="itemNumber">{{indexData.bill_total.send_get_num}}</text>
+            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .3s;">{{indexData.bill_total.send_get_num}}</text>
             <text class="itemtxt">{{fixedData.send_get}}</text>
           </view>
           <view class="cut1"></view>
           <view class="dataItem">
-            <text class="itemNumber">{{indexData.bill_total.send_into_num}}</text>
+            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .4s;">{{indexData.bill_total.send_into_num}}</text>
             <text class="itemtxt">{{fixedData.send_num}}</text>
           </view>
         </block>
 
         <view class="cut1"></view>
         <view class="dataItem">
-          <text class="itemNumber">{{indexData.bill_total.use_num}}</text>
+          <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .5s;">{{indexData.bill_total.use_num}}</text>
           <text class="itemtxt">{{fixedData.use_num}}</text>
         </view>
       </block>
     </view>
-    <view class="couponContentData">
+    <view class="otherData">
+      <view class="dataTab {{dataTabIndex == 1?'active':''}}" @tap="seeTodayData(1)">当天数据</view>
+      <view class="cut3"></view>
+      <view class="dataTab {{dataTabIndex == 2?'active':''}}" @tap="seeTodayData(2)">当月数据</view>
+    </view>
+    <view class="dataBox">
+      <view class="totle-data todayData {{shwtodayData?'shwtodayData':''}}">
+        <block>
+          <view class="dataItem">
+            <text class="itemNumber showNumber">{{indexData.bill_total.qr_code_get_num}}</text>
+            <text class="itemtxt">{{fixedData.qr_get_num}}</text>
+          </view>
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber showNumber">{{indexData.bill_total.qr_code_into_num}}</text>
+            <text class="itemtxt">{{fixedData.qr_num}}</text>
+          </view>
+          <!-- 老板账号 -->
+          <block wx:if="{{couponInfo.auth_data == 1}}">
+            <view class="cut1"></view>
+            <view class="dataItem">
+              <text class="itemNumber showNumber">{{indexData.bill_total.send_get_num}}</text>
+              <text class="itemtxt">{{fixedData.send_get}}</text>
+            </view>
+            <view class="cut1"></view>
+            <view class="dataItem">
+              <text class="itemNumber showNumber">{{indexData.bill_total.send_into_num}}</text>
+              <text class="itemtxt">{{fixedData.send_num}}</text>
+            </view>
+          </block>
+
+          <view class="cut1"></view>
+          <view class="dataItem">
+            <text class="itemNumber showNumber">{{indexData.bill_total.use_num}}</text>
+            <text class="itemtxt">{{fixedData.use_num}}</text>
+          </view>
+        </block>
+      </view>
+    </view>
+    <view class="couponContentData {{shwtodayData?'showContentData':''}}">
       <view class="titleBox">
         <image src="./images/active.png" mode="widthFix" class="titleIcon"></image>
         <text>{{fixedData.activate_list}}</text>
@@ -78,7 +117,7 @@
     </view>
     <view class="qrCodeBox">
       <view class="shadow" wx:if="{{showQR}}" @tap="closeQr"></view>
-      <image src="{{qrImg}}" mode="widthFix" class="qrPic {{showQR?'showQr':''}}"></image>
+      <image src="{{qrImg}}" mode="widthFix" class="qrPic {{showQR?'showQr':''}}" @tap="fullimg"></image>
       <view @tap="savePic" class="savePic {{showQR?'showsavePic':''}}">保存图片</view>
     </view>
   </view>
@@ -105,7 +144,10 @@
       couponInfo: '',
       isLoadAll: false,
       qrImg: '',
-      showQR: false
+      showQR: false,
+      adminName: '',
+      shwtodayData: '',
+      dataTabIndex: 0
     }
     computed = {
         
@@ -188,10 +230,27 @@
       },
       toCouponData(activeId){
         CouponModel.navTo("./activeCouponData", {adminId: this.couponInfo.admin_id, activeId: activeId})
+      },
+      seeTodayData(type){
+        if(this.dataTabIndex == type){
+          this.dataTabIndex = 0
+          this.shwtodayData = false
+        } else {
+          this.dataTabIndex = type
+          this.shwtodayData = true
+        }
+        this.$apply()
+      },
+      fullimg(){
+        wx.previewImage({
+          current: this.qrImg,
+          urls: [this.qrImg]
+        })
       }
     }
     onLoad(e){
       this.couponInfo = wx.getStorageSync('couponInfo')
+      this.adminName = wx.getStorageSync('adminName')
       let query = {
         admin_id: this.couponInfo.admin_id,
         pageNum: this.pageNum
@@ -291,6 +350,16 @@
           color: #3E4552;
           font-size: 38rpx;
           font-weight: 600;
+          transform: translateY(-40rpx);
+          opacity: 0;
+        }
+        .showNumber{
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .showitemNumber{
+          opacity: 1;
+          transform: translateY(0);
         }
         .itemtxt{
           font-size: 25rpx;
@@ -304,10 +373,65 @@
         background-color: #F0F2F6;
       }
     }
+    .dataBox{
+      width: 710rpx;
+      height: 120rpx;
+      overflow: hidden;
+      margin-left: 20rpx;
+      transition: .3s;
+    }
+    .todayData{
+      margin-top: 0;
+      box-shadow: none;
+      border: 1px solid #2781FB;
+      box-sizing: border-box;
+      border-top: none;
+      border-radius: 0px;
+      transition: .3s;
+      transform: translateY(-120rpx);
+      pointer-events: none;
+      opacity: 0;
+      margin-left: 0;
+      .cut1{
+        background-color: #2781FB;
+      }
+    }
+    .shwtodayData{
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .otherData{
+      width: 710rpx;
+      height: 70rpx;
+      display: flex;
+      margin: 20rpx 0 0;
+      background-color: #2781FB;
+      margin-left: 20rpx;
+      border: 1px solid #2781FB;
+      box-sizing: border-box;
+      .dataTab{
+        height: 100%;
+        flex: 1;
+        line-height: 70rpx;
+        text-align: center;
+        font-size: 28rpx;
+        color: #fff;
+      }
+      .active{
+        background-color: #003983;
+      }
+      .cut3{
+        width: 1px;
+        height: 100%;
+        background-color: #fff;
+      }
+    }
     .couponContentData{
       width: 100%;
       box-sizing: border-box;
-      padding: 0 20rpx;      
+      padding: 0 20rpx; 
+      transition: .3s;
+      transform: translateY(-120rpx);     
       .titleBox{
         width: 100%;
         height: 90rpx;
@@ -400,6 +524,9 @@
         }
       }
     }
+    .showContentData{
+      transform: translateY(0);
+    }
     .qrCodeBox{
       width: 750rpx;
       height: 100%;
@@ -434,6 +561,7 @@
       .showQr{
         opacity: 1;
         transform: scale(1);
+        pointer-events: auto;
       }
       .savePic{
         width: 600rpx;

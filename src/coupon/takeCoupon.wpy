@@ -9,7 +9,7 @@
         <view class="cut cut2"></view>
         <view class="half-round"></view>
         <image src="./images/quan.png" mode="widthFix" class="quanPic"></image>
-        <text class="coupon-title">{{indexData.limit_that}}</text>
+        <text class="coupon-title">{{indexData.goods_name}}</text>
         <view class="coupon-desc">
           <text>有效期至：</text> <text>{{indexData.to_time}}</text>
         </view>
@@ -147,7 +147,7 @@
             this.couponStatus = 4
             this.$apply() 
             setTimeout(()=>{
-              Address.navTo('./couponIndex', {formId: res.detail.formId, id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id})
+              Address.navTo('./couponIndex', {formId: res.detail.formId, id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id, activityName: this.indexData.preferentialactivity.activity_name})
             }, 1000)
           } else {
             wx.hideLoading()
@@ -168,7 +168,7 @@
         Address.navTo('../niceShop/niceShopIndex', {id: this.indexData.magicshop.id, formId: formId})
       },
       toCouponList(){
-        Address.navTo('./couponIndex', {id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id})
+        Address.navTo('./couponIndex', {id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id, activityName: this.indexData.preferentialactivity.activity_name})
       }
     }
     onLoad(e){
@@ -195,12 +195,12 @@
       }
       couponModel.getTakeCouponData(query,(res)=>{
         if(res.code === 1){
-          wxParse.wxParse('article', 'html', res.data.detail, this, 5)
+          wxParse.wxParse('article', 'html', res.data.preferentialactivity.detail, this, 5)
           this.indexData = res.data
           this.fixedData = res.content_str
           this.couponStatus = res.data.check_status
           if(this.couponStatus == 4){
-            couponModel.navTo('./couponIndex', {id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id})
+            couponModel.navTo('./couponIndex', {id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id, activityName: this.indexData.preferentialactivity.activity_name})
           }
           this.loadingHidden = true
           this.$apply()

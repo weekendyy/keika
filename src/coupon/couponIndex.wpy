@@ -122,9 +122,9 @@
       this.shopId = e.id
       this.goodsId = e.goodsId
       this.activeId = e.activeId
-      if(e.shopName){
+      if(e.activityName){
         wx.setNavigationBarTitle({
-          title: e.shopName
+          title: e.activityName
         })
       }
     }

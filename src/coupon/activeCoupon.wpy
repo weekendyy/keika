@@ -4,16 +4,15 @@
     <!-- 头部信息 -->
     <view class="coupon-header {{loadingHidden?'show-coupon-header':''}}">
       <view class="coupon-header-top">
-        <view class="cut cut1"></view>
-        <view class="cut cut2"></view>
+        <!-- <view class="cut cut1"></view>
+        <view class="cut cut2"></view> -->
         <view class="half-round"></view>
         <image src="./images/quan.png" mode="widthFix" class="quanPic"></image>
-        <text class="coupon-title">{{indexData.preferential.total_price_str}}</text>
+        <text class="coupon-title">{{indexData.preferential.goods_name}}</text>
         <view class="coupon-desc">
           <text>有效期至：</text> <text>{{indexData.preferential.end_time}}</text>
         </view>
         <text class="coupon-other">使用说明：{{indexData.preferential.use_detail}}</text>
-        <text class="coupon-other">{{indexData.preferential.limit_that}}</text>
       </view>
     </view>
     <!-- 帮忙信息 -->
@@ -143,9 +142,10 @@
       this._loadData()
     }
     onShareAppMessage(){
+      let that = this
       return {
         title: '快来帮好友激活【' + this.indexData.preferential.goods_name + '】优惠券',
-        path: '/coupon/takeCoupon?into_type='+ this.indexData.get_type +'&admin_id='+ this.indexData.assistant_id + '&goods_id=' + this.indexData.preferential_id +'&get_log_id=' + this.indexData.id,
+        path: '/coupon/takeCoupon?into_type='+ this.indexData.get_type +'&admin_id='+ this.indexData.assistant_id + '&goods_id=' + this.indexData.preferential.id +'&get_log_id=' + this.indexData.id,
         success: function(res) {
           CouponModel.showTips('转发成功')
         },
@@ -224,7 +224,6 @@
         background-size: cover;
         background-repeat: no-repeat;
         position: relative;
-        border-bottom: 1px dashed #D6D6D6;
         z-index: 2;
         display: flex;
         flex-direction: column;
@@ -282,6 +281,7 @@
           margin: 10rpx;
           line-height: 35rpx;
           text-align: center;
+          width: 400rpx;
         }
       }
     }
@@ -295,7 +295,6 @@
       box-sizing: border-box;
       padding: 30rpx 0 10rpx;
       background-color: #fff;
-      border-radius: 10rpx;
       display: flex;
       flex-direction: column;
       align-items: center;

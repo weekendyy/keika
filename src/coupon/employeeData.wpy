@@ -1,7 +1,7 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="employeeBox">
-    <block wx:for="{{empolyeeData}}">
+    <block wx:for="{{empolyeeData}}" wx:key="{{index}}">
       <view class="empolyeeItem">
         <view class="empolyeeHead">
           <text class="zhangaho">员工账号：{{item.admindata.username}}</text>

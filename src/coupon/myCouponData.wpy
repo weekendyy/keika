@@ -1,7 +1,7 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="businessName">
-    <view class="nametxt"><open-data type="userNickName"></open-data>，您好</view>
+    <view class="nametxt"><text>{{adminName}}</text>，您好</view>
   </view>
   <view class="totle-data">
     <block>
@@ -64,7 +64,7 @@
         </view>
       </view>
     </block>
-    <view class="noneAvtive" wx:if="{{userData.length == 0}}">未添加优惠券</view>
+    <view class="noneAvtive" wx:if="{{userData.length == 0}}">未有人领取</view>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -78,7 +78,7 @@
       navigationBarBackgroundColor: "#2781FB",
       navigationBarTitleText: '我的数据',
       backgroundColorTop: '#2781FB',
-      backgroundColorBottom: '#2781FB',
+      backgroundColorBottom: '#F8F9F9',
       navigationBarTextStyle: 'white'
     }
     data = {
@@ -88,7 +88,8 @@
       pageNum: 1,
       userData: '',
       billData: '',
-      authData: ''
+      authData: '',
+      adminName: ''
     }
     computed = {
         
@@ -98,6 +99,7 @@
     }
     onLoad(e){
       this.authData = wx.getStorageSync('couponInfo').auth_data
+      this.adminName = wx.getStorageSync('adminName')
       this.adminId = e.adminId
       this.activeId = e.activeId
       let query = {

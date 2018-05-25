@@ -51,13 +51,13 @@
       <form style="height:100%; flex: 0 0 167rpx;" report-submit bindsubmit="gotoCoupon" wx:if="{{vipInfo.is_preferential == 2}}">
         <button class="nav" form-type="submit">
           <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
-          <image src="./images/coupon.png"></image>
+          <image src="./images/couponIcon.png"></image>
           <text>优惠券</text>
         </button>
       </form>
       <view class="nav">
         <button @tap="toCouponData">
-          <image src="http://p55e536k6.bkt.clouddn.com/loginIcon.png"></image>
+          <image src="./images/dataIcon.png"></image>
           <text>数据查看</text>
         </button>
       </view>

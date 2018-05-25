@@ -2,7 +2,7 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="activeCouponDataBox">
     <view class="businessName">
-      <view class="nametxt"><open-data type="userNickName"></open-data>，您好</view>
+      <view class="nametxt"><text>{{adminName}}</text>，您好</view>
     </view>
     <view class="totle-data">
       <block>
@@ -73,7 +73,7 @@
       navigationBarBackgroundColor: "#2781FB",
       navigationBarTitleText: '活动优惠券',
       backgroundColorTop: '#2781FB',
-      backgroundColorBottom: '#2781FB',
+      backgroundColorBottom: '#F8F9F9',
       navigationBarTextStyle: 'white'
     }
     data = {
@@ -82,7 +82,8 @@
       activeId: '',
       couponData: '',
       authData: '',
-      billData: ''
+      billData: '',
+      adminName: ''
     }
     computed = {
         
@@ -94,6 +95,7 @@
     }
     onLoad(e){
       this.authData = wx.getStorageSync('couponInfo')
+      this.adminName = wx.getStorageSync('adminName')
       this.activeId = e.activeId
       this.adminId = e.adminId
       let query = {

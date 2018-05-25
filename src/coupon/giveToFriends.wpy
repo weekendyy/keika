@@ -8,13 +8,13 @@
           <image src="./images/couponhome.png" mode="widthFix" class="homeIcon"></image>
           <view class="couponTop">
             <image src="{{item.preferential.img_url}}" mode="aspectFill" class="couponPic"></image>
-            <text class="coupontitle">{{item.magicshop.magic_shop_name}}</text>
+            <text class="coupontitle">{{item.preferential.goods_name}}</text>
             <text class="couponAddress">地址：{{item.magicshop.address}}</text>
             <text class="couponTel">电话：{{item.magicshop.link_tel}}</text>
           </view>
           <view class="couponBottom">
-            <text class="couponDesc">{{item.total_price_str}}</text>
-            <text class="couponName">{{item.preferential_str}}</text>
+            <text class="couponDesc">{{item.preferential.use_detail}}</text>
+            <text class="couponName">{{item.preferential.limit_that}}</text>
             <view class="cut"></view>
             <text class="couponTime">{{item.preferential.end_time}}{{item.time_status_str}}</text>
           </view>
@@ -223,8 +223,8 @@
       let userInfo = wx.getStorageSync('userInfo')
       let that = this
       let currentCoupon = this.couponData[this.couponIndex]
-      let title = userInfo.nickName + '送你一张【' + currentCoupon.preferential_str + '】优惠券，' + '赶快来领'
-      let path = '/coupon/takeCoupon?into_type=' + currentCoupon.get_type + '&admin_id=' + currentCoupon.assistant_id + '&goods_id=' + currentCoupon.preferential_id + '&get_log_id=' + currentCoupon.id
+      let title = userInfo.nickName + '送你一张【' + currentCoupon.preferential.goods_name + '】优惠券，' + '赶快来领'
+      let path = '/coupon/takeCoupon?into_type=' + currentCoupon.get_type + '&admin_id=' + currentCoupon.assistant_id + '&goods_id=' + this.goodsId + '&get_log_id=' + currentCoupon.id
       console.log(path)
       return {
         title: title,
@@ -331,12 +331,16 @@
             font-size: 24rpx;
             margin-top: 20rpx;
             text-align: center;
+            width: 400rpx;
+            line-height: 35rpx;
           }
           .couponName{
             font-size: 45rpx;
             font-weight: 600;
             margin: 28rpx 0 40rpx;
             text-align: center;
+            width: 400rpx;
+            line-height: 55rpx;
           }
           .cut{
             width: 50rpx;

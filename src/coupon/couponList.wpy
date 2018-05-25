@@ -3,11 +3,11 @@
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="couponListBox">
     <block wx:for="{{couponList}}" wx:key="{{index}}">
-      <view class="coupon-header {{loadingHidden?'show-coupon-header':''}}" @tap="toCouponDetail({{item.preferential_id}},{{item.magic_shop_id}}, {{item.activity_id}})">
+      <view class="coupon-header {{loadingHidden?'show-coupon-header':''}}" @tap="toCouponDetail({{item.preferential_id}},{{item.magic_shop_id}}, {{item.activity_id}}, {{item.preferenactivity[0].activity_name}})">
         <view class="coupon-header-top">
           <view class="half-round"></view>
           <image src="./images/quan.png" mode="widthFix" class="quanPic"></image>
-          <text class="coupon-title">{{item.preferential.limit_that}}</text>
+          <text class="coupon-title">{{item.preferenactivity[0].activity_name}}</text>
           <view class="coupon-desc">
             <text>有效期至：</text> <text>{{item.end_time}}</text>
           </view>
@@ -30,7 +30,7 @@
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
-      navigationBarTitleText: '优惠券列表',
+      navigationBarTitleText: '活动列表',
       backgroundColorTop: '#F0F2F5',
       backgroundColorBottom: '#F0F2F5'
     }
@@ -45,9 +45,8 @@
         
     }
     methods = {
-      toCouponDetail(couponId, shopId, activeId){
-        // id=182&shopName=令狐冲烤鱼&goodsId=47
-        CouponModel.navTo('./couponIndex', {id: shopId, goodsId: couponId, activeId: activeId})
+      toCouponDetail(couponId, shopId, activeId, activityName){
+        CouponModel.navTo('./couponIndex', {id: shopId, goodsId: couponId, activeId: activeId, activityName: activityName})
       }
     }
     onLoad(e){

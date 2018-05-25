@@ -64,6 +64,10 @@
               key: "couponPassword",
               data: this.accountPasswod
             })
+            wx.setStorage({
+              key: "adminName",
+              data: res.data.user_name
+            })
             setTimeout(()=>{
               wx.redirectTo({
                 url: './businessCouponData'

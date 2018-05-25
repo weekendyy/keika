@@ -2,15 +2,15 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="verificationBox">
     <!-- 优惠券信息 -->
-    <view class="verification-coupon beforeShow {{loadingHidden?'show-detailItem':''}}" @tap="toCouponDetail">
+    <view class="verification-coupon beforeShow {{loadingHidden?'show-detailItem':''}}">
       <image src="{{indexData.preferential.img_url}}" mode="aspectFill" class="mainPic"></image>
       <view class="coupon-info">
         <text class="coupon-title">{{indexData.preferential.goods_name}}</text>
         <view class="coupin-content">
           <text class="coupon-number">数量：1</text>
           <view class="coupon-price">
-            <text>¥{{indexData.preferential.preferential_price}}</text>
-            <image src="images/righticon.png" mode="widthFix"></image>
+            <!-- <text>¥{{indexData.preferential.preferential_price}}</text> -->
+            <!-- <image src="images/righticon.png" mode="widthFix"></image> -->
           </view>
         </view>
         <text class="coupon-time">有效期：{{indexData.preferential.from_time}}-{{indexData.preferential.end_time}}</text>

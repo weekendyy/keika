@@ -9,7 +9,6 @@
         <text class="shopAddress">地址：{{item.magicshop.address}}</text>
       </view>
     </view>
-    <view style="height:1000rpx;"></view>
     <view wx:if="{{couponList.length == 0}}">
       <template is="emptyGoodsTips"></template>
     </view>
