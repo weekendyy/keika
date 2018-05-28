@@ -5,78 +5,48 @@
       <view class="nametxt"><text>{{adminName}}</text>{{fixedData.wechat_name_str}}</view>
       <view class="zhuxiao" @tap="toLogin">注销</view>
     </view>
-    <view class="totle-data">
-      <block>
-        <view class="dataItem">
-          <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .1s;">{{indexData.bill_total.qr_code_get_num}}</text>
-          <text class="itemtxt">{{fixedData.qr_get_num}}</text>
-        </view>
-        <view class="cut1"></view>
-        <view class="dataItem ">
-          <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .2s;">{{indexData.bill_total.qr_code_into_num}}</text>
-          <text class="itemtxt">{{fixedData.qr_num}}</text>
-        </view>
-        <!-- 老板账号 -->
-        <block wx:if="{{couponInfo.auth_data == 1}}">
-          <view class="cut1"></view>
-          <view class="dataItem">
-            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .3s;">{{indexData.bill_total.send_get_num}}</text>
-            <text class="itemtxt">{{fixedData.send_get}}</text>
-          </view>
-          <view class="cut1"></view>
-          <view class="dataItem">
-            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .4s;">{{indexData.bill_total.send_into_num}}</text>
-            <text class="itemtxt">{{fixedData.send_num}}</text>
-          </view>
-        </block>
-
-        <view class="cut1"></view>
-        <view class="dataItem">
-          <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .5s;">{{indexData.bill_total.use_num}}</text>
-          <text class="itemtxt">{{fixedData.use_num}}</text>
-        </view>
-      </block>
-    </view>
-    <view class="otherData">
-      <view class="dataTab {{dataTabIndex == 1?'active':''}}" @tap="seeTodayData(1)">当天数据</view>
-      <view class="cut3"></view>
-      <view class="dataTab {{dataTabIndex == 2?'active':''}}" @tap="seeTodayData(2)">当月数据</view>
-    </view>
-    <view class="dataBox">
-      <view class="totle-data todayData {{shwtodayData?'shwtodayData':''}}">
+    <view class="totle-dataBox">
+      <view class="dataTap">
+        <view @tap="dataTap(0)" class="{{dataTapIndex == 0 ? 'activeTap' : ''}}">总数</view>
+        <view @tap="dataTap(1)" class="{{dataTapIndex == 1 ? 'activeTap' : ''}}">当月</view>
+        <view @tap="dataTap(2)" class="{{dataTapIndex == 2 ? 'activeTap' : ''}}">上月</view>
+        <view @tap="dataTap(3)" class="{{dataTapIndex == 3 ? 'activeTap' : ''}}">当日</view>
+        <view @tap="dataTap(4)" class="{{dataTapIndex == 4 ? 'activeTap' : ''}}">昨日</view>
+      </view>  
+      <view class="totle-data">
         <block>
           <view class="dataItem">
-            <text class="itemNumber showNumber">{{indexData.bill_total.qr_code_get_num}}</text>
+            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .1s;">{{dataBill.qr_code_get_num}}</text>
             <text class="itemtxt">{{fixedData.qr_get_num}}</text>
           </view>
           <view class="cut1"></view>
-          <view class="dataItem">
-            <text class="itemNumber showNumber">{{indexData.bill_total.qr_code_into_num}}</text>
+          <view class="dataItem ">
+            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .2s;">{{dataBill.qr_code_into_num}}</text>
             <text class="itemtxt">{{fixedData.qr_num}}</text>
           </view>
           <!-- 老板账号 -->
           <block wx:if="{{couponInfo.auth_data == 1}}">
             <view class="cut1"></view>
             <view class="dataItem">
-              <text class="itemNumber showNumber">{{indexData.bill_total.send_get_num}}</text>
+              <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .3s;">{{dataBill.send_get_num}}</text>
               <text class="itemtxt">{{fixedData.send_get}}</text>
             </view>
             <view class="cut1"></view>
             <view class="dataItem">
-              <text class="itemNumber showNumber">{{indexData.bill_total.send_into_num}}</text>
+              <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .4s;">{{dataBill.send_into_num}}</text>
               <text class="itemtxt">{{fixedData.send_num}}</text>
             </view>
           </block>
 
           <view class="cut1"></view>
           <view class="dataItem">
-            <text class="itemNumber showNumber">{{indexData.bill_total.use_num}}</text>
+            <text class="itemNumber {{loadingHidden?'showitemNumber':''}}" style="transition: .3s .5s;">{{dataBill.use_num}}</text>
             <text class="itemtxt">{{fixedData.use_num}}</text>
           </view>
         </block>
       </view>
     </view>
-    <view class="couponContentData {{shwtodayData?'showContentData':''}}">
+    <view class="couponContentData">
       <view class="titleBox">
         <image src="./images/active.png" mode="widthFix" class="titleIcon"></image>
         <text>{{fixedData.activate_list}}</text>
@@ -146,8 +116,8 @@
       qrImg: '',
       showQR: false,
       adminName: '',
-      shwtodayData: '',
-      dataTabIndex: 0
+      dataTapIndex: 0,
+      dataBill: ''
     }
     computed = {
         
@@ -231,21 +201,39 @@
       toCouponData(activeId){
         CouponModel.navTo("./activeCouponData", {adminId: this.couponInfo.admin_id, activeId: activeId})
       },
-      seeTodayData(type){
-        if(this.dataTabIndex == type){
-          this.dataTabIndex = 0
-          this.shwtodayData = false
-        } else {
-          this.dataTabIndex = type
-          this.shwtodayData = true
-        }
-        this.$apply()
-      },
       fullimg(){
         wx.previewImage({
           current: this.qrImg,
           urls: [this.qrImg]
         })
+      },
+      dataTap(index){
+        this.dataTapIndex = index
+        if(index === '0'){
+          this.dataBill = this.indexData.bill_total
+          this.$apply()
+          return false
+        }
+        if(index === '1'){
+          this.dataBill = this.indexData.this_month_bill_total
+          this.$apply()
+          return false
+        }
+        if(index === '2'){
+          this.dataBill = this.indexData.last_month_bill_total
+          this.$apply()
+          return false
+        }
+        if(index === '3'){
+          this.dataBill = this.indexData.today_bill_total
+          this.$apply()
+          return false
+        }
+        if(index === '4'){
+          this.dataBill = this.indexData.yesterday_bill_total
+          this.$apply()
+          return false
+        }
       }
     }
     onLoad(e){
@@ -259,6 +247,7 @@
         if(res.code == 1){
           this.indexData = res.data
           this.fixedData = res.content_str
+          this.dataBill = res.data.bill_total
           wx.setNavigationBarTitle({
             title: res.data.data[0].magicshop.magic_shop_name
           })
@@ -304,11 +293,13 @@
     width: 100%;
     .businessName{
       width: 100%;
-      height: 240rpx;
+      height: 340rpx;
       background-color: #2781FB;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      box-sizing: border-box;
+      padding-bottom: 100rpx;
       .nametxt{
         font-size: 50rpx;
         color: #fff;
@@ -328,110 +319,79 @@
         margin-right: 20rpx;
       }
     }
-    .totle-data{
+    .totle-dataBox{
       width: 710rpx;
-      height: 120rpx;
-      border-radius: 10rpx;
+      height: 200rpx;
+      margin-left: 20rpx;
+      margin-top: -150rpx;
       box-shadow: 0 0 20rpx rgba(5,41,93,.2);
-      margin-left: 20rpx;
-      margin-top: -60rpx;
-      background-color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      .dataItem{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: 100%;
-        justify-content: center;
-        flex: 1;
-        .itemNumber{
-          color: #3E4552;
-          font-size: 38rpx;
-          font-weight: 600;
-          transform: translateY(-40rpx);
-          opacity: 0;
-        }
-        .showNumber{
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .showitemNumber{
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .itemtxt{
-          font-size: 25rpx;
-          color: #A0A8B8;
-          margin-top: 10rpx;
-        }
-      }
-      .cut1{
-        width: 1px;
-        height: 70rpx;
-        background-color: #F0F2F6;
-      }
-    }
-    .dataBox{
-      width: 710rpx;
-      height: 120rpx;
+      border-radius: 10rpx;
       overflow: hidden;
-      margin-left: 20rpx;
-      transition: .3s;
-    }
-    .todayData{
-      margin-top: 0;
-      box-shadow: none;
-      border: 1px solid #2781FB;
-      box-sizing: border-box;
-      border-top: none;
-      border-radius: 0px;
-      transition: .3s;
-      transform: translateY(-120rpx);
-      pointer-events: none;
-      opacity: 0;
-      margin-left: 0;
-      .cut1{
-        background-color: #2781FB;
+      .dataTap{
+        width: 710rpx;
+        height: 80rpx;
+        display: flex;
+        border-bottom: 1px solid #F4F5F8;
+        view{
+          flex: 1;
+          color: #444444;
+          font-size: 28rpx;
+          text-align: center;
+          line-height: 80rpx;
+          border-bottom: 2px solid #fff;
+          background-color: #fff;
+        }
+        .activeTap{
+          border-bottom: 2px solid #2781FB;
+          color: #2781FB;
+        }
       }
-    }
-    .shwtodayData{
-      transform: translateY(0);
-      opacity: 1;
-    }
-    .otherData{
-      width: 710rpx;
-      height: 70rpx;
-      display: flex;
-      margin: 20rpx 0 0;
-      background-color: #2781FB;
-      margin-left: 20rpx;
-      border: 1px solid #2781FB;
-      box-sizing: border-box;
-      .dataTab{
-        height: 100%;
-        flex: 1;
-        line-height: 70rpx;
-        text-align: center;
-        font-size: 28rpx;
-        color: #fff;
-      }
-      .active{
-        background-color: #003983;
-      }
-      .cut3{
-        width: 1px;
-        height: 100%;
+      .totle-data{
+        width: 710rpx;
+        height: 120rpx;
         background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        .dataItem{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100%;
+          justify-content: center;
+          flex: 1;
+          .itemNumber{
+            color: #3E4552;
+            font-size: 38rpx;
+            font-weight: 600;
+            transform: translateY(-40rpx);
+            opacity: 0;
+          }
+          .showNumber{
+            opacity: 1;
+            transform: translateY(0);
+          }
+          .showitemNumber{
+            opacity: 1;
+            transform: translateY(0);
+          }
+          .itemtxt{
+            font-size: 25rpx;
+            color: #A0A8B8;
+            margin-top: 10rpx;
+          }
+        }
+        .cut1{
+          width: 1px;
+          height: 70rpx;
+          background-color: #F0F2F6;
+        }
       }
     }
     .couponContentData{
       width: 100%;
       box-sizing: border-box;
-      padding: 0 20rpx; 
-      transition: .3s;
-      transform: translateY(-120rpx);     
+      padding: 0 20rpx;  
       .titleBox{
         width: 100%;
         height: 90rpx;
@@ -523,9 +483,6 @@
           }
         }
       }
-    }
-    .showContentData{
-      transform: translateY(0);
     }
     .qrCodeBox{
       width: 750rpx;

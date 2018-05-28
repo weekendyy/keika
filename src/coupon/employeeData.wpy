@@ -1,5 +1,12 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="dataTap">
+    <view @tap="dataTap(0)" class="{{dataTapIndex == 0 ? 'activeTap' : ''}}">总数</view>
+    <view @tap="dataTap(1)" class="{{dataTapIndex == 1 ? 'activeTap' : ''}}">当月</view>
+    <view @tap="dataTap(2)" class="{{dataTapIndex == 2 ? 'activeTap' : ''}}">上月</view>
+    <view @tap="dataTap(3)" class="{{dataTapIndex == 3 ? 'activeTap' : ''}}">当日</view>
+    <view @tap="dataTap(4)" class="{{dataTapIndex == 4 ? 'activeTap' : ''}}">昨日</view>
+  </view>
   <view class="employeeBox">
     <block wx:for="{{empolyeeData}}" wx:key="{{index}}">
       <view class="empolyeeItem">
@@ -31,6 +38,7 @@
         <view class="cut3"></view>
       </view>
     </block>
+    <view class="noneData" wx:if="{{isEmpty}}">暂无数据</view>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -50,16 +58,75 @@
     data = {
       loadingHidden: false,
       empolyeeData: '',
-      pageNum: 1,
-      isLoadAll: false,
+      allData: '',
+      lastMonthData: '',
+      thisMonthData: '',
+      yestodayData: '',
+      todayData: '',
+      pageNum_all: 1,
+      pageNum_today: 1,
+      pageNum_yesToday: 1,
+      pageNum_lastMonth: 1,
+      pageNum_thisMonth: 1,
+      isLoadAll_all: false,
+      isLoadAll_today: false,
+      isLoadAll_yesToday: false,
+      isLoadAll_lastMonth: false,
+      isLoadAll_thisMonth: false,
       adminId: '',
-      activeId: ''
+      activeId: '',
+      dataTapIndex: '0',
+      isEmpty: false
     }
     computed = {
         
     }
     methods = {
-      
+      dataTap(index){
+        this.isEmpty = false
+        this.dataTapIndex = index
+        if(index === '0'){
+          if(this.allData.length === 0){
+            this._loadData(index,'',true)
+          }
+          this.empolyeeData = this.allData
+          this.$apply()
+          return false
+        }
+        if(index === '1'){
+          if(this.thisMonthData.length === 0){
+            this._loadData(index,'',true)
+          }
+          this.empolyeeData = this.thisMonthData
+          this.$apply()
+          return false
+        }
+        if(index === '2'){
+          if(this.lastMonthData.length === 0){
+            this._loadData(index,'',true)
+          }
+          this.empolyeeData = this.lastMonthData
+          this.$apply()
+          return false
+        }
+        if(index === '3'){
+          if(this.todayData.length === 0){
+            this._loadData(index,'',true)
+          }
+          this.empolyeeData = this.todayData
+          this.$apply()
+          return false
+        }
+        if(index === '4'){
+          if(this.yestodayData.length === 0){
+            this._loadData(index,'',true)
+          }
+          this.empolyeeData = this.yestodayData
+          this.$apply()
+          return false
+        }
+        this.$apply()
+      }
     }
     onLoad(e){
       this.adminId = e.adminId
@@ -67,11 +134,16 @@
       let query = {
         adminId: e.adminId,
         activeId: e.activeId,
-        pageNum: this.pageNum
+        pageNum: this.pageNum_all,
+        dataTpye: 'all_bill'
       }
       CouponModel.getEmpolyeeData(query, (res)=>{
         if(res.code == 1){
+          if(res.data.length === 0){
+            this.isEmpty = true
+          }
           this.empolyeeData = res.data
+          this.allData = res.data
           this.loadingHidden = true
           this.$apply()
         } else {
@@ -81,25 +153,159 @@
     }
     onShow(){
     }
-    onReachBottom(){
-      if(!this.isLoadAll){
-        this.pageNum++
-        let query = {
-          adminId: this.adminId,
-          activeId: this.activeId,
-          pageNum: this.pageNum
-        }
-        CouponModel.getEmpolyeeData(query, (res)=>{
-          if(res.code == 1){
-            if(res.data.length == 0){
-              CouponModel.showTips('已经到底了')
-              this.isLoadAll = true
-            }
-            this.empolyeeData = [...this.empolyeeData, ...res.data]
-            this.$apply()
-          } else {
-            CouponModel.showTips(res.message)
+    _loadData(type, callBack, tabType){
+      let dataTpye = ''
+      let pageNum = ''
+      if(type === '0'){
+        dataTpye = 'all_bill'
+        pageNum = this.pageNum_all
+      }
+      if(type === '1'){
+        dataTpye = 'this_month'
+        pageNum = this.pageNum_thisMonth
+      }
+      if(type === '2'){
+        dataTpye = 'last_month'
+        pageNum = this.pageNum_lastMonth
+      }
+      if(type === '3'){
+        dataTpye = 'today'
+        pageNum = this.pageNum_today
+      }
+      if(type === '4'){
+        dataTpye = 'yesterday'
+        pageNum = this.pageNum_yesToday
+      }
+      let query = {
+        adminId: this.adminId,
+        activeId: this.activeId,
+        pageNum: pageNum,
+        dataTpye: dataTpye
+      }
+      CouponModel.getEmpolyeeData(query, (res)=>{
+        if(res.code == 1){
+          if(tabType && res.data.length === 0){
+            this.isEmpty = true
           }
+          if(type === '0'){
+            if(!callBack){
+              this.allData = res.data
+              this.empolyeeData = this.allData
+              this.$apply()
+              return false
+            } else {
+              callBack(res.data)
+              return false
+            }
+          }
+          if(type === '1'){
+            if(!callBack){
+              this.thisMonthData = res.data
+              this.empolyeeData = this.thisMonthData
+              this.$apply()
+              return false
+            } else {
+              callBack(res.data)
+              return false
+            }
+          }
+          if(type === '2'){
+            if(!callBack){
+              this.lastMonthData = res.data
+              this.empolyeeData = this.lastMonthData
+              this.$apply()
+              return false
+            } else {
+              callBack(res.data)
+              return false
+            }
+          }
+          if(type === '3'){
+            if(!callBack){
+              this.todayData = res.data
+              this.empolyeeData = this.todayData
+              this.$apply()
+              return false
+            } else {
+              callBack(res.data)
+              return false
+            }
+          }
+          if(type === '4'){
+            if(!callBack){
+              this.yestodayData = res.data
+              this.empolyeeData = this.yestodayData
+              this.$apply()
+              return false
+            } else {
+              callBack(res.data)
+              return false
+            }
+          }
+        } else {
+          CouponModel.showTips(res.message)
+        }
+      })
+    }
+    onReachBottom(){
+      if(this.dataTapIndex === '0' && !this.isLoadAll_all){
+        this.pageNum_all++
+        this._loadData(this.dataTapIndex,(res)=>{
+          if(res.length === 0){
+            this.isLoadAll_all = true
+            CouponModel.showTips("已经到底了")
+          }
+          this.allData = [...this.allData, ...res]
+          this.empolyeeData = this.allData
+          this.$apply()
+        })
+      }
+      if(this.dataTapIndex === '1' && !this.isLoadAll_thisMonth){
+        this.pageNum_thisMonth++
+        this._loadData(this.dataTapIndex,(res)=>{
+          if(res.length === 0){
+            this.isLoadAll_thisMonth = true
+            CouponModel.showTips("已经到底了")
+          }
+          this.thisMonthData = [...this.thisMonthData, ...res]
+          this.empolyeeData = this.thisMonthData
+          this.$apply()
+        })
+      }
+      if(this.dataTapIndex === '2' && !this.isLoadAll_lastMonth){
+        this.pageNum_lastMonth++
+        this._loadData(this.dataTapIndex,(res)=>{
+          if(res.length === 0){
+            this.isLoadAll_lastMonth = true
+            CouponModel.showTips("已经到底了")
+          }
+          this.lastMonthData = [...this.lastMonthData, ...res]
+          this.empolyeeData = this.lastMonthData
+          this.$apply()
+        })
+      }
+      if(this.dataTapIndex === '3' && !this.isLoadAll_today){
+        this.pageNum_today++
+        this._loadData(this.dataTapIndex,(res)=>{
+          if(res.length === 0){
+            this.isLoadAll_today = true
+            CouponModel.showTips("已经到底了")
+          }
+          this.todayData = [...this.todayData, ...res]
+          this.empolyeeData = this.todayData
+          this.$apply()
+        })
+      }
+      if(this.dataTapIndex === '4' && !this.isLoadAll_yesToday){
+        this.pageNum_yestoday++
+        this._loadData(this.dataTapIndex,(res)=>{
+          if(res.length === 0){
+            this.isLoadAll_yesToday = true
+            CouponModel.showTips("已经到底了")
+          }
+          this.yestodayData = [...this.yestodayData, ...res]
+          this.empolyeeData = this.yestodayData
+          this.$apply()
         })
       }
     }
@@ -110,10 +316,38 @@
   Page{
     background-color: #F8F9F9;
   }
+  .dataTap{
+    width: 750rpx;
+    height: 80rpx;
+    display: flex;
+    border-bottom: 1px solid #F4F5F8;
+    view{
+      flex: 1;
+      color: #444444;
+      font-size: 28rpx;
+      text-align: center;
+      line-height: 80rpx;
+      border-bottom: 2px solid #fff;
+      background-color: #fff;
+    }
+    .activeTap{
+      border-bottom: 2px solid #2781FB;
+      color: #2781FB;
+    }
+  }
   .employeeBox{
     width: 100%;
     box-sizing: border-box;
     padding:30rpx 20rpx;
+    .noneData{
+      width: 100%;
+      height: 500rpx;
+      text-align: center;
+      line-height: 500rpx;
+      color: #999;
+      font-size: 35rpx;
+      font-weight: 600;
+    }
     .empolyeeItem{
       width: 100%;
       border-radius: 10rpx;

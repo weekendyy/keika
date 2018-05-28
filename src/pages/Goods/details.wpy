@@ -428,6 +428,9 @@
               return false
             }
           })
+        },()=>{
+          this.isBuying = false
+          this.$apply()
         })
       },
       gotoUse(){

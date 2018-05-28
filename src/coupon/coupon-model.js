@@ -298,7 +298,8 @@ class takeCoupon extends Base {
       data: {
         admin_id: queryData.adminId,
         activity_id: queryData.activeId,
-        page_num: queryData.pageNum
+        page_num: queryData.pageNum,
+        choose_type: queryData.dataTpye
       },
       sCallback(ResData) {
         callback && callback(ResData)

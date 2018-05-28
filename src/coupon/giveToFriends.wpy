@@ -1,5 +1,6 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="giveToFriends">
     <view class="couponBox {{loadingHidden?'show-couponBox':''}}">
       <block wx:for="{{couponData}}" wx:key="{{index}}">
@@ -20,7 +21,9 @@
           </view>
         </view>
       </block>
-      <text class="empty" wx:if="{{couponData.length == 0}}">空空如也~</text>
+      <view wx:if="{{couponData.length == 0}}">
+        <template is="emptyGoodsTips" data="{{tipsTxt:'暂无优惠券'}}"></template>
+      </view>
     </view>
     <!-- 立即使用 -->
     <form report-submit="true" bindsubmit="useCoupon">
@@ -192,6 +195,9 @@
       } else if(this.order_type == 3 && !this.hasUserInfo){
         wx.hideShareMenu()
       }
+      if(this.couponData.length != 0){
+        return false
+      }
       let query = {
         magic_shop_id: this.shopId,
         order_type: this.order_type,
@@ -241,6 +247,7 @@
 </script>
 <style lang="less">
   @import '../pages/tpls/loading/loading.wxss';
+  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   Page{
     background-color: #fff;
   }

@@ -77,17 +77,11 @@ class Address extends Base{
     let Geography = wx.getStorageSync('GeographyData')
     if(!Geography){
       MyModel.getCityName((ResData)=>{
-        wx.setStorage({
-          key:"GeographyData",
-          data: ResData
-        })
+        wx.setStorageSync('GeographyData', ResData)
         sCallBack && sCallBack()
       },()=>{
         MyModel.twoGetCityName((res)=>{
-          wx.setStorage({
-            key:"GeographyData",
-            data: res
-          })
+          wx.setStorageSync('GeographyData', ResData)
           sCallBack && sCallBack()
         },(res)=>{
           wx.showToast({
@@ -103,7 +97,7 @@ class Address extends Base{
     }
   }
   //获取用户信息并更新
-  getUser(res,sCallBack){
+  getUser(res,sCallBack,fCallBack){
     let userInfo = res.detail.userInfo
     if(userInfo){  //用户点了确定授权或者已经授权
       let value = wx.getStorageSync('userInfo')
@@ -130,6 +124,7 @@ class Address extends Base{
         icon: 'none',
         duration: 3000
       })
+      fCallBack()
     }
   }
 }
