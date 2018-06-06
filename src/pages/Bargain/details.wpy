@@ -18,12 +18,12 @@
         <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
       </view>
     </view>
-    <button class="posterText {{loadingHidden?'showposterText':''}}" @tap="getUserInfo">
+    <view class="posterText {{loadingHidden?'showposterText':''}}" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </button>
+    </view>
     <view class="mainBoxB">
       <view class="mainBoxB-top {{loadingHidden?'show-mainBoxB-top':''}}">
         <text class="title">{{DetailData.title}}</text>
@@ -248,7 +248,8 @@
     <view class="bargain_success_cover" wx:if="{{showBarginSuccess}}"></view>
     <view class="bargain_success_content {{showBarginSuccess?'show_bargain_success_content':''}}">
       <image src="http://applet.czsjcrm.cn/images/templete_show_image/guandage.png" mode="widthFix" class="bargain_successPic"></image>
-      <text class="bargain_success_txt">恭喜您!成功砍掉<text>{{bargain_price}}</text></text>
+      <text wx:if="{{isBottomPrice}}" class="bargain_success_txt">恭喜，已经砍到底价</text>
+      <text class="bargain_success_txt" wx:if="{{!isBottomPrice}}">成功帮好友砍掉<text>¥{{bargain_price}}</text></text>
       <view class="iknow" @tap="closeBarginSuccess">我知道了</view>
     </view>
   </view>
@@ -362,7 +363,8 @@
       activity_id: '',
       posterImg:'',
       formId: '',
-      secondLoad: false
+      secondLoad: false,
+      isBottomPrice: false
     }
     methods = {
       gotoBuy(){
@@ -544,20 +546,15 @@
         if(ResData.bargain.code == 1 && ResData.bargain.is_own == 0){
           // 如果砍到底价 就提示砍到底价 渲染最新价格 和人数
           if(ResData.bargain.launch.is_minimum == 1){
-            wx.showToast({
-              title: '已经是底价了',
-              icon: 'success',
-              duration: 2000
-            })
+            this.isBottomPrice = true
+            this.bargain_price = ResData.bargain.bargain_price
+            this.showBarginSuccess = true
             that.$apply()
             return false
           }
           if(ResData.bargain.launch.is_minimum == 0){
-            wx.showToast({
-              title: '帮忙砍价成功了',
-              icon: 'success',
-              duration: 2000
-            })
+            this.bargain_price = ResData.bargain.bargain_price
+            this.showBarginSuccess = true
             that.$apply()
             return false
           }

@@ -11,7 +11,7 @@
     <view class="order-main">
       <view class="order-all" wx:if="{{orderAllData.length}}">
         <repeat for="{{orderAllData}}" wx:for-item="item" key:index="index" >
-          <view class="order-item" @tap="orderDetails({{index}})">
+          <view class="order-item" @tap="orderDetails({{index}},{{item.deadline}})">
             <view class="order-item-header">
               <text class="shop-name">{{item.shop_name}}</text>
               <view wx:if="{{item.goods_order_type == 2}}">
@@ -133,23 +133,25 @@
                 <text>已过期了</text>
               </view>
             </view>
+            <!-- 秒杀 -->
             <view class="payment-btn" wx:if="{{item.goods_order_type == 1}}">
               <!--交易关闭-->
-              <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
+              <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
               <!--秒杀未付款-->
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
-              <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
+              <text wx:if="{{item.status == 2 && item.deadline>=time}}" @tap.stop="orderUse({{index}})">去使用</text>
+              <text wx:if="{{item.status == 2 && item.deadline<time}}">已过期</text>
               <!--交易完成-->
               <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
               <!--交易成功-->
               <view wx:if="{{item.status == 4}}" class="success">
-                <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                <!-- <text class='del' @tap.stop="delOrder({{index}})">删除订单</text> -->
                 <text @tap.stop="orderDetails({{index}})">查看订单</text>
               </view>
             </view>
             <view class="payment-btn" wx:if="{{item.goods_order_type == 2 && item.check_pay_type == 1}}">
               <!--交易关闭-->
-              <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
+              <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
                 <!--秒杀未付款-->
                 <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
                 <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
@@ -157,13 +159,13 @@
                 <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
                 <!--交易成功-->
                 <view wx:if="{{item.status == 4}}" class="success">
-                  <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                  <!-- <text class='del' @tap.stop="delOrder({{index}})">删除订单</text> -->
                   <text @tap.stop="orderDetails({{index}})">查看订单</text>
                 </view>
             </view>
             <view class="payment-btn" wx:if="{{item.goods_order_type == 2 && item.check_pay_type == 2}}">
               <!--交易关闭-->
-              <text class="del" wx:if="{{item.status == 0 || item.status == 8}}" @tap.stop="delOrder({{index}})">删除订单</text>
+              <!-- <text class="del" wx:if="{{item.status == 0 || item.status == 8}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
 
               <!--拼团未付款-->
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
@@ -174,20 +176,20 @@
               <text wx:if="{{ item.status == 3}}" @tap.stop="orderEvaluate({{index}})">去评价</text>
               <!--交易成功-->
               <view wx:if="{{item.status == 4}}" class="success">
-                <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                <!-- <text class='del' @tap.stop="delOrder({{index}})">删除订单</text> -->
                 <text @tap.stop="orderDetails({{index}})">查看订单</text>
               </view>
             </view>
             <view class="payment-btn" wx:if="{{item.goods_type == 5}}">
               <text wx:if="{{item.status == 1}}" @tap.stop="orderUse({{index}})">去使用</text>
               <text wx:if="{{item.status == 2}}" @tap.stop="orderDetails({{index}})">已使用</text>
-              <text wx:if="{{item.status == 3}}" @tap.stop="orderDetails({{index}})">删除订单</text>
+              <!-- <text wx:if="{{item.status == 3}}" @tap.stop="orderDetails({{index}})">删除订单</text> -->
               <!--交易成功-->
             </view>
             <!-- 砍价 -->
             <view class="payment-btn" wx:if="{{item.goods_type == 4}}">
               <!--交易关闭-->
-              <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text>
+              <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
               <!--秒杀未付款-->
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
               <text wx:if="{{item.status == 2 && item.use_status == 0}}" @tap.stop="orderUse({{index}})">
@@ -200,7 +202,7 @@
               <text wx:if="{{ item.status ==3 }}" @tap.stop="orderEvaluate({{index}})">去评价</text>
               <!--交易成功-->
               <view wx:if="{{item.status == 4}}" class="success">
-                <text class='del' @tap.stop="delOrder({{index}})">删除订单</text>
+                <!-- <text class='del' @tap.stop="delOrder({{index}})">删除订单</text> -->
                 <text @tap.stop="orderDetails({{index}})">查看订单</text>
               </view>
             </view>
@@ -238,7 +240,8 @@
       formId:'',
       vipStatue:2,
       pageNum: 1,
-      isLoadAll: false
+      isLoadAll: false,
+      time: ''
     }
     methods={
       onTabsItemTap(index){
@@ -248,8 +251,11 @@
         this.currentTabsIndex = index
         this._loadOrderList()
       },
-      orderDetails(index){
+      orderDetails(index,deadLine){
        //跳转至详情页
+        if(deadLine<this.time){
+          return false
+        }
         let orderIndex = index
         let orderID = this.orderAllData[orderIndex].id
         let goods_order_type = this.orderAllData[orderIndex].goods_order_type
@@ -409,6 +415,10 @@
     onLoad(options) {
       this.currentTabsIndex = options.id;
       this.formId = options.formId
+      let myTime = new Date()
+      let timeMonth = (myTime.getMonth()+1).toString()
+      let timeDay = (myTime.getDate()).toString()
+      this.time = timeMonth+'.'+timeDay
     }
     onShow(){
       this.pageNum = 1

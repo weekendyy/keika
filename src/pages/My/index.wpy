@@ -19,14 +19,14 @@
     </view>
     </form>
     <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}">
-      <view class="nav">
+      <!-- <view class="nav">
         <form report-submit='magic_form_id'>
           <button open-type="contact">
             <image src="./images/icon-kefu.png"></image>
             <text>{{center_index_str[0]}}</text>
           </button>
         </form>
-      </view>
+      </view> -->
       <form style="height:100%; flex: 0 0 167rpx;" report-submit='magic_form_id' bindsubmit="gotowelfare">
         <button class="nav" form-type="submit">
           <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
@@ -50,7 +50,7 @@
       </form>
       <form style="height:100%; flex: 0 0 167rpx;" report-submit bindsubmit="gotoCoupon" wx:if="{{vipInfo.is_preferential == 2}}">
         <button class="nav" form-type="submit">
-          <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
+          <text class="num" wx:if="{{vipInfo.preferential_get_num}}">{{vipInfo.preferential_get_num}}</text>
           <image src="./images/couponIcon.png"></image>
           <text>优惠券</text>
         </button>
@@ -58,7 +58,7 @@
       <view class="nav">
         <button @tap="toCouponData">
           <image src="./images/dataIcon.png"></image>
-          <text>数据查看</text>
+          <text>查数据</text>
         </button>
       </view>
     </view>
@@ -105,7 +105,7 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.14.1</text>
+        <text>V 1.14.3</text>
       </view>
     </view>
   </view>

@@ -124,7 +124,6 @@
     }
     methods = {
       myQRCode(id){
-        console.log(id)
         if(typeof(id) == 'object'){
           CouponModel.showTips("未创建优惠券")
           return false
@@ -136,7 +135,10 @@
           this.$apply()
           return false
         }
-        CouponModel.showTips('二维码下载中..')
+        wx.showLoading({
+          title: '二维码下载中..',
+          icon: 'none'
+        })
         let query = {
           adminId: this.couponInfo.admin_id,
           activeId: id
@@ -172,7 +174,6 @@
         let that = this
         wx.showLoading({title:'保存中...'})
         let posterPic =  this.qrImg
-        console.log(posterPic)
         wx.saveImageToPhotosAlbum({
           filePath: posterPic,
           success:()=>{
@@ -249,7 +250,7 @@
           this.fixedData = res.content_str
           this.dataBill = res.data.bill_total
           wx.setNavigationBarTitle({
-            title: res.data.data[0].magicshop.magic_shop_name
+            title: res.data.shop_name
           })
           this.loadingHidden = true
           this.$apply()

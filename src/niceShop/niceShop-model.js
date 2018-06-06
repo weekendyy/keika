@@ -19,7 +19,19 @@ class NiceShop extends Base {
     }
     this.request(param)
   }
-
+  getMoreGoodsList(queryData, callback){
+    let param = {
+      url: "v5/magic_home_area/activity_list",
+      data: {
+        area_id: queryData.id,
+        time_status: queryData.status
+      },
+      sCallback(ResData){
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
   
 }
 const NiceShopModel = new NiceShop()

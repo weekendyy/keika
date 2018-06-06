@@ -297,7 +297,7 @@
         })
       }
       if(this.dataTapIndex === '4' && !this.isLoadAll_yesToday){
-        this.pageNum_yestoday++
+        this.pageNum_yesToday++
         this._loadData(this.dataTapIndex,(res)=>{
           if(res.length === 0){
             this.isLoadAll_yesToday = true

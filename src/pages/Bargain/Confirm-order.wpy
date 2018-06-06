@@ -21,10 +21,6 @@
         </view>
       </view>
     </view>
-    <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
-      <text>手机号(必填)</text>
-      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11"  placeholder="请填写手机号,方便商家验证"/>
-    </view>
     <view class="Confirm_main">
       <view class="main_header">
         <text>购物清单</text>
@@ -66,6 +62,10 @@
         <text>下单时间：</text>
         <text>{{goods_info.create_time}}</text>
       </view>
+    </view>
+    <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
+      <text>手机号(必填)</text>
+      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
     </view>
     <view class="footer">
       <text class="pay-text">实付:</text>
@@ -121,24 +121,6 @@
         if(!this.AddressInfo.shipping_name && this.choose_address == 1) {
           wx.showToast({
             title: '请填写收货地址',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(Number(this.requirePhone.length) == 0){
-          wx.showToast({
-            title: '请输入手机号码',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(Number(this.requirePhone.length) <= 10){
-          wx.showToast({
-            title: '手机长度不足',
             icon:'loading',
             duration: 1000,
             mask: true,
@@ -264,15 +246,15 @@
       BargainModel.orderDetail({launch_id:this.launch_id}, (ResData)=>{
         if(ResData.code == 1){
           this.goods_info = ResData.data
-          this.AddressInfo.shipping_name = this.goods_info.shipping_name || ''
-          this.AddressInfo.shipping_province = this.goods_info.shipping_province || ''
-          this.AddressInfo.shipping_city = this.goods_info.shipping_city || ''
-          this.AddressInfo.shipping_area = this.goods_info.shipping_area || ''
-          this.AddressInfo.shipping_street = this.goods_info.shipping_street || ''
-          this.AddressInfo.shipping_tel = this.goods_info.shipping_phone || ''
-          this.choose_address = this.goods_info.choose_address || ''
-          this.real_tel = this.goods_info.real_tel || ''
-          this.requirePhone = this.goods_info.real_tel || ''
+          this.goods_info.shipping_name && (this.AddressInfo.shipping_name = this.goods_info.shipping_name)
+          this.goods_info.shipping_province && (this.AddressInfo.shipping_province = this.goods_info.shipping_province)
+          this.goods_info.shipping_city && (this.AddressInfo.shipping_city = this.goods_info.shipping_city)
+          this.goods_info.shipping_area && (this.AddressInfo.shipping_area = this.goods_info.shipping_area)
+          this.goods_info.shipping_street && (this.AddressInfo.shipping_street = this.goods_info.shipping_street)
+          this.goods_info.shipping_phone && (this.AddressInfo.shipping_tel = this.goods_info.shipping_phone)
+          this.goods_info.choose_address && (this.choose_address = this.goods_info.choose_address)
+          this.goods_info.real_tel && (this.real_tel = this.goods_info.real_tel)
+          this.goods_info.real_tel && (this.requirePhone = this.goods_info.real_tel)
         }
         this.$apply()
       })

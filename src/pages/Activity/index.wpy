@@ -1,512 +1,576 @@
 <template>
-  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
-  <import src="/pages/tpls/loading/loading.wxml" />
-  <form report-submit="magic-formID" bindsubmit="onTabsItemTapFormId">
-    <view class="activity-wrapper">
-      <view class="banner {{loadingHidden?'showbanner':''}}">
-        <cheader :headerinfo.sync="headerinfo"></cheader>
-      </view>
-      <view class="activity-content">
-        <view class="activity-tab {{loadingHidden?'show-activity-tab':''}}">
-            <repeat for="{{TitleData}}" wx:for-item="item" key="index">
-              <button class="tab-item {{currentTabsIndex == index ? 'active': ''}}" data-index="{{index}}" form-type="submit" >
-                {{item}}
-              </button>
-            </repeat>
+  <import src="../tpls/loading/loading.wxml" />
+  <view class="shopBox">
+    <form report-submit="true" bindsubmit="toOpenVip">
+    <view class="VipCardBox {{showContent?'showVipCardBox':''}}">
+      <view class="vipCard {{showContent?'showVipCard':''}} {{vipAnimation?'vipAnimation':''}}" style="background-image: url({{vipInfo.background_img}});" bindlongpress="vipanima" bindtouchend="stopAnima">
+        <view class="vipCard-Info">
+          <view class="vipInfo-left">
+            <text class="nameTxt">姓名</text>
+            <view class="userName">
+              <open-data type="userNickName"></open-data>
+            </view>
+          </view>
+          <view class="vipCard-right">
+            <block wx:if="{{vipInfo.open_status == 1}}">
+              <view class="end-time-txtBox">
+                <text class="end-time-txt">到期时间</text>
+                <text class="end-time-txt1">(续费)</text>
+              </view>
+              <text class="end-time">{{vipInfo.valid_time}}</text>
+            </block>
+            <block wx:if="{{vipInfo.open_status == 2}}">
+              <view class="openVip">立即开通</view>
+            </block>
+          </view>
         </view>
-        <view class="activity-tab-box {{loadingHidden?'show-activity-tab-box':''}}">
-            <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 0}}">
-              <view class="index-item" wx:for="{{NowActivityData}}" wx:for-item="item" wx:key="index">
-                <form report-submit="true" bindsubmit="gotoNowDetails">
-                  <button data-index="{{index}}" form-type="submit" class="activityFormId"></button>
-                </form>
-                <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">限时抢购</view>
-                  </view>
-                </view>
-                <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">拼团活动</view>
-                  </view>
-                </view>
-                <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">砍价活动</view>
-                  </view>
-                </view>
-                <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">集卡活动</view>
-                  </view>
-                </view>
-                <image class="item-pic" src="{{item.banner}}" mode="aspectFill"></image>
-                <view class="item-data">
-                  <view class="brand">
-                    <text>品牌 : </text>
-                    <text>{{item.brand_name}}</text>
-                  </view>
-                  <text class="stitle">{{item.name}}</text>
-                  <view class="date-wrapper">
-                    <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
-                    <view class="num-wrapper">
-                      剩余: <text class="num">{{item.residue_num}}</text> 份
-                    </view>
-                  </view>
-                </view>
-              </view>
-              <view wx:if="{{isEmpty.nowIsEmpty}}">
-                <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
-              </view>
-            </scroll-view>
-            <scroll-view class="vip-list" scroll-y="true" bindscrolltolower="onReachBottom" hidden="{{ currentTabsIndex != 1}}">
-              <view class="index-item" wx:for="{{OldActivityData}}" wx:for-item="item" wx:key="index" @tap="gotoOldDetails({{index}})">
-                <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">限时抢购</view>
-                  </view>
-                </view>
-                <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">拼团活动</view>
-                  </view>
-                </view>
-                <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">砍价活动</view>
-                  </view>
-                </view>
-                <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-                  <view class="merge_goods_typeBox">
-                    <view class="merge_goods_type_txt">集卡活动</view>
-                  </view>
-                </view>
-                <image class="item-pic" src="{{item.banner}}" mode="aspectFill"></image>
-                <view class="item-data">
-                  <view class="brand">
-                    <text>品牌 : </text>
-                    <text>{{item.brand_name}}</text>
-                  </view>
-                  <text class="stitle">{{item.name}}</text>
-                  <view class="date-wrapper">
-                    <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
-                    <view class="num-wrapper">
-                      剩余: <text class="num">{{item.residue_num}}</text> 份
-                    </view>
-                  </view>
-                </view>
-              </view>
-              <view wx:if="{{isEmpty.oldIsEmpty}}">
-                <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
-              </view>
-            </scroll-view>
+        <button class="formIdBtn" form-type="submit"></button>
+      </view>
+    </view>
+    </form>
+    <view class="vipRight {{showContent?'showVipRight':''}}">
+      <view class="vipRight-title">
+        <view class="adorn-left"></view>
+        <view class="cut1"></view>
+        <text>{{fixedData.str_5}}</text>
+        <view class="cut1"></view>
+        <view class="adorn-right"></view>
+      </view>
+      <view class="vipRight-content">
+        <view class="vipRightItem" wx:for="{{vipRight}}" wx:key="{{index}}">
+          <image src="{{item.url}}" mode="widthFix" class="rightIcon"></image>
+          <text>{{item.name}}</text>
         </view>
       </view>
     </view>
-  </form>
-  <view wx:if="{{!loadingHidden}}">
+    <view class="vipRight countBox {{showContent?'showcountBox':''}}">
+      <view class="vipRight-title">
+        <view class="adorn-left"></view>
+        <view class="cut1"></view>
+        <text>{{fixedData.str_6}}</text>
+        <view class="cut1"></view>
+        <view class="adorn-right"></view>
+      </view>
+      <view class="countTab">
+        <!-- tab切换 -->
+        <view wx:for="{{countTabs}}" wx:key="{{index}}" class="tabItem" @tap="tabChange({{index}})"><text class="{{index == tabIndex ? 'activeTab' : ''}}">{{item}}</text></view>
+      </view>
+      <!-- 切换内容 -->
+      <view class="tabContentBox">
+        <view class="tabContent">
+          <form report-submit="true" bindsubmit="toGoodsDetail">
+          <block wx:if="{{tabIndex == 1}}">
+            <block wx:for="{{countTabContent[1]}}" wx:key="{{index}}">
+              <view class="listStyle-six" style="height: 390rpx">
+                <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
+                <view class="goodsTips">{{fixedData.str_9}}</view>
+                <view class="goodsTitle ellip-2">{{item.goods_name}}</view>
+                <view class="priceBox">
+                  <text class="priceNow">¥{{item.original_price?item.discount_price:0}}</text>
+                  <text class="pricePre">¥{{item.original_price?item.original_price:0}}</text>
+                </view>
+                <button class="formIdBtn" form-type="submit" data-id="{{item.id}}" data-type="{{item.goods_type}}"></button>
+              </view>
+            </block>
+          </block>
+          </form>
+          <block wx:if="{{tabIndex == 0}}">
+            <block wx:for="{{countTabContent[0]}}" wx:key="{{index}}">
+              <form report-submit="true" bindsubmit="toWealfare">
+              <view class="listStyle-six" style="height: 440rpx">
+                <image src="{{item.banner_img}}" mode="aspectFill" class="goodsPic"></image>
+                <view class="goodsTips">{{fixedData.str_9}}</view>
+                <text class="goodsTitle ellip-2">{{item.description_title}}</text>
+                <view class="priceBox">
+                  <view class="couponType">
+                    <text class="countTxt1 ellip-1">{{item.magic_goods_name}}</text>
+                    <text class="countTxt2">{{item.magic_goods_title}}</text>
+                  </view>
+                </view>
+                <button class="formIdBtn" form-type="submit" data-id="{{item.id}}"></button>
+              </view>
+              </form>
+            </block>
+          </block>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!showContent}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
+
 <script>
   import wepy from 'wepy'
-  import cheader from '@/components/cheader'
-  import cheaderModel from '@/components/cheader-model'
-  import ActivityModel from './Activity-model'
-  import MyModel from '@/pages/My/index-model'
-  export default class extends wepy.page {
+  import ActivityModel from './Activity-model.js'
+  export default class Index extends wepy.page {
     config = {
-      navigationBarBackgroundColor: "#faf9f9",
-      navigationBarTitleText: '活动推荐',
-    }
-    data = {
-      loadingHidden: false,
-      currentTabsIndex: 0,
-      TitleData: [],
-      headerinfo: null,
-      NowActivityData: '',
-      OldActivityData: '',
-      NowpreventRepeatReuqest: true,
-      OldpreventRepeatReuqest: true,
-      pageNum:{
-        NowActivityPage: 1,
-        OldActivityPage: 1,
-      },
-      formId:null,
-      isEmpty: {
-        nowIsEmpty: false,
-        oldIsEmpty: false
-      }
-    }
-    methods = {
-      onShareAppMessage(){
-        return {
-          title: "活动推荐",
-          path: '/pages/Activity/index',
-        }
-      },
-      onTabsItemTapFormId(e){
-        this.formId = e.detail.formId
-        let index = e.detail.target.dataset.index
-        this.currentTabsIndex = index
-        if(this.currentTabsIndex == 1 && this.OldActivityData.length == 0){
-          let query = {}
-          query.pageNum = this.pageNum.OldActivityPage
-          query.magic_formID = this.formId
-          this.isEmpty.oldIsEmpty = false
-          ActivityModel.getPast(query,Resdata=>{
-            if(Resdata.code == 1){
-              this.OldActivityData = [...this.OldActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
-              if(this.OldActivityData.length == 0){
-                this.isEmpty.oldIsEmpty = true
-              }
-              this.$apply()
-            }
-          })
-        }
-      },
-      gotoNowDetails(res){
-        let index = res.detail.target.dataset.index
-        let formId = res.detail.formId
-        const i = this.NowActivityData[index]
-        if(i.merge_goods_type == 2){
-          this.$navigate('../Groups/Groups-details',{id:i.group_id, formID: formId})
-          return false
-        }
-        if(i.merge_goods_type == 1){
-          this.$navigate('../Goods/details',{id:i.promotion_id, formID: formId})
-          return false
-        }
-        if(i.merge_goods_type == 4){
-          this.$navigate('../Bargain/details',{id:i.bargain_id, formID: formId})
-          return false
-        }
-        if(i.merge_goods_type == 3){
-          this.$navigate('../Card/details',{id:i.lucky_id, formID: formId})
-          return false
-        }
-      },
-      gotoOldDetails(index){
-        const i = this.OldActivityData[index]
-        if(i.merge_goods_type == 2){
-          this.$navigate('../Groups/Groups-details',{id:i.group_id})
-          return false
-        }
-        if(i.merge_goods_type == 1){
-          this.$navigate('../Goods/details',{id:i.promotion_id})
-          return false
-        }
-        if(i.merge_goods_type == 4){
-          this.$navigate('../Bargain/details',{id:i.bargain_id})
-          return false
-        }
-        if(i.merge_goods_type == 3){
-          this.$navigate('../Card/details',{id:i.lucky_id})
-          return false
-        }
-      },
-      onReachBottom(){
-        if (this.currentTabsIndex == 0){
-          if (!this.NowpreventRepeatReuqest) {
-            return false
-          }
-          ++this.pageNum.NowActivityPage
-          ActivityModel.getConduct(this.pageNum.NowActivityPage,(Resdata)=>{
-            if(Resdata.code == 1){
-              if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0 && Resdata.data.lucky_data.length == 0 && Resdata.data.bargain_data.length == 0){
-                wx.showToast({
-                  title: '已经到底了',
-                  icon:'loading',
-                  duration: 1500
-                })
-                this.NowpreventRepeatReuqest = false
-                this.$apply()
-                return false
-              }
-              this.NowActivityData = [...this.NowActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
-              this.$apply()
-            }
-          })
-        }
-        if (this.currentTabsIndex == 1){
-          if (!this.OldpreventRepeatReuqest) {
-            return false
-          }
-          ++this.pageNum.OldActivityPage
-          let query = {}
-          query.pageNum = this.pageNum.OldActivityPage
-          query.magic_formID = this.formId
-          ActivityModel.getPast(query,(Resdata)=>{
-            if(Resdata.code == 1){
-              if(Resdata.data.group_data.length == 0 && Resdata.data.promotion_data.length == 0){
-                wx.showToast({
-                  title: '已经到底了',
-                  icon:'loading',
-                  duration: 1500
-                })
-                this.OldpreventRepeatReuqest = false
-                this.$apply()
-                return false
-              }
-              this.OldActivityData = [...this.OldActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
-              this.$apply()
-            }
-          })
-        }
-      }
-    }
-    onLoad(){
-      ActivityModel.getConduct(this.pageNum.NowActivityPage,(Resdata)=>{
-        if(Resdata.code == 1){
-          this.NowActivityData = [...this.NowActivityData, ...Resdata.data.group_data,...Resdata.data.promotion_data,...Resdata.data.bargain_data,...Resdata.data.lucky_data]
-          if(this.NowActivityData.length == 0){
-            this.isEmpty.nowIsEmpty = true
-          }
-          this.TitleData = Resdata.data.activity_recommend_str
-          this.loadingHidden = true
-          this.$apply()
-        }
-      })
-    }
-    onShow(){
-      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
-        if(ResData.code == 1){
-          this.headerinfo = ResData.data
-          this.loadingHidden = true
-          this.$apply()
-        }
-      })
+      navigationBarTitleText: '会员专区'
     }
     components = {
-      cheader: cheader
+      
+    }
+
+    data = {
+      showContent: false,
+      countTabs: [],
+      countTabContent: [[],[]],
+      tabIndex: 0,
+      moveXBegin: 0,
+      vipRight: [],
+      fixedData: '',
+      vipInfo: '',
+      vipAnimation: false
+    }
+
+    computed = {
+      // countBoxHeight(){
+      //   let countH = parseInt(this.countTabContent[this.tabIndex].length/2) + this.countTabContent[this.tabIndex].length%2
+      //   if(this.tabIndex == 0){
+      //     return countH*420 + 20
+      //   } else {
+      //     return countH*470 + 20
+      //   }
+      // }
+    }
+
+    methods = {
+      tabChange(index){
+        this.tabIndex = index
+        this.$apply()
+      },
+      // moveStart(res){
+      //   this.moveXBegin = res.changedTouches[0].clientX
+      // },
+      // moveEnd(res){
+      //   let moveXEnd = res.changedTouches[0].clientX
+      //   if(moveXEnd-this.moveXBegin<-70){
+      //     if(this.tabIndex>=this.countTabContent.length-1){
+      //       this.tabIndex = this.countTabContent.length-1
+      //       return false
+      //     }
+      //     this.tabIndex++
+      //   }
+      //   if(moveXEnd-this.moveXBegin>70){
+      //     if(this.tabIndex<=0){
+      //       this.tabIndex = 0
+      //       return false
+      //     }
+      //     this.tabIndex--
+      //   }
+      // },
+      toOpenVip(e){
+        let formId = e.detail.formId
+        ActivityModel.navTo('../Vip/Index',{formId: formId})
+      },
+      toGoodsDetail(e){
+        let formId = e.detail.formId
+        let goodsType = e.detail.target.dataset.type
+        let id = e.detail.target.dataset.id
+        if(goodsType == 1){  //抢购
+          ActivityModel.navTo('../Goods/details', {id: id, formID: formId})
+          return false
+        }
+        if(goodsType == 2){  //拼团
+          ActivityModel.navTo('../Groups/Groups-details', {id: id, formID: formId})
+          return false
+        }
+        if(goodsType == 5){  //集卡
+          ActivityModel.navTo('../Card/details', {id: id, formID: formId})
+          return false
+        }
+        if(goodsType == 4){  //砍价
+          ActivityModel.navTo('../Bargain/details', {id: id, formID: formId})
+          return false
+        }
+      },
+      toWealfare(e){
+        let formId = e.detail.formId
+        let id = e.detail.target.dataset.id
+        ActivityModel.navTo('../Shop/welfareDetails', {id: id, formID: formId})
+      },
+      vipanima(){
+        this.vipAnimation = true
+        this.$apply()
+      },
+      stopAnima(){
+        this.vipAnimation = false
+        this.$apply()
+      }
+    }
+    events = {
+      
+    }
+    onLoad() {
+      ActivityModel.getActiveData({type: 2},(res)=>{
+        if(res.code === 1){
+          this.fixedData = res.data.content_str
+          this.vipRight = [
+                 {url:'http://p55e536k6.bkt.clouddn.com/right1.png',name: this.fixedData.str_1},
+                 {url:'http://p55e536k6.bkt.clouddn.com/right2.png',name: this.fixedData.str_2},
+                 {url:'http://p55e536k6.bkt.clouddn.com/right4.png',name: this.fixedData.str_3},
+                 {url:'http://p55e536k6.bkt.clouddn.com/right3.png',name: this.fixedData.str_4}]
+          this.countTabs = [this.fixedData.str_8,this.fixedData.str_7]
+          this.vipInfo = res.data.card_info
+          if(res.data.goods_data){
+            this.countTabContent[0] = res.data.goods_data.goods_data
+          }
+          this.showContent = true
+          this.$apply()
+        } else {
+          ActivityModel.showTips(res.message)
+        }
+      })
+      ActivityModel.getActiveData({type: 1},(res)=>{
+        if(res.code === 1){
+          if(res.data.goods_data){
+            this.countTabContent[1] = res.data.goods_data.goods_data
+          }
+        } else {
+          ActivityModel.showTips(res.message)
+        }
+      })
+
+    }
+    onShow(){
     }
   }
 </script>
 <style lang="less">
-  @import '../tpls/emptyGoodsTips/emptyGoodsTips.wxss';
   @import '../tpls/loading/loading.wxss';
   page{
-    background-color: #faf9f9;
+    background-color: #F8F8F8;
   }
-  .banner{
-    opacity: 0;
-  }
-  .showbanner{
-    opacity: 1;
-    transition: .5s;
-  }
-  .activity-content{
-    position: relative;
-    z-index:2;
-      .activity-tab{
+  .shopBox{
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    .VipCardBox{
+      width: 100%;
+      height: 467rpx;
+      display: flex;
+      justify-content: center;
+      background-color: #fff;
+      background-image: url('http://p55e536k6.bkt.clouddn.com/vipbgpp.jpg');
+      background-repeat: no-repeat;
+      background-position: 0 0;
+      -webkit-background-size: contain;
+      background-size: contain;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: .4s;
+      perspective: 500;
+      .vipCard{
+        margin-top: 25rpx;
+        width: 570rpx;
+        height: 320rpx;
+        border-radius: 10rpx;
+        box-shadow: 0 0 9rpx rgba(0,0,0,0.7);
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        justify-content: flex-end;
+        background-repeat: no-repeat;
+        background-position: 0 0;
+        -webkit-background-size: cover;
+        background-size: cover;
+        opacity: 0;
+        transform: translateY(300rpx) translateX(300rpx) rotateZ(45deg) rotateX(180deg);
+        transition: 1s ease-out 0.3s;
+        background-color: #000;
+        .vipCard-Info{
+          width: 100%;
+          box-sizing: border-box;
+          padding: 0 50rpx;
+          color: #fff;
+          display: flex;
+          justify-content: space-between;
+          margin-top: 40rpx;
+          margin-bottom: 35rpx;
+          .vipInfo-left{
+            display: flex;
+            flex-direction: column;
+            .nameTxt{
+              font-size: 25rpx;
+            }
+            .userName{
+              font-size: 29rpx;
+              margin-top: 10rpx;
+            }
+          }
+          .vipCard-right{
+            display: flex;
+            flex-direction: column;
+            width: 180rpx;
+            align-items: flex-end;
+            .end-time-txtBox{
+              display: flex;
+              align-items: center;
+              .end-time-txt{
+                font-size: 25rpx;
+              }
+              .end-time-txt1{
+                color: #E6C168;
+                margin-left: 10rpx;
+                font-size: 25rpx;
+                border-bottom: 1px solid #E6C168;
+              }
+            }
+            .end-time{
+              font-size: 25rpx;
+              margin-top: 15rpx;
+            }
+            .openVip{
+              font-size: 25rpx;
+              color: #E7C375;
+              background-color: #312F31;
+              border-radius: 10rpx;
+              border: 1px solid #fff;
+              padding: 14rpx 20rpx;
+            }
+          }
+        }
+      }
+      .vipAnimation{
+        animation: vipCardMove 1.5s linear infinite;
+        animation-fill-mode: forwards;
+      }
+      @keyframes vipCardMove{
+        0%,70%,92%,100%{
+          transform: scale(1);
+        }
+        74%{
+          transform: scale(1.1);
+        }
+      }
+      .showVipCard{
+        opacity: 1;
+        transform: translateY(0) translateX(0) rotateZ(0) rotateX(0);
+      }
+    }
+    .showVipCardBox{
+      opacity: 1;
+      transform: scale(1);
+    }
+    .vipRight{
+      background-color: #fff;
+      width: 100%;
+      box-sizing: border-box;
+      padding-bottom: 50rpx;
+      margin-top: -20rpx;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: .4s .1s;
+      .vipRight-title{
+        width: 100%;
+        height: 80rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .adorn-left{
+          width: 55rpx;
+          height: 1px;
+          background-color: #E6C168;
+          background: linear-gradient(90deg, #FFFFFF, #E6C168);
+        }
+        .cut1{
+          width: 3px;
+          height: 3px;
+          border-radius: 100%;
+          background-color: #E6C168;
+          margin: 0 15rpx;
+        }
+        text{
+          font-size: 28rpx;
+          color: #E6C168;
+        }
+        .adorn-right{
+          width: 55rpx;
+          height: 1px;
+          background: linear-gradient(-90deg, #FFFFFF, #E6C168);
+        }
+      }
+      .vipRight-content{
         width: 100%;
         display: flex;
-        background-color: #fff;
-        border-bottom: 1rpx solid #eeeeee;
-        justify-content: center;
-        opacity: 0;
-        .tab-item{
-          width: 166rpx;
-          line-height: 94rpx;
-          text-align: center;
-          font-size: 30rpx;
-          color: #9b9b9b;
-          padding:0;
-          margin:0;
-          background-color:#fff;
-          border-radius: 0;
-          &::after{
-            content:none;
-          }
-          &.active{
-            color: #ff1818;
-            border-bottom: 4rpx solid #ff1818;
-          }
-          &:last-child{
-            position: relative;
-            &::before{
-              content: " ";
-              position: absolute;
-              left: 0;
-              top: 50%;
-              margin-top: -18rpx;
-              width: 2rpx;
-              height: 37rpx;
-              background-color: #d4d4d4;
-            }
-          }
-        }
-      }
-      .show-activity-tab{
-        opacity: 1;
-        transition: .5s .1s;
-      }
-  }
-  .activity-tab-box{
-    margin-top: 31rpx;
-    opacity: 0;
-    .index-list{
-      &:first-child{
-        padding-top:31rpx;
-        padding-bottom:20rpx;
-      }
-    }
-  }
-  .show-activity-tab-box{
-    opacity: 1;
-    transition: .5s .3s;
-  }
-  .vip-list{
-    .index-header{
-      width: 100%;
-      height: 112rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      image{
-        width: 36rpx;
-        height: 32rpx;
-        margin-right:34rpx;
-      }
-      .name{
-        font-size: 34rpx;
-        color: #353535;
-        letter-spacing: 4rpx;
-      }
-    }
-    .index-item{
-      width: 690rpx;
-      margin-left: auto;
-      margin-right: auto;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background-color: #ffffff;
-      box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      position: relative;
-      .activityFormId{
-        width: 690rpx;
-        height: 520rpx;
-        position: absolute;
-        top: 0;
-        left: 0;
-        margin: 0;
-        padding: 0;
-        border-radius: 0;
-        background-color: transparent;
-        &::after{
-          content: none;
-        }
-      }
-      + .index-item{
         margin-top: 30rpx;
-      }
-      &:last-child{
-        margin-bottom: 50rpx;
-      }
-      .sign{
-        position: absolute;
-        left:0;
-        top: 0;
-        image{
-          width: 148rpx;
-          height: 148rpx;
-        }
-        .merge_goods_typeBox{
-          width:200rpx;
-          height: 200rpx;
-          transform: rotateZ(-45deg);
-          .merge_goods_type_txt{
-            height: 60rpx;
-            background-color: #cf2824;
-            width:200rpx;
-            color: #fff;
-            font-size: 25rpx;
-
-            text-align: center;
-            line-height: 60rpx;
+        .vipRightItem{
+          flex: 0 0 187.5rpx;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          .rightIcon{
+            width: 97rpx;
+            height: 97rpx;
           }
-        }
-      }
-      .item-pic{
-        width: 100%;
-        height: 360rpx;
-      }
-      .item-data{
-        background-color: #fff;
-        font-size:0;
-        overflow: hidden;
-        .brand{
-          height: 50rpx;
-          background-color: #e8c180;
-          font-size: 0;
-          padding-left:31rpx;
-          padding-right: 31rpx;
-          margin-top: 23rpx;
-          display: inline-block;
-          overflow: hidden;
-          text-overflow:ellipsis;
-          white-space: nowrap;
           text{
             font-size: 26rpx;
-            line-height: 50rpx;
-            color: #f6f6f6;
-            letter-spacing: 2rpx;
-            &:last-child{
-              overflow: hidden;
-              text-overflow:ellipsis;
-              white-space: nowrap;
-              padding-left: 18rpx;
-            }
+            color: #8E8E8E;
+            margin-top: 20rpx;
           }
         }
-        .title{
+      }
+    }
+    .showVipRight{
+      opacity: 1;
+      transform: scale(1);
+    }
+    .countBox{
+      margin-top: 20rpx;
+      padding-top: 20rpx;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: .4s .2s;
+      .countTab{
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 40rpx;
+        display: flex;
+        margin-bottom: 20rpx;
+        .tabItem{
           flex: 1;
-          overflow: hidden;
-          text-overflow:ellipsis;
-          white-space: nowrap;
-          padding-top: 16rpx;
-          padding-left: 31rpx;
-          padding-bottom: 13rpx;
-          font-size: 28rpx;
-          color: #323232;
-          letter-spacing: 2rpx;
-        }
-        .stitle{
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          overflow: hidden;
-          margin-top: 16rpx;
-          padding-left: 31rpx;
-          margin-bottom: 13rpx;
-          font-size: 28rpx;
-          line-height:30rpx;
-          color: #323232;
-          letter-spacing: 2rpx;
-        }
-        .date-wrapper{
+          height: 70rpx;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          margin-bottom: 20rpx;
-          .date{
-            padding-left: 31rpx;
-            font-size: 24rpx;
-            color: #888888;
-            letter-spacing: 2rpx;
+          justify-content: center;
+          text{
+            font-size: 28rpx;
+            color: #848484;
+            border-bottom: 3px solid #fff;
+            line-height: 50rpx;
           }
-          .num-wrapper{
-            margin-right: 14rpx;
-            font-size: 24rpx;
-            color: #888888;
-            .num{
-              color: #ffc14c;
+          .activeTab{
+            border-bottom: 3px solid #FFDE09;
+            color: #0A0B0A;
+          }
+        }
+      }
+      .tabContentBox{
+        display: flex;
+        flex-wrap: nowrap;
+        transition: .4s;
+        border-top: 1px solid #F2F2F2;
+        .tabContent{
+          flex: 0 0 750rpx;
+          box-sizing: border-box;
+          padding: 20rpx 40rpx;
+          padding-right: 10rpx;
+          flex-wrap: wrap;
+          .listStyle-six{
+            width: 325rpx;
+            border: 1px solid #EFEFEF;
+            border-radius: 7rpx;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30rpx;
+            justify-content: space-between;
+            box-sizing: border-box;
+            padding-bottom: 15rpx;
+            display: inline-block;
+            margin-right: 23rpx;
+            .goodsPic{
+              width: 100%;
+              height: 210rpx;
+            }
+            .goodsTips{
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 115rpx;
+              height: 40rpx;
+              border-bottom-right-radius: 7rpx;
+              background: linear-gradient(90deg, #FD4E7B, #FC4855);
+              color: #2C2D2C;
+              font-size: 23rpx;
+              text-align: center;
+              line-height: 40rpx;
+              color: #fff;
+            }
+            .goodsTitle{
+              font-size: 30rpx;
+              line-height: 45rpx;
+              color: #000;
+              font-weight: 600;
+              margin-top: 20rpx;
+              padding-left: 15rpx;
+              height: 80rpx;
+              width: 295rpx;
+            }
+            .priceBox{
+              width: 100%;
+              box-sizing: border-box;
+              padding: 0 15rpx;
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+              margin: 20rpx 0;
+              .priceNow{
+                font-size: 33rpx;
+                color: #FA3B3E;
+                font-family: 'priceFont';
+              }
+              .pricePre{
+                color: #999;
+                font-size: 20rpx;
+                font-family: 'priceFont';
+              }
+              .couponType{
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                .countTxt1{
+                  color: #FA4043;
+                  font-size: 35rpx;
+                  font-weight: 600;
+                  widows: 100%;
+                }
+                .countTxt2{
+                  color: #999;
+                  font-size: 24rpx;
+                  margin-top: 20rpx;
+                }
+              }
+            }
+            .buyNow{
+              width: 295rpx;
+              height: 50rpx;
+              background-color: #FFDE09;
+              border-radius: 5rpx;
+              font-size: 25rpx;
+              color: #2C2D2C;
+              text-align: center;
+              line-height: 50rpx;
+              margin-left: 15rpx;
             }
           }
         }
       }
+    }
+    .showcountBox{
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .formIdBtn{
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    &::after{
+      content: none;
     }
   }
 </style>

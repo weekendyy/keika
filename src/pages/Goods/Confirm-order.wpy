@@ -22,10 +22,6 @@
         </view>
       </view>
     </view>
-    <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
-      <text>手机号(必填)</text>
-      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11"  placeholder="请填写手机号,方便商家验证"/>
-    </view>
     <view class="Confirm_main">
       <view class="main_header">
         <text>购物清单</text>
@@ -75,6 +71,10 @@
         <text>下单时间：</text>
         <text>{{goods_info.order_time}}</text>
       </view>
+    </view>
+    <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
+      <text>手机号(必填)</text>
+      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
     </view>
     <view class="footer">
       <text class="pay-text">实付:</text>
@@ -161,7 +161,7 @@
           orderID: this.orderId,
           shipping_phone: this.requirePhone
         }
-        if(JSON.stringify(this.AddressInfo) == '{}'){
+        if(this.AddressInfo.shipping_name == ' ' && this.goods_info.address_options == 1){
           wx.showToast({
             title: '请填写收货地址',
             icon: 'success',
@@ -268,7 +268,7 @@
             this.$apply()
             return false
           }
-
+          orderModel.showTips(ResData.message)
         })
       },
     }
@@ -278,14 +278,14 @@
       orderModel.getOrderInfoById(this.orderId, ResData=> {
         if (ResData.code == 1) {
           this.goods_info = ResData.data
-          this.AddressInfo.shipping_name = this.goods_info.shipping_name || ''
-          this.AddressInfo.shipping_province = this.goods_info.shipping_province || ''
-          this.AddressInfo.shipping_city = this.goods_info.shipping_city || ''
-          this.AddressInfo.shipping_area = this.goods_info.shipping_area || ''
-          this.AddressInfo.shipping_street = this.goods_info.shipping_street || ''
-          this.AddressInfo.shipping_tel = this.goods_info.shipping_phone || ''
-          this.real_tel = this.goods_info.real_tel || ''
-          this.requirePhone = this.goods_info.real_tel || ''
+          this.goods_info.shipping_name && (this.AddressInfo.shipping_name = this.goods_info.shipping_name)
+          this.goods_info.shipping_province && (this.AddressInfo.shipping_province = this.goods_info.shipping_province)
+          this.goods_info.shipping_city && (this.AddressInfo.shipping_city = this.goods_info.shipping_city)
+          this.goods_info.shipping_area && (this.AddressInfo.shipping_area = this.goods_info.shipping_area)
+          this.goods_info.shipping_street && (this.AddressInfo.shipping_street = this.goods_info.shipping_street)
+          this.goods_info.shipping_phone && (this.AddressInfo.shipping_tel = this.goods_info.shipping_phone)
+          this.goods_info.real_tel && (this.real_tel = this.goods_info.real_tel)
+          this.goods_info.real_tel && (this.requirePhone = this.goods_info.real_tel)
           this.$apply()
         }
       })

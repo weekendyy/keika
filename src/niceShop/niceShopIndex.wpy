@@ -1,5 +1,6 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
+  <import src="../wxParse/wxParse.wxml"/>
   <view class="niceShopIndex">
     <view class="bannerTop {{showContent?'showBanner':''}}">
       <Banner :bannerImgs.sync='bannerImgs'></Banner>
@@ -135,6 +136,13 @@
         </view>
       </view>
     </view>
+    <!-- 店铺介绍 -->
+    <view class="shopDesc">
+      <text class="shopDescTxt">店铺介绍</text>
+      <view class="shopDescContent">
+        <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+      </view>
+    </view>
   </view>
   <view wx:if="{{!showContent}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -144,6 +152,7 @@
   import wepy from 'wepy'
   import Banner from './components/banner'
   import NiceShopModel from './niceShop-model.js'
+  import wxParse from '../wxParse/wxParse'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -221,6 +230,7 @@
           this.couponData = res.data.magicgoods
           this.todayData = res.data.today_recommend_arr
           this.choiceness = res.data.choiceness_recommend_arr
+          wxParse.wxParse('article', 'html', this.indexData.detail, this, 5);
           wx.setNavigationBarTitle({
             title: res.data.magic_shop_name
           })
@@ -315,6 +325,9 @@
         font-size: 29rpx;
         color: #888;
         margin-top: 10rpx;
+        text-align: center;
+        width: 500rpx;
+        line-height: 37rpx;
       }
       .share-column{
         width: 100%;
@@ -634,7 +647,7 @@
                 button{
                   padding: 0;
                   margin: 0rpx;
-                  background-color: #FFDE09;
+                  background-color: #FF5766;
                   border-radius: 6rpx;
                   width: 160rpx;
                   height: 60rpx;
@@ -642,6 +655,7 @@
                   text-align: center;
                   line-height: 60rpx;
                   margin-top: -5rpx;
+                  color: #fff;
                   &::after{
                     content: none;
                   }
@@ -693,6 +707,29 @@
       opacity: 1;
       transition: .5s .1s;
       transform: scale(1);
+    }
+    .shopDesc{
+      width: 100%;
+      background-color: #fff;
+      margin-top: 20rpx;
+      .shopDescTxt{
+        font-size: 42rpx;
+        font-weight: 600;
+        margin-left: 40rpx;
+        padding: 40rpx 0;
+        display: block;
+      }
+      .shopDescContent{
+        width: 100%;
+        box-sizing: border-box;
+        padding:0 20rpx 20rpx;
+        .wxParse-p view,.wxParse-p image{
+          width: 100%;
+        }
+        image{
+          margin-bottom: 10rpx;
+        }
+      }
     }
   }
 </style>

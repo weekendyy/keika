@@ -16,7 +16,7 @@
       <scroll-view scroll-y wx:if="{{currentTabsIndex==0}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
         <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="scareBuyingList">
           <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="gotoDetails" class="activityFormId"></button>
-          <image src="{{item.main_img}}" mode="scaleToFill" class="goodspic"></image>
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodspic"></image>
           <view class="rightbox">
             <view class="itemtop">
               <text class="itemtitle">{{item.title}}</text>

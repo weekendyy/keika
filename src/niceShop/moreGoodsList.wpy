@@ -1,0 +1,230 @@
+<template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <import src="/pages/tpls/loading/loading.wxml" />
+    <swiper indicator-dots="{{false}}" class="swiperBox">
+      <block wx:for="{{bannerImgs}}" wx:key="{{index}}">
+        <swiper-item>
+          <image src="{{item.banner_url}}" mode="aspectFill" class="bannerImg" />
+        </swiper-item>
+      </block>
+    </swiper>
+    <view class="goodsListTap">
+      <view class="itemTap {{tabIndex == 0 ? 'itemTapActive' : ''}}" @tap="itemTab(0)">进行中</view>
+      <view class="itemTap {{tabIndex == 1 ? 'itemTapActive' : ''}}" @tap="itemTab(1)">往期活动</view>
+    </view>
+    <view class="goodsListBox">
+      <block wx:for="{{goodsData}}" wx:key="{{index}}">
+        <view class="listStyle-three" @tap="toGoodsDetail({{item.goods_type}},{{item.id}})">
+          <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+          <view class="goodsContent-styleThree">
+            <text class="goodsTitle-styleThree">{{item.goods_name}}</text>
+            <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
+            <view class="priceBox-styleThree">
+              <view class="goods-price">
+                <text class="price-now">¥{{item.discount_price}}</text>
+                <text class="price-pre">¥{{item.original_price?item.original_price:0}}</text>
+              </view>
+              <view class="barginbtn">立即抢购</view>
+            </view>
+          </view>
+        </view>
+      </block>
+      <view wx:if="{{goodsData.length == 0}}">
+        <template is="emptyGoodsTips" data="{{tipsTxt:'暂无活动'}}"></template>
+      </view>
+    </view>
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import NiceShopModel from './niceShop-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '商品列表',
+    }
+    data = {
+      showContent: false,
+      id: '',
+      bannerImgs: '',
+      tabIndex: 0,
+      goodsData: '',
+      goodsDataNow: '',
+      goodsDataOld: ''
+    }
+    components = {
+      
+    }
+    computed = {
+        
+    }
+    methods = {
+      itemTab(index){
+        this.tabIndex = index
+        if(index == 0){
+          this.goodsData = this.goodsDataNow
+        } else {
+          this.goodsData = this.goodsDataOld
+        }
+        this.$apply()
+      },
+      toGoodsDetail(type, id){
+        if(type == 1){  //抢购
+          NiceShopModel.navTo('../pages/Goods/details', {id: id})
+          return false
+        }
+        if(type == 2){  //拼团
+          NiceShopModel.navTo('../pages/Groups/Groups-details', {id: id})
+          return false
+        }
+        if(type == 5){  //集卡
+          NiceShopModel.navTo('../pages/Card/details', {id: id})
+          return false
+        }
+        if(type == 4){  //砍价
+          NiceShopModel.navTo('../pages/Bargain/details', {id: id})
+          return false
+        }
+      }
+    }
+    onLoad(e){
+      if(e.name){
+        wx.setNavigationBarTitle({
+          title: e.name
+        })
+      }
+      this.id = e.id
+      let query = {
+        id: this.id,
+        status: 2
+      }
+      NiceShopModel.getMoreGoodsList(query, (res)=>{
+        if(res.code === 1){
+          this.bannerImgs = res.data.banner_data
+          this.goodsData = res.data.area_data[0].goods_data
+          this.goodsDataNow = res.data.area_data[0].goods_data
+          this.showContent = true
+          this.$apply()
+        } else {
+          NiceShopModel.showTips(res.message)
+        }
+      })
+      NiceShopModel.getMoreGoodsList({id: this.id, status: 3}, (res)=>{
+        if(res.code === 1){
+          this.goodsDataOld = res.data.area_data[0].goods_data
+        } else {
+          NiceShopModel.showTips(res.message)
+        }
+      })
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  .swiperBox{
+    width: 100%;
+    height: 230rpx;
+    .bannerImg{
+      width: 100%;
+      height: 100%;
+    }
+  }
+  .goodsListTap{
+    width: 100%;
+    height: 80rpx;
+    display: flex;
+    border-bottom: 1px solid #EFEFEF;
+    box-sizing: content-box;
+    background-color: #fff;
+    justify-content: space-around;
+    .itemTap{
+      flex: 0 0 170rpx;
+      height: 80rpx;
+      line-height: 78rpx;
+      text-align: center;
+      color: #808080;
+      font-size: 30rpx;
+      border-bottom: 2px solid #fff;
+      box-sizing: border-box;
+    }
+    .itemTapActive{
+      border-bottom: 2px solid #E6C168;
+      color: #E6C168;
+    }
+  }
+  .goodsListBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 30rpx 40rpx;
+    .listStyle-three{
+      width: 670rpx;
+      height: 226rpx;
+      box-sizing: border-box;
+      padding-bottom: 30rpx;
+      margin-bottom: 30rpx;
+      display: flex;
+      border-bottom: 1px solid #DFDFDF;
+      .goodsPic-styleThree{
+        flex: 0 0 280rpx;
+        height: 190rpx;
+        border-radius: 6rpx;
+      }
+      .goodsContent-styleThree{
+        flex: 1;
+        box-sizing: border-box;
+        padding-left: 30rpx;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        .goodsTitle-styleThree{
+          font-size: 32rpx;
+          font-weight: 600;
+          line-height: 40rpx;
+        }
+        .goodsDesc-styleThree{
+          font-size: 25rpx;
+          color: #9B9B9B;
+          margin-bottom: 15rpx;
+        }
+        .priceBox-styleThree{
+          display: flex;
+          justify-content: space-between;
+          .barginbtn{
+            width: 120rpx;
+            height: 50rpx;
+            background-color: #FF5766;
+            border-radius: 8rpx;
+            font-size: 23rpx;
+            color: #fff;
+            text-align: center;
+            line-height: 50rpx;
+          }
+          .goods-price{
+            display: flex;
+            align-items: baseline;
+            .price-now{
+              font-family: 'priceFont';
+              font-size: 38rpx;
+              color: #FA3B3E;
+              font-weight: 600;
+            }
+            .price-pre{
+              font-family: 'priceFont';
+              color: #999;
+              margin-left: 20rpx;
+              font-size: 23rpx;
+              text-decoration: line-through;
+            }
+          }
+        }
+      }
+    }
+  }
+</style>
+

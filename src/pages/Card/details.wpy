@@ -12,12 +12,12 @@
         <text>{{likeNum}}人喜欢</text>
       </view>
     </swiper>
-    <button class="posterText" @tap="getUserInfo">
+    <view class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </button>
+    </view>
     <view class="card-content">
       <view class="card-title">
         <view class="card-title-wrapper">

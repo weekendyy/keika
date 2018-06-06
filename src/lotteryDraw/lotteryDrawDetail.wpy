@@ -162,12 +162,12 @@
         </view>
       </view>
     </view>
-    <!-- <button class="posterText {{showContent?'showposterText':''}}" @tap="buildPoster">
+    <button class="posterText {{showContent?'showposterText':''}}" @tap="buildPoster">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </button> -->
+    </button>
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
@@ -274,7 +274,13 @@
           return false
         }
         this.$apply()
-        lotteryDrawModel.buildPoster(this, 'lotteryCanvas', this.detailData.goods_name, this.detailData.sponsor_name, this.detailData.open_reward_time, this.detailData.id)
+        lotteryDrawModel.getPosterData({id: this.goodsId},(res)=>{
+          if(res.code == 1){
+            lotteryDrawModel.buildPoster(this, 'lotteryCanvas', this.detailData.goods_name, this.detailData.sponsor_name, this.detailData.open_reward_time, this.detailData.id, res)
+          } else {
+            lotteryDrawModel.showTips(res.message)
+          }
+        })
       },
       savePostePic(){
         lotteryDrawModel.savePoste(this,'lotteryCanvas',this.detailData.id)
@@ -314,7 +320,9 @@
           joinNum++
           this.detailData.join_count = "已有 "+joinNum+" 人参与，"
           this.$apply()
-          lotteryDrawModel.setPrePageState("lotteryData["+this.index+"].is_join",2)
+          if(this.index){
+            lotteryDrawModel.setPrePageState("lotteryData["+this.index+"].is_join",2)
+          }
         } else {
           lotteryDrawModel.showTips(res.message)
         }
@@ -341,7 +349,9 @@
         this.userInfo = true
       }
       this.goodsId = e.id
-      this.index = e.index
+      if(e.index){
+        this.index = e.index
+      }
       let query = {
         goods_id: this.goodsId
       }

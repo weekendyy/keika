@@ -3,25 +3,6 @@ class Index extends Base {
   constructor() {
     super()
   }
-
-  /**
-   * 获取首页有没有开通会员
-   * @param callback 有开通会员的时候,就显示轮播,没有开通就提示开通的会员信息
-   */
-  getWelfare(queryData, callback) {
-    let param = {
-      url: 'v5/magic_goods/home_goods_list',
-      data: {
-        page_num: queryData.page_num,
-        versions: 'vip4'
-      },
-      sCallback(ResData) {
-        callback && callback(ResData)
-      }
-    }
-    this.request(param)
-  }
-
   /**
    * 首页活动
    * @param callback
@@ -49,6 +30,33 @@ class Index extends Base {
     }
     this.request(param)
   }
+  
+  // 获取首页主要信息
+  getMainData(callback){
+    let param = {
+      url: 'v5/magic_home_area/home_area',
+      sCallback: function(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // for(let i=0; i<this.goodsListOld.length;i++){
+  //   this.goodsList.push({})
+  //   for(let k=0; k<this.goodsListOld[i].goods_data.length; k++){
+  //     let isTrue = true
+  //     for(let j=0; j<this.goodsList[i].length; j++){
+  //       if(this.goodsList[i].type === this.goodsListOld[i].goods_data[k].style_type){
+  //         this.goodsList[i].content.push(this.goodsListOld[i].goods_data[k])
+  //         isTrue = false
+  //       }
+  //     }
+  //     if(isTrue){
+  //       this.goodsList[i].type=this.goodsListOld[i].goods_data[k].style_type,
+  //       this.goodsList[i].content=[]
+  //     }
+  //   }
+  // }
 }
 const indexModel = new Index()
 export default indexModel

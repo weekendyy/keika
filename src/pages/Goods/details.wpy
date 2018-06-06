@@ -10,12 +10,12 @@
       </repeat>
     </swiper>
     <BackHome top='20'></BackHome>
-    <button class="posterText" @tap="getUserInfo">
+    <view class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </button>
+    </view>
     <view class="goods-header">
       <view class="goods-header-title">
         <text class="goods-header-title_left">共{{DetailsData.num}}份/剩{{DetailsData.residue}}份</text>

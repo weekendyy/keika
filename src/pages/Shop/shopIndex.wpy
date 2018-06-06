@@ -76,7 +76,7 @@
           <view class="shop-data-item" wx:for="{{shopData}}" wx:for-item="item" wx:for-index="idx" wx:key="index" @tap="gotoShop({{idx}})">
             <view class="top">
               <view class="pic-wrapper">
-                <image class="pic" src="{{item.main_img}}"></image>
+                <image class="pic" mode="aspectFill" src="{{item.main_img}}"></image>
               </view>
               <view class="top-content">
                 <text class="shop-name">{{item.magic_shop_name}}</text>
@@ -131,7 +131,7 @@
           <view class="shop-data-item" wx:for="{{nearbyData}}" wx:for-item="item" wx:key="index"  @tap="gotonear({{index}})">
             <view class="top">
               <view class="pic-wrapper">
-                <image class="pic" src="{{item.main_img}}"></image>
+                <image class="pic" mode="aspectFill" src="{{item.main_img}}"></image>
               </view>
               <view class="top-content">
                 <text class="shop-name">{{item.magic_shop_name}}</text>
@@ -765,7 +765,7 @@
   }
   .swiper-wrapper{
     width: 100%;
-    height: 320rpx;
+    height: 334rpx;
     image{
       width: 100%;
       height: 100%

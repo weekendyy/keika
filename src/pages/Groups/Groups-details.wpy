@@ -8,12 +8,12 @@
       </swiper-item>
     </swiper>
     <BackHome top='20'></BackHome>
-    <button class="posterText" @tap="getUserInfo">
+    <view class="posterText" @tap="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </button>
+    </view>
     <view class="details-header">
       <text class="new-Price">¥{{DetailData.group_price}}</text>
       <view class="Price-warpper">

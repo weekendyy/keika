@@ -1,1050 +1,755 @@
 <template>
-  <import src="/pages/tpls/loading/loading.wxml" />
-  <view class="index-container">
-    <!-- 黑卡会员轮播图 -->
-    <view class="cheader-index {{loadingHidden?'show-header':''}}">
-      <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-        <!-- 已开通 -->
-        <swiper autoplay="true" interval="3000" indicator-color="#bbd5ef" indicator-active-color="#fff" indicator-dots="true" class="swiper-wrapper" wx:if="{{headerinfo.open_status == 1 && headerinfo.home_banner.length}}">
-          <repeat for="{{headerinfo.home_banner}}" key="index">
-            <swiper-item class="swiper-item" @tap="gotoBannerUrl({{item.banner_path}})">
-              <image class="swiper-image" src="{{item.banner_url}}"></image>
-            </swiper-item>
-          </repeat>
-        </swiper>
-        <!-- 未开通会员 -->
-        <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
-          <view class="open-wrapper" style="background-image: url({{headerinfo.background_img}})">
-            <view class="logo"></view>
-            <view class="user-info">
-              <open-data type="userAvatarUrl" class="pic"></open-data>
-              <open-data type="userNickName" class="name"></open-data>
-              <view class="open">
-                <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
-                <button class="btn" form-type="submit">{{headerinfo.magic_auth_str[1]}}</button>
-              </view>
-            </view>
-          </view>
-          <image class="open-bg" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.jpg"></image>
+  <import src="../tpls/loading/loading.wxml" />
+  <!-- 轮播图 -->
+  <block wx:if="{{bannerImgs.length != 0}}">
+    <Banner :bannerImgs.sync="bannerImgs" :isShow.sync="showContent" :bannerIndex.sync="bannerIndex"></Banner>
+  </block>
+  <!-- 导航 -->
+  <form report-submit="true" bindsubmit="toNavDetail">
+    <view class="navBox" wx:if="{{navData.length != 0}}">
+      <view class="navItem {{showContent?'showNavItem':''}}" wx:for="{{navData}}" wx:key="{{index}}">
+        <image src="{{item.classify_img}}" mode="aspectFill" class="navIcon"></image>
+        <text class="navTxt">{{item.classify_name}}</text>
+        <button class="formIdBtn" form-type="submit" data-type="{{item.choose_link}}" data-url="{{item.http_url}}"></button>
+      </view>
+    </view>
+  </form>
+  <!-- 专题 -->
+  <block wx:if="{{subjectList.length != 0}}">
+    <slidSwitch :subjectList.sync="subjectList" :isShow.sync="showSubject"></slidSwitch>
+  </block>
+  <!-- 产品列表 -->
+  <view class="goodsLisBox {{showContent?'showGoodsLisBox':''}}">
+    <block wx:for="{{goodsList}}" wx:key="{{index}}">
+      <!-- 头部标题 -->
+      <view class="goodsListHead">
+        <view class="headTitle">
+          <text class="headTitle_txt">{{item.area_name}}</text>
+          <text class="headTitle_desc ellip-2">{{item.area_title}}</text>
         </view>
-      </form>
-    </view>
-    <!-- 导航栏 -->
-    <form report-submit="magic-formID" bindsubmit="navClickFromID">
-      <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}" >
-        <button class="nav" wx:for="{{navData}}" wx:for-item="item" wx:key="index" data-index="{{index}}" form-type="submit">
-          <image src="{{item.classify_img}}"></image>
-          <text>{{item.classify_name}}</text>
-        </button>
+        <!-- <view class="pageNum" wx:if="{{item.headStyle == 2}}"><text class="pageNumTxt">{{currentIndex}}</text>/3</view> -->
+        <view class="seeMore" @tap="seeMoreGoods({{item.id}},{{item.area_name}})">查看更多</view>
       </view>
-    </form>
-    <!-- 专题 -->
-    <view class="TimeLimitActivity {{loadingHidden?'show_TimeLimitActivity':''}} {{subject_data.length?'':'hide_TimeLimitActivity'}}">
-      <view class="TimeLimitActivity_title" wx:if="{{subject_data.length}}">
-        <image src="./images/xianshi.png" mode="widthFix" class="xianshiIcon"></image>
-        <text class="TimeLimitActivity_titleTxt">{{listtitle[2]}}</text>
-      </view>
-      <form bindsubmit="toActivityList" report-submit="magicFormId">
-      <view class="activityBox">
-        <block wx:for="{{subject_data}}" wx:key="{{item.id}}">
-          <button class="activityItem" form-type="submit" data-index="{{index}}">
-            <image src="{{item.img_url}}" mode="aspectFill" class="activityItemPic"></image>
-            <view class="activity_end" wx:if="{{item.time_status == 3}}">
-              <text>{{item.time_str}}</text>
-            </view>
-          </button>
-        </block>
-      </view>
-      </form>
-    </view>
-    <!-- 活动推荐 -->
-    <view class="index-list {{loadingHidden?'show-index-list':''}}">
-      <view class="index-header" wx:if="{{activityData.length}}">
-        <image src="./images/liwu.png"></image>
-        <text class="name">{{listtitle[0]}}</text>
-      </view>
-      <repeat for="{{activityData}}" wx:for-item="item" key:index="index">
-        <view class="index-item">
-          <form report-submit="true" bindsubmit="gotoDetails" wx:if="{{item.merge_goods_type != 4}}">
-            <button data-index="{{index}}" form-type="submit" class="activityFormId"></button>
+      <!-- 商品部分 -->
+      <block wx:for="{{item.goods_data}}" wx:key="{{index}}" wx:item="">
+        <!-- 类型一 -->
+        <view wx:if="{{index == 3}}">
+          <form report-submit="true" bindsubmit="toGoodsDetail">
+            <block wx:for="{{item}}" wx:key="{{index}}">
+              <view class="listStyle-one">
+                <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
+                <!-- <image src="./images/activelogo.png" mode="widthFix" class="goodsLogo"></image> -->
+                <view class="bottom-info">
+                  <text class="goods-title ellip-1">{{item.goods_name}}</text>
+                  <view class="goods-time-amount">
+                    <text>活动时间：{{item.from_time}}-{{item.to_time}}</text>
+                    <text>已售：{{item.get_num}}份</text>
+                  </view>
+                  <view class="goods-priceAnd">
+                    <view class="goods-price">
+                      <text class="price-now">¥{{item.original_price?item.discount_price:0}}</text>
+                      <text class="price-pre">¥{{item.original_price?item.original_price:0}}</text>
+                    </view>
+                    <view class="buyBtn">立即抢购</view>
+                  </view>
+                </view>
+                <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+              </view>
+            </block>
           </form>
-          <!-- 砍价需要授权 -->
-          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="toBargain" class="activityFormId" wx:if="{{item.merge_goods_type == 4}}"></button>
-          <!-- 抢购 -->
-          <view class="sign" wx:if="{{item.merge_goods_type == 1}}">
-            <view class="merge_goods_typeBox">
-              <view class="merge_goods_type_txt">{{home_goods_classify_str.promotion_goods_str}}</view>
-            </view>
-          </view>
-          <!-- 拼团 -->
-          <view class="sign" wx:if="{{item.merge_goods_type == 2}}">
-            <view class="merge_goods_typeBox">
-              <view class="merge_goods_type_txt">{{home_goods_classify_str.group_goods_str}}</view>
-            </view>
-          </view>
-          <!-- 砍价 -->
-          <view class="sign" wx:if="{{item.merge_goods_type == 4}}">
-            <view class="merge_goods_typeBox">
-              <view class="merge_goods_type_txt">{{home_goods_classify_str.bargain_goods_str}}</view>
-            </view>
-          </view>
-          <!-- 集卡 -->
-          <view class="sign" wx:if="{{item.merge_goods_type == 3}}">
-            <view class="merge_goods_typeBox">
-              <view class="merge_goods_type_txt">{{home_goods_classify_str.lucky_goods_str}}</view>
-            </view>
-          </view>
-          <view class="status-img" wx:if="{{item.residue_num!=0}}">
-            <view class="status-img-content">
-              <text>赶快</text>
-              <text>来抢</text>
-            </view>
-          </view>
-          <view class="status-img empty" wx:if="{{item.residue_num == 0}}">
-            <view class="status-img-content">
-              <text>已经</text>
-              <text>抢光</text>
-            </view>
-          </view>
-          <image class="item-pic" src="{{item.banner}}" mode="aspectFill"></image>
-          <view class="item-data">
-            <view class="left">
-              <view class="brand">
-                <text>品牌 : </text>
-                <text>{{item.brand_name}}</text>
-              </view>
-              <view class="title">{{item.name}}</view>
-              <view class="date-wrapper">
-                <text class="date">时间: {{item.from_time}}-{{item.to_time}}</text>
-              </view>
-            </view>
-            <view class="right">
-              <text class="btn">立刻抢购</text>
-              <view class="num-wrapper">
-                剩余: <text class="num">{{item.residue_num}} </text>份
-              </view>
-            </view>
-          </view>
         </view>
-      </repeat>
-    </view>
-    <!-- 会员福利 -->
-    <view class="vip-list"  wx:if="{{welfareData.length}}">
-      <view class="index-header">
-        <image src="./images/fuli.png"></image>
-        <text class="name">{{listtitle[1]}}</text>
-      </view>
-      <scroll-view  scroll-y="true" bindscrolltolower="onReachBottom">
-        <repeat for="{{welfareData}}" wx:for-item="item" key:index="index">
-          <view class="index-item">
-            <form report-submit="true" bindsubmit="gotoWelfareDetails">
-              <button data-index="{{index}}" form-type="submit" class="activityFormId"></button>
-            </form>
-            <view class="status-img" wx:if="{{item.repertory_num!=0}}">
-              <view class="status-img-content">
-                <text>赶快</text>
-                <text>来抢</text>
+        <!-- 类型二 -->
+        <form report-submit="true" bindsubmit="toGoodsDetail">
+        <view class="goodsType2" wx:if="{{index == 1}}">
+          <block wx:for="{{item}}" wx:key="{{index}}">
+            <view class="listStyle-two">
+              <image src="{{item.banner}}" class="goodsPic-styleTwo" mode="aspectFill"></image>
+              <text class="goodsTitle-styleTwo ellip-2">{{item.goods_name}}</text>
+              <view class="goods-price">
+                <text class="price-now">¥{{item.original_price?item.discount_price:0}}</text>
+                <text class="price-pre">¥{{item.original_price?item.original_price:0}}</text>
               </view>
+              <view class="cut2" wx:if="{{index%2 == 0}}"></view>
+              <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
             </view>
-            <view class="status-img empty" wx:if="{{item.repertory_num == 0}}">
-              <view class="status-img-content">
-                <text>已经</text>
-                <text>抢完</text>
-              </view>
-            </view>
-            <view class="vip-wrapper">
-              <text>{{listtitle[3]}}</text>
-            </view>
-            <image class="item-pic" src="{{item.banner_img}}" mode="aspectFill"></image>
-            <view class="item-data">
-              <view class="brand">
-                <text>品牌 : </text>
-                <text>{{item.magic_goods_classify}}</text>
-              </view>
-              <view class="vip-box">
-                <text class="stitle">{{item.magic_goods_title}}</text>
-              </view>
-              <view class="date-wrapper">
-                <text class="date">时间: {{item.from_time}}-{{item.end_time}}</text>
-                <view class="num-wrapper">
-                  剩余: <text class="num">{{item.repertory_num}}</text> 份
+          </block>
+        </view>
+        </form>
+        <!-- 类型三 -->
+        <view class="goodsType2" wx:if="{{index == 2}}">
+          <form report-submit="true" bindsubmit="toGoodsDetail">
+          <block wx:for="{{item}}" wx:key="{{index}}">
+            <view class="listStyle-three">
+              <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+              <view class="goodsContent-styleThree">
+                <text class="goodsTitle-styleThree ellip-2">{{item.goods_name}}</text>
+                <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
+                <view class="priceBox-styleThree">
+                  <view class="goods-price">
+                    <text class="price-now">¥{{item.original_price?item.discount_price:0}}</text>
+                    <text class="price-pre">¥{{item.original_price?item.original_price:0}}</text>
+                  </view>
+                  <view class="barginbtn">立即抢购</view>
                 </view>
               </view>
+              <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
             </view>
-          </view>
-        </repeat>
-      </scroll-view>
-    </view>
-    <!-- 抽奖按钮 -->
-    <image @tap="toPrizeList" class="toPrize {{loadingHidden?'showtoPrizeList':''}}" src="http://applet.czsjcrm.cn/images/templete_image/reward_3.gif" mode="widthFix"></image>
+          </block>
+          </form>
+        </view>
+        <!-- 类型四 -->
+        <form report-submit="true" bindsubmit="toGoodsDetail">
+        <view class="goodsType4" wx:if="{{index == 4}}">
+          <block wx:for="{{item}}" wx:key="{{index}}">
+            <view class="listStyle-four">
+              <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleFour"></image>
+              <!-- <view class="groupTip-styleFour">2人拼团</view> -->
+              <text class="goodsTitle-styleFour ellip-2">{{item.goods_name}}</text>
+              <view class="goods-price">
+                <text class="price-now">¥{{item.original_price?item.discount_price:0}}</text>
+                <text class="price-pre">¥{{item.original_price?item.original_price:0}}</text>
+              </view>
+              <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+            </view>
+          </block>
+          <view style="flex: 0 0 1rpx;"></view>
+        </view>
+        </form>
+        <!-- 类型五 -->
+        <form report-submit="true" bindsubmit="toGoodsDetail">
+        <view class="goodsType5" wx:if="{{index == 5}}">
+          <swiper indicator-dots="{{false}}" class="listStyle-five" current="{{bannerIndexGoods}}" bindchange="bannerChange"
+            autoplay="{{false}}" interval="{{5000}}" duration="{{500}}">
+            <block wx:for="{{item}}" wx:key="{{index}}">
+              <swiper-item>
+                <view class="itemBox" style="transform: scale({{bannerIndexGoods == index ? '1' : '0.9'}});">
+                  <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
+                  <!-- <image src="./images/activelogo.png" mode="widthFix" class="goodsLogo"></image> -->
+                  <view class="bottom-info">
+                    <text class="goods-title ellip-1">{{item.goods_name}}</text>
+                    <view class="goods-time-amount">
+                      <text>活动时间：{{item.from_time}}-{{item.to_time}}</text>
+                      <text>已售：{{item.get_num}}份</text>
+                    </view>
+                    <view class="goods-priceAnd">
+                      <view class="goods-price">
+                        <text class="price-now">¥{{item.original_price?item.discount_price:0}}</text>
+                        <text class="price-pre">¥{{item.original_price?item.original_price:0}}</text>
+                      </view>
+                      <view class="buyBtn">立即抢购</view>
+                    </view>
+                  </view>
+                  <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+                </view>
+              </swiper-item>
+            </block>
+          </swiper>
+          <view class="swiperNumber"><text class="currentIndex">{{currentIndex}}</text>/{{item.length}}</view>
+        </view>
+        </form>
+      </block>
+    </block>
   </view>
-  <view wx:if="{{!loadingHidden}}">
+  <view style="height: 30rpx;"></view>
+  <!-- 抽奖按钮 -->
+  <image @tap="toPrizeList" class="toPrize {{showContent?'showtoPrizeList':''}}" src="http://applet.czsjcrm.cn/images/templete_image/reward_3.gif" mode="widthFix"></image>
+  <view wx:if="{{!showContent}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
 </template>
+
 <script>
   import wepy from 'wepy'
-  import cheaderModel from '@/components/cheader-model'
-  import indexModel from './index-model'
-  import MyModel from '@/pages/My/index-model'
-  import Address from '../../utils/address.js'
-  export default class extends wepy.page {
+  import Banner from '../../components/banner'
+  import slidSwitch from '../../components/slidSwitch'
+  import IndexModel from './index-model.js'
+  export default class Index extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '首页',
       enablePullDownRefresh: true,
       backgroundTextStyle: 'dark'
     }
-    data = {
-      headerinfo: null,
-      welfareData:null,
-      preventRepeatReuqest: true,
-      pageNum :1,
-      activityData: '',
-      loadingHidden: false,
-      userInfo: null,
-      listtitle: null,
-      navData: null,
-      home_goods_classify_str:null,
-      formId:'',
-      subject_data:''
+    components = {
+      Banner: Banner,
+      slidSwitch: slidSwitch
     }
+
+    data = {
+      showContent: false,
+      showNav: false,
+      showSubject: false,
+      navData: [],
+      bannerImgs: [],
+      bannerIndex: 0,
+      subjectList: [],
+      currentIndex: 1,
+      goodsList: [],
+      bannerIndexGoods: 0
+    }
+
+    computed = {
+      
+    }
+
     methods = {
-      onShareAppMessage(){
-        return {
-          title: wepy.$instance.globalData.name,
-          path: '/pages/Index/index',
-        }
-      },
-      gotoDetails(res){
-        let index = res.detail.target.dataset.index
-        this.formId = res.detail.formId
-        const i = this.activityData[index]
-        if(i.merge_goods_type == 2){
-          this.$navigate('../Groups/Groups-details',{id:i.group_id,formID:this.formId})
-          return false
-        }
-        if(i.merge_goods_type == 1){
-          this.$navigate('../Goods/details',{id:i.promotion_id,formID:this.formId})
-          return false
-        }
-        if(i.merge_goods_type == 4){
-          this.$navigate('../Bargain/details',{id:i.bargain_id,formID:this.formId})
-          return false
-        }
-        if(i.merge_goods_type == 3){
-          this.$navigate('../Card/details',{id:i.lucky_id,formID:this.formId})
-          return false
-        }
-      },
-      toBargain(res){
-        Address.getUser(res,()=>{
-          console.log(res)
-          let index = res.currentTarget.dataset.index
-          const i = this.activityData[index]
-          this.$navigate('../Bargain/details',{id:i.bargain_id})
-        })
-      },
-      gotoWelfareDetails(res){
-        let formId = res.detail.formId
-        let index = res.detail.target.dataset.index
-        let i = this.welfareData[index].id
-        this.$navigate('../Shop/welfareDetails',{id:i,formID: formId})
-      },
-      onReachBottom(){
-        if (!this.preventRepeatReuqest) {
-          return false
-        }
-        ++this.pageNum
-        indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
-          if(this.welfareData.length >= ResData.total_num){
-            wx.showToast({
-              title: '已经到底了',
-              icon:'loading',
-              duration:1500
-            })
-            this.preventRepeatReuqest = false
-            return false
-          }
-          if(ResData.code == 1){
-            this.welfareData = [...this.welfareData, ...ResData.data]
-            this.$apply()
-          }
-        })
-      },
-      navClickFromID(e){
-        this.formId = e.detail.formId
-        let index = e.detail.target.dataset.index
-        let IndexData = this.navData[index]
-        if (IndexData.choose_link == 1){
-          wx.navigateTo({
-            url: IndexData.http_url+'?formId='+this.formId,
-          })
-          return false
-        }
-        if (IndexData.choose_link == 3){
-          wx.switchTab({
-            url: IndexData.http_url,
-          })
-          return false
-        }
-        if(IndexData.choose_link == 2){
-          wx.navigateToMiniProgram({
-            appId: IndexData.http_url
-          })
-          return false
-        }
-        if(IndexData.choose_link == 4){
-          wx.navigateTo({
-            url: './open?url='+IndexData.http_url,
-          })
-          return false
-        }
-      },
-      toActivityList(e){
-        let formId = e.detail.formId
-        let index = e.detail.target.dataset.index
-        let subjectItem = this.subject_data[index]
-        wx.navigateTo({
-          url:'../../TimeLimitActivity/TimeLimitActivityDetail?id='+subjectItem.id+'&formId='+formId
-        })
-      },
-      gotoOpenVipFormId(e){
-        this.formId = e.detail.formId
-        wx.navigateTo({
-          url: '../Vip/Index?formId='+this.formId
-        })
-      },
-      gotoBannerUrl(url){
-        if(url){
-          wx.navigateTo({
-            url: url
-          })
-        }
+      bannerChange(e){
+        this.bannerIndexGoods = e.detail.current
+        this.currentIndex = this.bannerIndexGoods+1
+        this.$apply()
       },
       toPrizeList(){
         wx.navigateTo({
           url: '../../lotteryDraw/lotteryDrawIndex'
         })
+      },
+      toNavDetail(e){
+        let formId = e.detail.formId
+        let type = e.detail.target.dataset.type
+        let url = e.detail.target.dataset.url
+        if (type == 1){
+          wx.navigateTo({
+            url: url+'?formId=' + formId
+          })
+          return false
+        }
+        if (type == 3){
+          wx.switchTab({
+            url: url
+          })
+          return false
+        }
+        if(type == 2){
+          wx.navigateToMiniProgram({
+            appId: url
+          })
+          return false
+        }
+      },
+      toGoodsDetail(e){
+        let formId = e.detail.formId
+        let type = e.detail.target.dataset.type
+        let id = e.detail.target.dataset.id
+        if(type == 1){  //抢购
+          IndexModel.navTo('../Goods/details', {id: id, formID: formId})
+          return false
+        }
+        if(type == 2){  //拼团
+          IndexModel.navTo('../Groups/Groups-details', {id: id})
+          return false
+        }
+        if(type == 5){  //集卡
+          IndexModel.navTo('../Card/details', {id: id})
+          return false
+        }
+        if(type == 4){  //砍价
+          IndexModel.navTo('../Bargain/details', {id: id})
+          return false
+        }
+      },
+      seeMoreGoods(id,name){
+        IndexModel.navTo('../../niceShop/moreGoodsList', {id:id, name: name})
       }
     }
-    onLoad(){
-      indexModel.getActivity((ResData)=>{
-        if(ResData.code == 1){
-          this.activityData = [...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
-          this.listtitle = ResData.data.char_str
-          this.home_goods_classify_str=ResData.data.home_goods_classify_str
-          this.subject_data = ResData.data.subject_data
-          this.loadingHidden = true
-          if(ResData.data.magic_top_title){
-            wepy.$instance.globalData.name = ResData.data.magic_top_title
+
+    events = {
+    }
+    onLoad() {
+      this._loadData()
+    }
+    _loadData(){
+      IndexModel.getMainData((res)=>{
+        if(res.code === 1){
+          // 设置首页导航标题
+          wx.stopPullDownRefresh()
+          if(res.data.magic_top_title){
             wx.setNavigationBarTitle({
-              title: ResData.data.magic_top_title
-            })
-          }else{
-            wx.setNavigationBarTitle({
-              title: "首页"
+              title: res.data.magic_top_title
             })
           }
+          // 设置轮播图
+          this.bannerImgs = res.data.banner_data
+          if(this.bannerImgs.length < 3){
+            this.bannerIndex = 0
+          } else {
+            this.bannerIndex = 1
+          }
+          // 设置商品列表
+          this.goodsList = res.data.area_data
+          setTimeout(()=>{
+            this.showContent = true
+            this.$apply()
+          },40)
           this.$apply()
+
+        } else {
+          IndexModel.showTips(res.message)
         }
       })
-      indexModel.getNaData((ResData)=>{
-        this.navData = ResData.data
-        this.loadingHidden = true
-        this.$apply()
+      IndexModel.getNaData((res)=>{
+        if(res.code === 1){
+          wx.stopPullDownRefresh()
+          this.navData = res.data
+          setTimeout(()=>{
+            this.showNav = true
+            this.showContent = true
+            this.$apply()
+          },100)
+          this.$apply() 
+        } else {
+          IndexModel.showTips(res.message)
+        }
       })
-      indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
-        if(ResData.code == 1){
-          this.welfareData = ResData.data
-          this.loadingHidden = true
+      IndexModel.getActivity((res)=>{
+        if(res.code === 1){
+          wx.stopPullDownRefresh()
+          this.subjectList = res.data.subject_data
+          setTimeout(()=>{
+            this.showSubject = true
+            this.showContent = true
+            this.$apply()
+          },40)
           this.$apply()
+        } else {
+          IndexModel.showTips(res.message)
         }
       })
     }
     onShow(){
-      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
-        if(ResData.code == 1){
-          this.headerinfo = ResData.data
-          this.loadingHidden = true
-          this.$apply()
-        }
-      })
     }
     onPullDownRefresh(){
-      this.pageNum=1;
-      let isConnectNet = false
-      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
-        if(ResData.code == 1){
-          this.headerinfo = ResData.data
-          this.$apply()
-        }
-      })
-      indexModel.getWelfare({page_num: this.pageNum},(ResData)=>{
-        if(ResData.code == 1){
-          this.welfareData = ResData.data
-          this.$apply()
-          wx.stopPullDownRefresh()
-          isConnectNet = true
-        }
-      })
-      indexModel.getActivity((ResData)=>{
-        if(ResData.code == 1){
-          this.activityData = [...ResData.data.group_data,...ResData.data.promotion_data,...ResData.data.bargain_data,...ResData.data.lucky_data]
-          this.listtitle = ResData.data.char_str
-          this.home_goods_classify_str=ResData.data.home_goods_classify_str
-          this.subject_data = ResData.data.subject_data
-          this.$apply()
-          wx.stopPullDownRefresh()
-          isConnectNet = true
-        }
-      })
-      indexModel.getNaData((ResData)=>{
-        this.navData = ResData.data
-        this.$apply()
-        wx.stopPullDownRefresh()
-        isConnectNet = true
-      })
+      this._loadData()
+    }
+    onShareAppMessage(){
+      return {
+        title: wepy.$instance.globalData.name,
+        path: '/pages/Index/index',
+      }
     }
   }
 </script>
 <style lang="less">
   @import '../tpls/loading/loading.wxss';
-  page{
-    background-color: #faf9f9;
-  }
-  .cheader-index{
-    opacity: 0;
-    transform: scale(1.2);
-    transition: .8s .9s;
-  }
-  .show-header{
-    opacity: 1;
-    transform: scale(1);
-  }
-  .nav-wrapper{
-    position: relative;
-    z-index:2;
+  .navBox{
     width: 100%;
-    display: flex;
-    background-color: #fff;
-    flex-wrap:wrap;
-    opacity: 0;
-    transform: scale(1.2);
-    transition: .8s .5s;
-    .nav{
-      flex: 0 0 187.5rpx;
-      height:164rpx;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-      padding: 0;
-      background-color: #fff;
-      &::after{
-        content:none;
-      }
-      image{
-        width: 70rpx;
-        height: 70rpx;
-      }
-      text{
-        margin-top: 20rpx;
-        font-size: 26rpx;
-        color: #0a0a0a;
-      }
-    }
-  }
-  .TimeLimitActivity{
-    width: 100%;
-    border-top: 20rpx solid #ECECEF;
     box-sizing: border-box;
-    padding: 30rpx 25rpx 40rpx;
-    opacity: 0;
-    transform: translateY(-100rpx);
-    transition: .8s .5s;
-    .TimeLimitActivity_title{
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin:16rpx 0 45rpx;
-      .xianshiIcon{
-        width: 45rpx;
-        height: 45rpx;
-        margin-right: 20rpx;
-        animation: xinshi 4s infinite;
-      }
-      @keyframes xianshi{
-        0%,96%{
-          transform: scale(1);
-        }
-        98%{
-          transform: scale(1.2);
-        }
-        100%{
-          transform: scale(1);
-        }
-      }
-      .TimeLimitActivity_titleTxt{
-        color: #FF2D2D;
-        font-weight: 600;
-        font-size: 34rpx;
-      }
-    }
-    .activityBox{
+    padding: 0 40rpx;
+    display: flex;
+    height: 130rpx;
+    margin: 10rpx 0 0;
+    .navItem{
+      flex: 0 0 167.5rpx;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      .activityItem{
-        padding: 0;
-        margin:0;
-        margin-bottom: 23rpx;
-        width: 700rpx;
-        height: 320rpx;
-        border-radius: 25rpx;
-        overflow: hidden;
-        position: relative;
-        transition: .3s;
-        &::after{
-          content:none;
+      justify-content: center;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: .6s .1s;
+      .navIcon{
+        width: 60rpx;
+        height: 60rpx;
+      }
+      .navTxt{
+        font-size: 28rpx;
+        color: #2D2E2D;
+        margin-top: 20rpx;
+        text-align: center;
+      }
+    }
+    .showNavItem{
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .goodsLisBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 40rpx;
+    opacity: 0;
+    transform: translateY(100rpx);
+    transition: .7s;
+    .goodsListHead{
+      width: 100%;
+      height: 140rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20rpx;
+      .headTitle{
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .headTitle_txt{
+          font-size: 42rpx;
+          color: #0A0B0A;
+          font-weight: 600;
         }
-        .activityItemPic{
-          width: 700rpx;
-          height: 320rpx;
-          border-radius: 25rpx;
-        }
-        .activity_end{
+        .headTitle_desc{
+          font-size: 24rpx;
+          color: #999DA2;
+          margin-top: 17rpx;
           width: 100%;
-          height: 80%;
-          background:linear-gradient(to top,#000,rgba(0,0,0,.0));
+          line-height: 30rpx;
+        }
+      }
+      .pageNum{
+        display: flex;
+        align-items: baseline;
+        font-size: 26rpx;
+        color: #ADADAD;
+        .pageNumTxt{
+          color: #0A0B0A;
+          font-size: 47rpx;
+          font-weight: 600;
+        }
+      }
+      .seeMore{
+        font-size: 28rpx;
+        color: #FA3B3E;
+        margin-left: 60rpx;
+      }
+    }
+    .listStyle-one{
+      width: 670rpx;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 1px solid #F2F2F2;
+      margin-bottom: 40rpx;
+      .goodsPic{
+        width: 100%;
+        height: 390rpx;
+        border-radius: 10rpx;
+      }
+      .goodsLogo{
+        width: 100rpx;
+        height: 10rpx;
+        position: absolute;
+        top: 30rpx;
+        right: 20rpx;
+      }
+      .bottom-info{
+        width: 100%;
+        box-sizing: border-box;
+        padding: 20rpx 0 40rpx;
+        .goods-title{
+          color: #000;
+          font-size: 34rpx;
+          font-weight: 600;
+          width: 100%;
+          display: block;
+        }
+        .goods-time-amount{
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          margin: 20rpx 0;
+          text{
+            font-size: 25rpx;
+            color: #AFAFAF;
+          }
+        }
+        .goods-priceAnd{
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .goods-price{
+            display: flex;
+            align-items: baseline;
+            .price-now{
+              font-family: 'priceFont';
+              font-size: 38rpx;
+              color: #FA3B3E;
+              font-weight: 600;
+            }
+            .price-pre{
+              font-family: 'priceFont';
+              color: #999;
+              margin-left: 20rpx;
+              font-size: 23rpx;
+              text-decoration: line-through;
+            }
+          }
+          .buyBtn{
+            width: 140rpx;
+            height: 50rpx;
+            background-color: #FF5766;
+            border-radius: 7rpx;
+            text-align: center;
+            line-height: 50rpx;
+            color: #fff;
+            font-size: 24rpx;
+          }
+        }
+      }
+    }
+    .goodsType2{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      .cut1{
+        width: 30rpx;
+        height: 1px;
+        background-color: #D9D9D9;
+        margin-bottom: 40rpx;
+      }
+      .listStyle-two{
+        width: 320rpx;
+        height: 400rpx;
+        margin-bottom: 40rpx;
+        box-sizing: border-box;
+        padding-bottom: 40rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        .goodsPic-styleTwo{
+          width: 100%;
+          height: 210rpx;
+          margin-bottom: 20rpx;
+          border-radius: 8rpx;
+        }
+        .goodsTitle-styleTwo{
+          width: 100%;
+          font-size: 29rpx;
+          font-weight: 600;
+          line-height: 39rpx;
+          margin-bottom: 20rpx;
+        }
+        .cut2{
+          width: 670rpx;
+          height: 1px;
+          background-color: #F2F2F2;
           position: absolute;
           bottom: 0;
           left: 0;
-          padding-left: 50rpx;
-          padding-bottom: 35rpx;
-          line-height: 1;
-          color: #fff;
+        }
+      }
+      .listStyle-three{
+        width: 670rpx;
+        height: 226rpx;
+        box-sizing: border-box;
+        padding-bottom: 30rpx;
+        margin-bottom: 30rpx;
+        display: flex;
+        border-bottom: 1px solid #F2F2F2;
+        position: relative;
+        .goodsPic-styleThree{
+          flex: 0 0 280rpx;
+          height: 190rpx;
+          border-radius: 6rpx;
+        }
+        .goodsContent-styleThree{
+          flex: 1;
+          box-sizing: border-box;
+          padding-left: 30rpx;
+          overflow: hidden;
           display: flex;
-          align-items: flex-end;
-          font-size: 35rpx;
-          font-weight: 500;
-          border-radius: 25rpx;
+          flex-direction: column;
+          justify-content: space-between;
+          .goodsTitle-styleThree{
+            font-size: 32rpx;
+            font-weight: 600;
+            line-height: 40rpx;
+          }
+          .goodsDesc-styleThree{
+            font-size: 25rpx;
+            color: #9B9B9B;
+            margin-bottom: 15rpx;
+          }
+          .priceBox-styleThree{
+            display: flex;
+            justify-content: space-between;
+            .barginbtn{
+              width: 120rpx;
+              height: 50rpx;
+              background-color: #FF5766;
+              border-radius: 8rpx;
+              font-size: 23rpx;
+              color: #fff;
+              text-align: center;
+              line-height: 50rpx;
+            } 
+          }
+        }
+      }
+    }
+    .goodsType4{
+      width: 710rpx;
+      height: 400rpx;
+      display: flex;
+      border-bottom: 1px solid #F2F2F2;
+      white-space: nowrap;
+      overflow: scroll;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 40rpx;
+      .listStyle-four{
+        flex: 0 0 320rpx;
+        height: 400rpx;
+        position: relative;
+        margin-right: 23rpx;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        .goodsPic-styleFour{
+          width: 100%;
+          height: 210rpx;
+          border-radius: 10rpx;
+        }
+        .groupTip-styleFour{
+          width: 107rpx;
+          height: 40rpx;
+          background-color: #FFDE09;
+          border-bottom-right-radius: 10rpx;
+          border-top-left-radius: 10rpx;
+          font-size: 22rpx;
+          color: #2C2D2C;
+          line-height: 40rpx;
+          text-align: center;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        .goodsTitle-styleFour{
+          width: 320rpx;
+          font-size: 31rpx;
+          font-weight: 600;
+          line-height: 39rpx;
+          margin: 20rpx 0;
+          white-space: normal;
+          height:77rpx;
+        }
+      }
+    }
+    .goodsType5{
+      position: relative;
+      .listStyle-five{
+        width: 100%;
+        height: 670rpx;
+        .itemBox{
+          width: 670rpx;
+          overflow: hidden;
+          position: relative;
+          border-bottom: 1px solid #F2F2F2;
+          margin-bottom: 40rpx;
+          transition: .5s;
+          .goodsPic{
+            width: 100%;
+            height: 390rpx;
+            border-radius: 10rpx;
+          }
+          .goodsLogo{
+            width: 100rpx;
+            height: 10rpx;
+            position: absolute;
+            top: 30rpx;
+            right: 20rpx;
+          }
+          .bottom-info{
+            width: 100%;
+            box-sizing: border-box;
+            padding: 20rpx 0 40rpx;
+            .goods-title{
+              color: #000;
+              font-size: 34rpx;
+              font-weight: 600;
+              display: block;
+              width: 100%;
+            }
+            .goods-time-amount{
+              width: 100%;
+              display: flex;
+              justify-content: space-between;
+              margin: 20rpx 0;
+              text{
+                font-size: 25rpx;
+                color: #AFAFAF;
+              }
+            }
+            .goods-priceAnd{
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              .goods-price{
+                display: flex;
+                align-items: baseline;
+                .price-now{
+                  font-family: 'priceFont';
+                  font-size: 38rpx;
+                  color: #FA3B3E;
+                  font-weight: 600;
+                }
+                .price-pre{
+                  font-family: 'priceFont';
+                  color: #999;
+                  margin-left: 20rpx;
+                  font-size: 23rpx;
+                  text-decoration: line-through;
+                }
+              }
+              .buyBtn{
+                width: 140rpx;
+                height: 50rpx;
+                background-color: #FF5766;
+                border-radius: 7rpx;
+                text-align: center;
+                line-height: 50rpx;
+                color: #fff;
+                font-size: 24rpx;
+              }
+            }
+          }
+        }
+      }
+      .swiperNumber{
+        position: absolute;
+        top: 0rpx;
+        left: 0rpx;
+        color: #fff;
+        font-size: 25rpx;
+        width: 80rpx;
+        height: 50rpx;
+        display: block;
+        border-top-left-radius: 10rpx;
+        border-bottom-right-radius: 10rpx;
+        box-shadow: 0 0 30rpx 30rpx rgba(255,87,102,1) inset;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        box-sizing: border-box;
+        padding-top: 6rpx;
+        .currentIndex{
+          font-size: 37rpx;
         }
       }
     }
   }
-  .hide_TimeLimitActivity{
-    padding: 0;
-    border-top: 0 solid #fff;
+  .goods-price{
+    display: flex;
+    align-items: baseline;
+    .price-now{
+      font-family: 'priceFont';
+      font-size: 38rpx;
+      color: #FA3B3E;
+      font-weight: 600;
+    }
+    .price-pre{
+      font-family: 'priceFont';
+      color: #999;
+      margin-left: 20rpx;
+      font-size: 23rpx;
+      text-decoration: line-through;
+    }
   }
-  .show_TimeLimitActivity{
+  .showGoodsLisBox{
     opacity: 1;
     transform: translateY(0);
-  }
-  .show-nav-wrapper{
-    opacity: 1;
-    transform: scale(1);
-  }
-  .index-list{
-    border-top: 20rpx solid #ececef;
-    opacity: 0;
-    transform: scale(1.05);
-    transition: .8s .7s;
-    .index-header{
-      width: 100%;
-      height: 116rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      image{
-        width: 36rpx;
-        height: 32rpx;
-        margin-right:34rpx;
-      }
-      .name{
-        font-size: 34rpx;
-        color: #353535;
-        letter-spacing: 4rpx;
-      }
-    }
-    .index-item{
-      width: 690rpx;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      position: relative;
-      background-color: #ffffff;
-      box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
-      margin-bottom: 30rpx;
-      overflow: hidden;
-      transition: .5s;
-      border-radius: 0;
-      position: relative;
-      .activityFormId{
-        width: 690rpx;
-        height: 520rpx;
-        position: absolute;
-        top: 0;
-        left: 0;
-        margin: 0;
-        padding: 0;
-        border-radius: 0;
-        background-color: transparent;
-        z-index: 20;
-        &::after{
-          content: none;
-        }
-      }
-      .sign{
-        position: absolute;
-        left:0;
-        top: 0;
-        image{
-          width: 148rpx;
-          height: 148rpx;
-        }
-        .merge_goods_typeBox{
-          width:200rpx;
-          height: 200rpx;
-          transform: rotateZ(-45deg);
-          .merge_goods_type_txt{
-            height: 60rpx;
-            background-color: #cf2824;
-            width:200rpx;
-            color: #fff;
-            font-size: 25rpx;
-
-            text-align: center;
-            line-height: 60rpx;
-          }
-        }
-      }
-      .status-img{
-        position: absolute;
-        right: 20rpx;
-        top: 20rpx;
-        width: 108rpx;
-        height: 108rpx;
-        border-radius: 100%;
-        background-color: rgba(206,8,3,.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        .status-img-content{
-          width: 92rpx;
-          height: 92rpx;
-          border-radius: 100%;
-          border:1px dashed #fff;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          font-size: 30rpx;
-          color: #fff; 
-          text{
-            line-height: 33rpx;
-          }
-        }
-      }
-      .empty{
-        background-color: rgba(0,0,0,.5);
-      }
-
-      .item-pic{
-        width: 100%;
-        height: 360rpx;
-      }
-      .item-data{
-        width: 100%;
-        background-color: #fff;
-        display: flex;
-        .left{
-          overflow: hidden;
-          margin-top: 22rpx;
-          margin-bottom: 20rpx;
-          .brand{
-            height: 50rpx;
-            background-color: #e8c180;
-            font-size: 0;
-            padding-left:31rpx;
-            padding-right: 31rpx;
-            display: inline-block;
-            overflow: hidden;
-            text{
-              font-size: 26rpx;
-              line-height: 50rpx;
-              color: #f6f6f6;
-              letter-spacing: 2rpx;
-              &:last-child{
-                padding-left: 18rpx;
-              }
-            }
-          }
-          .title{
-            overflow: hidden;
-            text-overflow:ellipsis;
-            white-space: nowrap;
-            padding-top: 16rpx;
-            padding-left: 31rpx;
-            padding-bottom: 13rpx;
-            font-size: 28rpx;
-            color: #323232;
-            letter-spacing: 2rpx;
-          }
-          .stitle{
-            flex: 1;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
-            overflow: hidden;
-            padding-top: 16rpx;
-            padding-left: 31rpx;
-            padding-bottom: 13rpx;
-            font-size: 28rpx;
-            color: #323232;
-            letter-spacing: 2rpx;
-          }
-
-
-          .date-wrapper{
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            .date{
-              padding-left: 31rpx;
-              font-size: 24rpx;
-              color: #888888;
-              letter-spacing: 2rpx;
-            }
-            .num-wrapper{
-              margin-right: 14rpx;
-              font-size: 24rpx;
-              color: #888888;
-              .num{
-                color: #ffc14c;
-              }
-            }
-          }
-        }
-        .right{
-          margin-left: auto;
-          margin-right: 14rpx;
-          display: flex;
-          flex-direction: column;
-          margin-top: 43rpx;
-          .btn{
-            width: 140rpx;
-            line-height: 60rpx;
-            text-align: center;
-            font-size: 28rpx;
-            background-color: #e8c180;
-            color: #fff;
-          }
-          .num-wrapper{
-            margin-top: 16rpx;
-            font-size: 24rpx;
-            color: #888888;
-            .num{
-              color: #ffc14c;
-            }
-          }
-        }
-      }
-    }
-  }
-  .show-index-list{
-    opacity: 1;
-    transform: scale(1);
-  }
-  .vip-list{
-    border-top: 20rpx solid #ececef;
-    .index-header{
-      width: 100%;
-      height: 112rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      image{
-        width: 36rpx;
-        height: 32rpx;
-        margin-right:34rpx;
-      }
-      .name{
-        font-size: 34rpx;
-        color: #353535;
-        letter-spacing: 4rpx;
-      }
-    }
-    .index-item{
-      width: 690rpx;
-      margin-left: auto;
-      margin-right: auto;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background-color: #ffffff;
-      box-shadow: 0rpx 0rpx 10rpx 0rpx rgba(0, 0, 0, 0.08);
-      transition: .5s;
-      position: relative;
-      .activityFormId{
-        width: 690rpx;
-        height: 520rpx;
-        position: absolute;
-        top: 0;
-        left: 0;
-        margin: 0;
-        padding: 0;
-        border-radius: 0;
-        background-color: transparent;
-        &::after{
-          content: none;
-        }
-      }
-      + .index-item{
-        margin-top: 30rpx;
-      }
-      &:last-child{
-        margin-bottom: 57rpx;
-      }
-      .status-img{
-        position: absolute;
-        right: 20rpx;
-        top: 20rpx;
-        width: 108rpx;
-        height: 108rpx;
-        border-radius: 100%;
-        background-color: rgba(206,8,3,.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        .status-img-content{
-          width: 92rpx;
-          height: 92rpx;
-          border-radius: 100%;
-          border:1px dashed #fff;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          font-size: 30rpx;
-          color: #fff; 
-          text{
-            line-height: 33rpx;
-          }
-        }
-      }
-      .empty{
-        background-color: rgba(0,0,0,.5);
-      }
-      .vip-wrapper{
-        position: absolute;
-        top: 40rpx;
-        left: -10rpx;
-        width: 106rpx;
-        height: 30rpx;
-        text-align: center;
-        background-image: linear-gradient(-12deg, #fec635 50%, #fed95a 100%),
-        linear-gradient(#636363, #636363);
-        border-radius: 0rpx 4rpx 4rpx 0rpx;
-        font-size:0;
-        text{
-          line-height: 30rpx;
-          font-size: 22rpx;
-          color: #4d4632;
-        }
-      }
-      .item-pic{
-        width: 100%;
-        height: 360rpx;
-      }
-      .item-data{
-        background-color: #fff;
-        font-size:0;
-        overflow: hidden;
-          .brand{
-            height: 50rpx;
-            background-color: #e8c180;
-            font-size: 0;
-            padding-left:31rpx;
-            padding-right: 31rpx;
-            margin-top: 23rpx;
-            display: inline-block;
-            overflow: hidden;
-            text-overflow:ellipsis;
-            white-space: nowrap;
-            text{
-              font-size: 26rpx;
-              line-height: 50rpx;
-              color: #f6f6f6;
-              letter-spacing: 2rpx;
-              &:last-child{
-                overflow: hidden;
-                text-overflow:ellipsis;
-                white-space: nowrap;
-                padding-left: 18rpx;
-              }
-            }
-          }
-          .title{
-            flex: 1;
-            overflow: hidden;
-            text-overflow:ellipsis;
-            white-space: nowrap;
-            padding-top: 16rpx;
-            padding-left: 31rpx;
-            padding-bottom: 13rpx;
-            font-size: 28rpx;
-            color: #323232;
-            letter-spacing: 2rpx;
-          }
-        .vip-box{
-          display: flex;
-          align-items: center;
-          width: 100%;
-          overflow: hidden;
-          .stitle{
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
-            overflow: hidden;
-            margin-top: 16rpx;
-            margin-bottom: 13rpx;
-            font-size: 28rpx;
-            line-height:30rpx;
-            color: #323232;
-            letter-spacing: 2rpx;
-            margin-left: 31rpx;
-          }
-        }
-
-          .date-wrapper{
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20rpx;
-            .date{
-              padding-left: 31rpx;
-              font-size: 24rpx;
-              color: #888888;
-              letter-spacing: 2rpx;
-            }
-            .num-wrapper{
-              margin-right: 14rpx;
-              font-size: 24rpx;
-              color: #888888;
-              .num{
-                color: #ffc14c;
-              }
-            }
-          }
-      }
-    }
-  }
-  .swiper-wrapper{
-    width: 100%;
-    height: 320rpx;
-    image{
-      width: 100%;
-      height: 100%
-    }
-  }
-  .open-vip{
-    padding-top: 30rpx;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #faf9f9;
-    overflow: hidden;
-    .open-wrapper{
-      width:  640rpx;
-      height: 390rpx;
-      background-color: #000000;
-      border-radius: 20rpx;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      .logo{
-        width: 335rpx;
-        height: 120rpx;
-        margin-top: 94rpx;
-      }
-      .user-info{
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 37rpx;
-        .pic{
-          width: 64rpx;
-          height: 64rpx;
-          border: 4rpx solid #e6c17a;
-          border-radius: 50%;
-          margin-left: 30rpx;
-          overflow: hidden;
-        }
-        .name{
-          margin-left: 23rpx;
-          flex: 1;
-          overflow: hidden;
-          text-overflow:ellipsis;
-          white-space: nowrap;
-          font-size: 28rpx;
-          color: #e7c375;
-        }
-        .open{
-          margin-left:auto;
-          display: flex;
-          flex-direction: column;
-          background-color: transparent;
-          padding: 0;
-          margin: 0;
-          &::after{
-            content:none;
-          }
-          .no-vip{
-            width: 194rpx;
-            text-align: center;
-            font-size: 22rpx;
-            color: #e7c375;
-          }
-          .btn{
-            padding: 0;
-            margin:0;
-            margin-top:10rpx;
-            width: 190rpx;
-            margin-right: 32rpx;
-            text-align: center;
-            font-size: 28rpx;
-            color: #e7c375;
-            line-height: 70rpx;
-            border: 1px solid #e3c289;
-            border-radius: 8rpx;
-            background-color: #412d2e;
-            letter-spacing: 6rpx;
-            &::after{
-              content:none;
-            }
-          }
-        }
-      }
-
-    }
-    .open-bg{
-      width: 100%;
-      height: 59rpx;
-      margin-bottom:-20rpx;
-      position: relative;
-      z-index: 1;
-    }
   }
   .toPrize{
     width: 200rpx;
@@ -1061,15 +766,18 @@
     transition: .5s 1s;
     transform: scale(1);
   }
-  .hidePrize{
-    transform: translateX(200rpx);
-  }
-  @keyframes prize{
-    0%,95%,100%{
-      transform: scale(1);
-    }
-    98%{
-      transform: scale(1.2);
+  .formIdBtn{
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    &::after{
+      content: none;
     }
   }
 </style>

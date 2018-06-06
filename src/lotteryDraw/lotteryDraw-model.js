@@ -146,29 +146,46 @@ class lotteryDraw extends Base {
     }
     this.request(param)
   }
+  // 获取海报数据
+  getPosterData(queryData, callback){
+    let param = {
+      url: 'v2/poster/get_data_poster',
+      data: {
+        id: queryData.id,
+        type: 8
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      },
+      fCallback(){
+        fcallBack && fcallBack()
+      }
+    }
+    this.request(param)
+  }
   // 生成海报
-  buildPoster(that, canvasId, goodsName, lotteryZanzu, lotteryTime, goodsId){
+  buildPoster(that, canvasId, goodsName, lotteryZanzu, lotteryTime, goodsId,resData){
     const posterWdith = that.$parent.globalData.pxRadio*650
     const poserHeight = that.$parent.globalData.pxRadio*1000
     const ctx = wx.createCanvasContext(canvasId)
     wx.downloadFile({
-      url: 'http://p55e536k6.bkt.clouddn.com/posterbg2.jpg',
+      url: 'https://api.czsjcrm.cn/images/poster/big_img/reward_backgroud.jpg',
       success: function (res) {
         let lotteryBgp = res.tempFilePath
         wx.downloadFile({
-          url: 'http://p55e536k6.bkt.clouddn.com/2256fda586ef7c05366598ca0a201c66.jpg',
+          url: resData.data.banner,
           success: function(res2){
             let goodsPic = res2.tempFilePath
             wx.downloadFile({
-              url: 'http://p55e536k6.bkt.clouddn.com/qrcode.png',
+              url: resData.data.qr_code_img,
               success: function(res3){
                 let QrPic = res3.tempFilePath
                 // 绘制背景图
                 ctx.drawImage(lotteryBgp, 0, 0, posterWdith, poserHeight)
                 // 绘制产品图
-                ctx.drawImage(goodsPic, 0.08*posterWdith, 0.33*posterWdith, 0.26*posterWdith, 0.26*posterWdith)
+                ctx.drawImage(goodsPic, 0.08*posterWdith, 0.34*posterWdith, 0.26*posterWdith, 0.26*posterWdith)
                 // 绘制二维码图
-                ctx.drawImage(QrPic, 0.35*posterWdith, 0.79*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
+                ctx.drawImage(QrPic, 0.35*posterWdith, 0.8*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
                 // 绘制标题
                 ctx.setFillStyle('black')
                 ctx.setFontSize(parseInt(posterWdith*0.05))
@@ -189,6 +206,10 @@ class lotteryDraw extends Base {
                 ctx.fillText(lotteryZanzu+' 赞助', 0.4*posterWdith, 0.51*posterWdith,0.8*posterWdith)
                 // 绘制开奖日期
                 ctx.fillText(lotteryTime, 0.4*posterWdith, 0.57*posterWdith,0.8*posterWdith)
+                // 绘制小程序名称
+                ctx.setFillStyle('#ffffff')
+                ctx.setTextAlign('center')
+                ctx.fillText(resData.data.top_name.magic_top_title, 0.5*posterWdith, 1.46*posterWdith,0.8*posterWdith)
                 ctx.draw(true)
                 wx.hideLoading()
                 that.showPosterBox = true

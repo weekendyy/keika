@@ -148,7 +148,7 @@
             this.$apply() 
             setTimeout(()=>{
               Address.navTo('./couponIndex', {formId: res.detail.formId, id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id, activityName: this.indexData.preferentialactivity.activity_name})
-            }, 1000)
+            }, 500)
           } else {
             wx.hideLoading()
             Address.showTips(resData.message)

@@ -5,7 +5,7 @@
     <view class="couponBox {{loadingHidden?'show-couponBox':''}}">
       <block wx:for="{{couponData}}" wx:key="{{index}}">
         <!-- 后面多张 -->
-        <view @tap="nextCoupon" @touchstart="moveStart" @touchmove="moveCoupon" @touchend="moveEnd" class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transform: translateX({{ ((index-changeNum)%couponData.length) == 0 ? couponMoveX+'px' : ((index-changeNum)%couponData.length)*50+'rpx'}}) translateY({{(index-changeNum)%couponData.length == 0 ? (couponMoveY+'px') : 0}}) scale({{(1-(index-changeNum)%couponData.length*0.1)}});background-image: url({{backGroundImg[index%4]}}); z-index:{{10-(index-changeNum)%couponData.length}}; opacity:{{(index-changeNum)%couponData.length == 0 ? 1 : 0.8}}; transition: {{(index-changeNum)%couponData.length == 0 ? '0.3':'0.5'}}s">
+        <view @tap="nextCoupon" @touchstart="moveStart" @touchmove="moveCoupon" @touchend="moveEnd" class="couponItem {{loadingHidden?'show-couponItem':''}}" style="transform: translateX({{ ((index-changeNum)%couponData.length) == 0 ? couponMoveX+'px' : ((index-changeNum)%couponData.length)*27+'px'}}) translateY({{(index-changeNum)%couponData.length == 0 ? (couponMoveY+'px') : 0}}) scale({{(1-(index-changeNum)%couponData.length*0.1)}});wxcs_style_transform: translateX({{ ((index-changeNum)%couponData.length) == 0 ? couponMoveX+'px' : ((index-changeNum)%couponData.length)*50+'rpx'}}) translateY({{(index-changeNum)%couponData.length == 0 ? (couponMoveY+'px') : 0}}) scale({{(1-(index-changeNum)%couponData.length*0.1)}});background-image: url({{backGroundImg[index%4]}}); z-index:{{10-(index-changeNum)%couponData.length}}; opacity:{{(index-changeNum)%couponData.length == 0 ? 1 : 0.8}}; transition: {{(index-changeNum)%couponData.length == 0 ? '0.3':'0.5'}}s">
           <image src="./images/couponhome.png" mode="widthFix" class="homeIcon"></image>
           <view class="couponTop">
             <image src="{{item.preferential.img_url}}" mode="aspectFill" class="couponPic"></image>
@@ -194,9 +194,6 @@
         wx.hideShareMenu()
       } else if(this.order_type == 3 && !this.hasUserInfo){
         wx.hideShareMenu()
-      }
-      if(this.couponData.length != 0){
-        return false
       }
       let query = {
         magic_shop_id: this.shopId,

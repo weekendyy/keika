@@ -21,10 +21,6 @@
         </view>
       </view>
     </view>
-    <view class="tel-wrapper" wx:if="{{groupsData.status == 1 }}">
-      <text>手机号(必填)</text>
-      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11"  placeholder="请填写手机号,方便商家验证"/>
-    </view>
     <view class="Confirm_main">
       <view class="main_header">
         <text>购物清单</text>
@@ -70,6 +66,10 @@
         <text>下单时间：</text>
         <text>{{groupsData.create_time}}</text>
       </view>
+    </view>
+    <view class="tel-wrapper" wx:if="{{groupsData.status == 1 }}">
+      <text>手机号(必填)</text>
+      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
     </view>
     <view class="footer">
       <text class="pay-text">实付:</text>
@@ -221,14 +221,14 @@
       Groups.getGropusOrderDetail(_param,ResData=>{
         if(ResData.code === 1){
           this.groupsData = ResData.data
-          this.AddressInfo.shipping_name = this.groupsData.shipping_name || ''
-          this.AddressInfo.shipping_province = this.groupsData.shipping_province || ''
-          this.AddressInfo.shipping_city = this.groupsData.shipping_city || ''
-          this.AddressInfo.shipping_area = this.groupsData.shipping_area || ''
-          this.AddressInfo.shipping_street = this.groupsData.shipping_street || ''
-          this.AddressInfo.shipping_tel = this.groupsData.shipping_phone || ''
-          this.real_tel = this.groupsData.real_tel || ''
-          this.requirePhone = this.groupsData.real_tel || ''
+          this.groupsData.shipping_name && (this.AddressInfo.shipping_name = this.groupsData.shipping_name)
+          this.groupsData.shipping_province && (this.AddressInfo.shipping_province = this.groupsData.shipping_province)
+          this.groupsData.shipping_city && (this.AddressInfo.shipping_city = this.groupsData.shipping_city)
+          this.groupsData.shipping_area && (this.AddressInfo.shipping_area = this.groupsData.shipping_area)
+          this.groupsData.shipping_street && (this.AddressInfo.shipping_street = this.groupsData.shipping_street)
+          this.groupsData.shipping_phone && (this.AddressInfo.shipping_tel = this.groupsData.shipping_phone)
+          this.groupsData.real_tel && (this.real_tel = this.groupsData.real_tel)
+          this.groupsData.real_tel && (this.requirePhone = this.groupsData.real_tel)
           this.$apply()
         }
       })
