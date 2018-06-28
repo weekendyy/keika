@@ -307,6 +307,19 @@ class takeCoupon extends Base {
     }
     this.request(param)
   }
+  // 获取裂变券列表
+  getIndexCouponListData(queryData, callback){
+    let param = {
+      url: 'v5/magic_home_area/activity_list_fission',
+      data: {
+        area_id: queryData.id
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
 }
 const couponModel = new takeCoupon()
 export default couponModel

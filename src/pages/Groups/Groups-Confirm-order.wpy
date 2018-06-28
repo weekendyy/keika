@@ -150,7 +150,7 @@
           })
           return false
         }
-        if(!(/^1[345789]\d{9}$/.test(this.requirePhone))){
+        if(!(/^1[23456789]\d{9}$/.test(this.requirePhone))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -163,7 +163,7 @@
           orderID: this.orderId,
           shipping_phone: this.requirePhone
         }
-        if(this.groupsData.address_options == 1 && this.AddressInfo.shipping_name == ''){
+        if(this.groupsData.address_options == 1 && JSON.stringify(this.AddressInfo) == '{}'){
           wx.showToast({
             title: '请填写收货地址',
             icon: 'success',

@@ -9,17 +9,26 @@
   </swiper>
   <view class="open-vip" wx:if="{{headerinfo.open_status == 2}}">
     <view class="open-wrapper" style="background-image: url({{headerinfo.background_img}});">
-      <view class="logo"></view>
-      <view class="user-info">
-        <open-data type="userAvatarUrl" class="pic"></open-data>
-        <open-data type="userNickName" class="name"></open-data>
-        <view class="open">
-          <text class="no-vip">{{headerinfo.magic_auth_str[0]}}</text>
-          <button class="btn" form-type="submit">{{headerinfo.magic_auth_str[1]}}</button>
+      <button class="formIdBtn" form-type="submit"></button>
+      <view class="vipCard-Info">
+        <view class="vipInfo-left">
+          <text class="nameTxt">姓名</text>
+          <view class="userName ellip-1">
+            <open-data type="userNickName" class="ellip-1"></open-data>
+          </view>
+        </view>
+        <view class="vipCard-right">
+          <block wx:if="{{vipInfo.open_status == 1}}">
+            <view class="end-time-txtBox">
+              <text class="end-time-txt">到期时间</text>
+              <text class="end-time-txt1">(续费)</text>
+            </view>
+            <text class="end-time">{{vipInfo.valid_time}}</text>
+          </block>
+            <view class="openVip">立即开通</view>
         </view>
       </view>
     </view>
-    <image class="open-bg" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.jpg"></image>
   </view>
 </form>
 </template>
@@ -51,95 +60,91 @@
 <style lang="less">
   .swiper-wrapper{
     width: 100%;
-    height: 320rpx;
+    height: 400rpx;
     image{
       width: 100%;
       height: 100%
     }
   }
   .open-vip{
-    padding-top: 30rpx;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: #faf9f9;
     overflow: hidden;
+    margin-bottom: 20rpx;
     .open-wrapper{
-      width:  640rpx;
-      height: 390rpx;
-      background-color: #000000;
+      position: relative;
+      margin-top: 25rpx;
+      width: 570rpx;
+      height: 320rpx;
       border-radius: 20rpx;
+      box-shadow: 0 0 9rpx rgba(0,0,0,0.7);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-content: center;
+      justify-content: flex-end;
       background-repeat: no-repeat;
-      background-position: center;
+      background-position: 0 0;
+      -webkit-background-size: cover;
       background-size: cover;
-      .logo{
-        width: 335rpx;
-        height: 120rpx;
-        margin-top: 94rpx;
-      }
-      .user-info{
+      background-color: #000;
+      .vipCard-Info{
+        position: relative;
         width: 100%;
+        box-sizing: border-box;
+        padding: 0 50rpx;
+        color: #fff;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 37rpx;
-        .pic{
-          width: 64rpx;
-          height: 64rpx;
-          border: 4rpx solid #e6c17a;
-          border-radius: 50%;
-          margin-left: 30rpx;
-          overflow: hidden;
-        }
-        .name{
-          margin-left: 23rpx;
-          flex: 1;
-          overflow: hidden;
-          text-overflow:ellipsis;
-          white-space: nowrap;
-          font-size: 28rpx;
-          color: #e7c375;
-        }
-        .open{
-          margin-left:auto;
+        justify-content: space-between;
+        margin-top: 40rpx;
+        margin-bottom: 35rpx;
+        .vipInfo-left{
           display: flex;
           flex-direction: column;
-          background-color: transparent;
-          padding: 0;
-          margin: 0;
-          &::after{
-            content:none;
+          .nameTxt{
+            font-size: 25rpx;
           }
-          .no-vip{
-            width: 194rpx;
-            text-align: center;
-            font-size: 22rpx;
-            color: #e7c375;
+          .userName{
+            font-size: 29rpx;
+            margin-top: 10rpx;
+            max-width: 300rpx;
           }
-          .btn{
-            padding: 0;
-            margin:0;
-            margin-top:10rpx;
-            width: 190rpx;
-            margin-right: 32rpx;
-            text-align: center;
-            font-size: 28rpx;
-            color: #e7c375;
-            line-height: 70rpx;
-            border: 1px solid #e3c289;
-            border-radius: 8rpx;
-            background-color: #412d2e;
-            letter-spacing: 6rpx;
-            &::after{
-              content:none;
+        }
+        .vipCard-right{
+          display: flex;
+          flex-direction: column;
+          width: 180rpx;
+          align-items: flex-end;
+          .end-time-txtBox{
+            display: flex;
+            align-items: center;
+            .end-time-txt{
+              font-size: 25rpx;
             }
+            .end-time-txt1{
+              color: #E6C168;
+              margin-left: 10rpx;
+              font-size: 25rpx;
+              border-bottom: 1px solid #E6C168;
+            }
+          }
+          .end-time{
+            font-size: 25rpx;
+            margin-top: 15rpx;
+          }
+          .openVip{
+            font-size: 25rpx;
+            color: #E7C375;
+            background-color: #312F31;
+            border-radius: 10rpx;
+            border: 1px solid #fff;
+            padding: 14rpx 20rpx;
+            z-index: 100;
+            pointer-events: auto;
           }
         }
       }
-
     }
     .open-bg{
       width: 100%;

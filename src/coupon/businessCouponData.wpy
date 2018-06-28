@@ -158,6 +158,8 @@
                 console.log(res2)
               }
             })
+          } else {
+            CouponModel.showTips(res.message)
           }
         })
       },
@@ -270,12 +272,14 @@
         }
         CouponModel.getCouponDataList(query, (res)=>{
           if(res.code == 1){
-            if(res.data.data.length == 0){
+            let count = Object.keys(res.data.data[0]).length;
+            if(res.data.data.length == 0 || count === 1){
               CouponModel.showTips("已经到底了")
               this.isLoadAll = true
               this.$apply()
+            } else {
+              this.indexData.data = [...this.indexData.data, ...res.data.data]
             }
-            this.indexData.data = [...this.indexData.data, ...res.data.data]
             this.$apply()
           } else {
             CouponModel.showTips(res.message)

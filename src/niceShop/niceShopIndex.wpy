@@ -3,6 +3,7 @@
   <import src="../wxParse/wxParse.wxml"/>
   <view class="niceShopIndex">
     <view class="bannerTop {{showContent?'showBanner':''}}">
+      <backHome top="20"></backHome>
       <Banner :bannerImgs.sync='bannerImgs'></Banner>
     </view>
     <!-- 店铺头部 -->
@@ -136,6 +137,23 @@
         </view>
       </view>
     </view>
+    <view class="posterText {{showContent?'showposterText':''}}" @tap="getUserInfo">
+      <view class="posterT">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </view>
+    <view class="posterBox">
+      <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+      <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+        <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="shopCanvas"></canvas>
+        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
+        <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+          <text>保存图片</text>
+        </view>
+      </view>
+    </view>
     <!-- 店铺介绍 -->
     <view class="shopDesc">
       <text class="shopDescTxt">店铺介绍</text>
@@ -153,6 +171,7 @@
   import Banner from './components/banner'
   import NiceShopModel from './niceShop-model.js'
   import wxParse from '../wxParse/wxParse'
+  import backHome from '../components/backHome'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -169,10 +188,13 @@
       couponData: [],
       todayData: [],
       choiceness: [],
-      formId: ''
+      formId: '',
+      showPosterBox: false,
+      posterImg: ''
     }
     components = {
-      Banner: Banner
+      Banner: Banner,
+      backHome: backHome
     }
     computed = {
         
@@ -208,6 +230,34 @@
       		NiceShopModel.navTo('../pages/Bargain/details?id='+id)
       		return false
       	}
+      },
+      getUserInfo(){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        let posterPic = wx.getStorageSync('posterPic_'+'shopCanvas'+'_'+this.shopId)
+        if(posterPic){
+          this.posterImg = posterPic
+          this.showPosterBox = true
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
+        let param = {}
+        param.id = this.shopId
+        param.type = 5
+        NiceShopModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            NiceShopModel.creatPoster(this, 'shopCanvas', ResData.data, this.indexData.magic_shop_name, '', '','','', this.indexData.address, this.shopId)
+          }
+        })
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        NiceShopModel.savePoste(this,'shopCanvas',this.shopId)
       }
     }
     onLoad(e){
@@ -707,6 +757,119 @@
       opacity: 1;
       transition: .5s .1s;
       transform: scale(1);
+    }
+    .posterText{
+      padding: 0;
+      margin: 0;
+      width: 80rpx;
+      height: 80rpx;
+      background-color: rgba(0,0,0,.7);
+      border-radius: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 430rpx;
+      right: 20rpx;
+      z-index: 1;
+      opacity: 0;
+      transform: scale(.5);
+      &::after{
+        content:none;
+      }
+      .posterT{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 65rpx;
+        height: 65rpx;
+        border:1px dashed #fff;
+        border-radius: 100%;
+        font-size: 20rpx;
+        color: #fff;
+        text{
+          margin: 3rpx 0;
+        }
+      }
+    }
+    .showposterText{
+      opacity: 1;
+      transform: scale(1);
+      transition: .5s .3s;
+    }
+    .posterBox{
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      .poster_cover{
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,.6);
+        pointer-events: auto;
+      }
+      .poster_content{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+        transform: rotateY(0deg);
+        transition: .4s;
+        .posterImg{
+          width: 650rpx;
+          height: 1080rpx;
+          margin-bottom: 20rpx;
+        }
+        .canvas{
+          box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+          background-color: #fff;
+          position: absolute;
+          top: -1000px;
+          left: -500px;
+        }
+        .canvasImg{
+          width: 650rpx;
+          height: 1000rpx;
+        }
+        .saveImg{
+          width: 650rpx;
+          height: 80rpx;
+          background-color: #FE6420;
+          text-align: center;
+          line-height: 70rpx;
+          font-size: 28rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          pointer-events: none;
+          margin-top: 20rpx;
+          .downPic{
+            width: 35rpx;
+            height: 35rpx;
+            margin-right: 20rpx;
+          }
+        }
+        .canSave{
+          pointer-events: auto;
+        }
+      }
+      .showPosterBox{
+        opacity: 1;
+        transform: rotateY(0);
+        transition: 1s;
+      }
     }
     .shopDesc{
       width: 100%;

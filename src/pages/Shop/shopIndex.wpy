@@ -82,7 +82,7 @@
                 <text class="shop-name">{{item.magic_shop_name}}</text>
                 <view class="type-wrapper">
                   <view>{{item.classify_magic_goods}}</view>
-                  <view>{{item.per_consume}}</view>
+                  <view>人均{{item.per_consume}}元</view>
                 </view>
                 <view class="type-wrapper">
                   <view>{{item.address}}</view>
@@ -137,7 +137,7 @@
                 <text class="shop-name">{{item.magic_shop_name}}</text>
                 <view class="type-wrapper">
                   <view>{{item.classify_magic_goods}}</view>
-                  <view>{{item.per_consume}}</view>
+                  <view>人均{{item.per_consume}}元</view>
                 </view>
                 <view class="type-wrapper">
                   <view>{{item.address}}</view>
@@ -197,6 +197,8 @@
     config = {
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '推荐店铺',
+      enablePullDownRefresh: true,
+      backgroundTextStyle: 'dark'
     }
     data = {
       loadingHidden: false,
@@ -331,7 +333,7 @@
           })
           return false
         }
-        if(!(/^1[345789]\d{9}$/.test(this.link_tel))){
+        if(!(/^1[23456789]\d{9}$/.test(this.link_tel))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -375,9 +377,19 @@
       }
     }
     onLoad(){
+      this._loadData()
+    }
+    onShow(){
+      
+    }
+    onPullDownRefresh(){
+      this._loadData()
+    }
+    _loadData(){
       Address.getGeoAndUserInfo(()=>{
         if(this.currentTabsIndex=='0'){
           ShopModel.getShopIndexData(this.pageNum.shopPage,(ResData)=>{
+            wx.stopPullDownRefresh()
             if(ResData.code == 1){
               this.isEmpty.isNowEmpty = false
               this.shopData = ResData.data
@@ -410,9 +422,8 @@
           })
         }
       })
-    }
-    onShow(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        wx.stopPullDownRefresh()
         if(ResData.code == 1){
           this.headerinfo = ResData.data
           this.loadingHidden = true
@@ -765,7 +776,7 @@
   }
   .swiper-wrapper{
     width: 100%;
-    height: 334rpx;
+    height: 430rpx;
     image{
       width: 100%;
       height: 100%

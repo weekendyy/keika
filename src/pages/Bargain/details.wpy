@@ -2,254 +2,260 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
   <!-- <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view> -->
-  <view class="container {{showPosterBox?'noScroll':''}}">
-    <image src="{{DetailData.img}}" class="bannerpic {{loadingHidden?'showBannerpic':''}}" mode="aspectFill"/>
-    <view wx:if="{{loadingHidden}}">
-      <BackHome top='70'></BackHome>
-    </view>
-    <view class="banner-info">
-      <view class="banner-info-item">
-        <text class="banner-info-itemNum">{{DetailData.see_num}}</text><text>人查看</text>
+  <block wx:if="{{DetailData.status == 1}}">
+    <view class="container {{showPosterBox?'noScroll':''}}">
+      <image src="{{DetailData.img}}" class="bannerpic {{loadingHidden?'showBannerpic':''}}" mode="aspectFill"/>
+      <view wx:if="{{loadingHidden}}">
+        <BackHome top='70'></BackHome>
       </view>
-      <view class="banner-info-item">
-        <text class="banner-info-itemNum">{{DetailData.share_num}}</text><text>人分享</text>
-      </view>
-      <view class="banner-info-item">
-        <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
-      </view>
-    </view>
-    <view class="posterText {{loadingHidden?'showposterText':''}}" @tap="getUserInfo">
-      <view class="posterT">
-        <text>生成</text>
-        <text>海报</text>
-      </view>
-    </view>
-    <view class="mainBoxB">
-      <view class="mainBoxB-top {{loadingHidden?'show-mainBoxB-top':''}}">
-        <text class="title">{{DetailData.title}}</text>
-        <swiper indicator-dots="{{false}}" class="league-swiper" circular
-        autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}" wx:if="{{floor_data.length}}">
-          <block wx:for="{{floor_data}}" wx:key="{{index}}">
-            <swiper-item>
-              <view class="bargainTips">
-                <text class="bargainTips-name">{{item.name}}</text>
-                <text class="bargainTips-txt">{{item.content_str}}</text>
-              </view>
-            </swiper-item>
-          </block>
-        </swiper>
-
-        <view class="starttime" wx:if="{{DetailData.status == 2}}">
-          <view class="starttimetxt">活动开始倒计时</view>
-          <view class="timenumber">
-            <text>{{clock.day}}</text>天<text>{{clock.hour}}</text>时<text>{{clock.min}}</text>分<text>{{clock.second}}</text>秒
-          </view>
+      <view class="banner-info">
+        <view class="banner-info-item">
+          <text class="banner-info-itemNum">{{DetailData.see_num}}</text><text>人查看</text>
         </view>
-        <view class="starttime" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 }}">
-          <view class="starttimetxt">活动结束倒计时</view>
-          <view class="timenumber">
-            <text>{{clock.day}}</text>天<text>{{clock.hour}}</text>时<text>{{clock.min}}</text>分<text>{{clock.second}}</text>秒
-          </view>
+        <view class="banner-info-item">
+          <text class="banner-info-itemNum">{{DetailData.share_num}}</text><text>人分享</text>
+        </view>
+        <view class="banner-info-item">
+          <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
         </view>
       </view>
-      <view class="mainBoxB-bottom {{loadingHidden?'show-mainBoxB-bottom':''}}">
-        <!-- <view class="priceNow">
-          <text class="textPriceNow"><text>现价</text> {{DetailData.current_price}} <text>元</text></text>
-        </view> -->
-        <view class="mainBoxB-bottom-info">
-          <view class="mainBoxB-bottom-info_left" wx:if="{{bargain.launch}}">
-            <text class="username" wx:if="{{bargain.launch.nickname}}">{{bargain.launch.nickname}}</text>
-            <open-data type="userNickName" wx:if="{{!bargain.launch.nickname}}" class="username"></open-data>
-            <view class="userbj">
-              <text>帮减人数：</text>
-              <text class="userbjNum">{{bargain.launch.help_count}}</text>
-            </view>
-          </view>
-          <view class="mainBoxB-bottom-info_right">
-            <view class="banjian xianj">
-              <text class="banjianTxt">现价:</text>
-              <text class="banjianNum">{{DetailData.current_price}}元</text>
-            </view>
-            <view class="banjian">
-              <text class="banjianTxt">底价:</text>
-              <text class="banjianNum">{{DetailData.floor_price}}元</text>
-            </view>
-            <view class="banjian">
-              <text class="banjianTxt">原价:</text>
-              <text class="banjianNum">{{DetailData.price}}元</text>
-            </view>
-          </view>
+      <view class="posterText {{loadingHidden?'showposterText':''}}" @tap="getUserInfo">
+        <view class="posterT">
+          <text>生成</text>
+          <text>海报</text>
         </view>
-        <view class="mainBoxB-bottom-options" >
-          <!-- 我自己的砍价 -->
-          <block wx:if="{{bargain.is_own == 1}}">
-            <!-- 活动进行中 -->
-            <block wx:if="{{DetailData.status == 1}}">
-              <!-- 商品还没卖完之前 -->
-              <block wx:if="{{DetailData.last_num > 0}}">
-                <view class="menpiaobtn success" wx:if="{{isOne == 0}}">
-                  <button class="kanyidao" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="myadd">我也要参加</button>
+      </view>
+      <view class="mainBoxB">
+        <view class="mainBoxB-top {{loadingHidden?'show-mainBoxB-top':''}}">
+          <text class="title">{{DetailData.title}}</text>
+          <swiper indicator-dots="{{false}}" class="league-swiper" circular
+          autoplay="{{true}}" interval="{{3000}}" vertical="{{true}}" wx:if="{{floor_data.length}}">
+            <block wx:for="{{floor_data}}" wx:key="{{index}}">
+              <swiper-item>
+                <view class="bargainTips">
+                  <text class="bargainTips-name">{{item.name}}</text>
+                  <text class="bargainTips-txt">{{item.content_str}}</text>
                 </view>
-                
-                <block wx:if="{{isOne != 0}}">
-                  <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1 && bargain.launch.receive_status != 1}}">
-                    <!-- 没到底价能购买 -->
-                    <view wx:if="{{DetailData.pay_status == 2}}" class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
-                    <!-- 没到底价不能购买 -->
-                    <view wx:if="{{DetailData.pay_status == 1}}" class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoIndex()">查看更多</view>
+              </swiper-item>
+            </block>
+          </swiper>
 
-                    <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency||0}}次)</view>
-                    <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0}}">邀请好友帮我砍</button>
-                  </view>
-                  <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
-                    <view class="kanyidao">减价成功,立即购买</view>
-                  </view>
-                  <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
-                    <view class="kanyidao">减价成功,立即兑换</view>
+          <view class="starttime" wx:if="{{DetailData.status == 2}}">
+            <view class="starttimetxt">活动开始倒计时</view>
+            <view class="timenumber">
+              <text>{{clock.day}}</text>天<text>{{clock.hour}}</text>时<text>{{clock.min}}</text>分<text>{{clock.second}}</text>秒
+            </view>
+          </view>
+          <view class="starttime" wx:if="{{DetailData.status == 1 && DetailData.last_num != 0 }}">
+            <view class="starttimetxt">活动结束倒计时</view>
+            <view class="timenumber">
+              <text>{{clock.day}}</text>天<text>{{clock.hour}}</text>时<text>{{clock.min}}</text>分<text>{{clock.second}}</text>秒
+            </view>
+          </view>
+        </view>
+        <view class="mainBoxB-bottom {{loadingHidden?'show-mainBoxB-bottom':''}}">
+          <!-- <view class="priceNow">
+            <text class="textPriceNow"><text>现价</text> {{DetailData.current_price}} <text>元</text></text>
+          </view> -->
+          <view class="mainBoxB-bottom-info">
+            <view class="mainBoxB-bottom-info_left" wx:if="{{bargain.launch}}">
+              <text class="username" wx:if="{{bargain.launch.nickname}}">{{bargain.launch.nickname}}</text>
+              <open-data type="userNickName" wx:if="{{!bargain.launch.nickname}}" class="username"></open-data>
+              <view class="userbj">
+                <text>帮减人数：</text>
+                <text class="userbjNum">{{bargain.launch.help_count}}</text>
+              </view>
+            </view>
+            <view class="mainBoxB-bottom-info_right">
+              <view class="banjian xianj">
+                <text class="banjianTxt">现价:</text>
+                <text class="banjianNum">{{DetailData.current_price}}元</text>
+              </view>
+              <view class="banjian">
+                <text class="banjianTxt">底价:</text>
+                <text class="banjianNum">{{DetailData.floor_price}}元</text>
+              </view>
+              <view class="banjian">
+                <text class="banjianTxt">原价:</text>
+                <text class="banjianNum">{{DetailData.price}}元</text>
+              </view>
+            </view>
+          </view>
+          <view class="mainBoxB-bottom-options" >
+            <!-- 我自己的砍价 -->
+            <block wx:if="{{bargain.is_own == 1}}">
+              <!-- 活动进行中 -->
+              <block wx:if="{{DetailData.status == 1}}">
+                <!-- 商品还没卖完之前 -->
+                <block wx:if="{{DetailData.last_num > 0}}">
+                  <view class="menpiaobtn success" wx:if="{{isOne == 0}}">
+                    <button class="kanyidao" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="myadd">我也要参加</button>
                   </view>
                   
+                  <block wx:if="{{isOne != 0}}">
+                    <view class="menpiaobtn" wx:if="{{DetailData.last_num > 0 && bargain.launch.is_minimum !=1 && bargain.launch.receive_status != 1}}">
+                      <!-- 没到底价能购买 -->
+                      <view wx:if="{{DetailData.pay_status == 2}}" class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoBuy()">以{{DetailData.current_price}}元购买</view>
+                      <!-- 没到底价不能购买 -->
+                      <view wx:if="{{DetailData.pay_status == 1}}" class="qiuzu" style="width:{{bargain.launch.frequency == 0?320:290}}rpx"  @tap="gotoIndex()">查看更多</view>
+
+                      <view class="kanyidao  {{LaunchState == true ? '': 'No'}}" @tap="openLaunch()" wx:if="{{bargain.launch.frequency != 0 }}">我来砍一刀（剩余{{bargain.launch.frequency||0}}次)</view>
+                      <button open-type="share" class="kanyidao" wx:if="{{bargain.launch.frequency == 0}}">邀请好友帮我砍</button>
+                    </view>
+                    <view class="menpiaobtn success"  @tap="gotoBuy()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price != 0}}">
+                      <view class="kanyidao">减价成功,立即购买</view>
+                    </view>
+                    <view class="menpiaobtn success {{exchangeState == true ? '': 'payState'}}"  @tap="exchange()" wx:if="{{bargain.launch.is_minimum == 1 && bargain.launch.receive_status != 1 && DetailData.last_num != 0 && DetailData.current_price == 0}}">
+                      <view class="kanyidao">减价成功,立即兑换</view>
+                    </view>
+                    
+                    <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
+                      <view class="kanyidao">去使用</view>
+                    </view>
+                    <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1}}">
+                      <view class="kanyidao">已使用</view>
+                    </view>
+
+                  </block>
+                </block>
+                <!-- 商品已经卖完 -->
+                <view class="starttime" wx:if="{{DetailData.last_num == 0 || DetailData.last_num < 0}}">
                   <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
                     <view class="kanyidao">去使用</view>
                   </view>
-                  <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 1}}">
-                    <view class="kanyidao">已使用</view>
-                  </view>
-
-                </block>
+                  <view wx:else class="starttimetxt">已售罄</view>
+                </view>
               </block>
-              <!-- 商品已经卖完 -->
-              <view class="starttime" wx:if="{{DetailData.last_num == 0 || DetailData.last_num < 0}}">
-                <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
+              <!-- 活动已经结束 -->
+              <block wx:if="{{DetailData.status == 3}}">
+                <view class="menpiaobtn success">
+                  <view class="kanyidao">已结束</view>
+                </view>
+
+                <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 &&  bargain.launch.use_status == 0}}" style="margin-top: 20rpx;">
                   <view class="kanyidao">去使用</view>
                 </view>
-                <view wx:else class="starttimetxt">已售罄</view>
-              </view>
+              </block>
+              <!-- 活动未开始 -->
+              <block wx:if="{{DetailData.status == 2}}">
+                <view class="menpiaobtn success">
+                  <view class="kanyidao">未开始</view>
+                </view>
+              </block>
+              <!-- 已过期 -->
+              <block wx:if="{{DetailData.status == 4}}">
+                <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 0}}">
+                  <view class="kanyidao">已过期</view>
+                </view>
+              </block>
             </block>
-            <!-- 活动已经结束 -->
-            <block wx:if="{{DetailData.status == 3}}">
+            <!-- 帮别人砍价 -->
+            <block wx:if="{{bargain.is_own == 0}}">
               <view class="menpiaobtn success">
-                <view class="kanyidao">已结束</view>
-              </view>
-
-              <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 &&  bargain.launch.use_status == 0}}" style="margin-top: 20rpx;">
-                <view class="kanyidao">去使用</view>
-              </view>
-            </block>
-            <!-- 活动未开始 -->
-            <block wx:if="{{DetailData.status == 2}}">
-              <view class="menpiaobtn success">
-                <view class="kanyidao">未开始</view>
+                <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="addBargain" class="kanyidao  {{shareState == true ? '': 'No'}}">
+                  <text wx:if="{{isTakePartIn == 2}}">返回我的砍价首页</text>
+                  <text wx:if="{{isTakePartIn == 1}}">我也要参加</text>
+                </button>
               </view>
             </block>
-            <!-- 已过期 -->
-            <block wx:if="{{DetailData.status == 4}}">
-              <view class="menpiaobtn success" wx:if="{{bargain.launch.use_status == 0}}">
-                <view class="kanyidao">已过期</view>
-              </view>
-            </block>
-          </block>
-          <!-- 帮别人砍价 -->
-          <block wx:if="{{bargain.is_own == 0}}">
-            <view class="menpiaobtn success">
-              <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="addBargain" class="kanyidao  {{shareState == true ? '': 'No'}}">
-                <text wx:if="{{isTakePartIn == 2}}">返回我的砍价首页</text>
-                <text wx:if="{{isTakePartIn == 1}}">我也要参加</text>
-              </button>
-            </view>
-          </block>
-        </view>
-        <text class="mainBoxB-bottom-txt">{{DetailData.loss_str}}</text>
-      </view>
-    </view>
-    <view class="shop-address {{loadingHidden?'show-shop-address':''}}">
-      <view class="shop-address-txt">
-        <text wx:if="{{DetailData.name}}">{{DetailData.name}}</text>
-        <text wx:if="{{DetailData.address}}">{{DetailData.address}}</text>
-      </view>
-      <view class="shop-adress-right">
-        <image @tap="toMap" mode="aspectFill" class="locationIcon" src="../../images/location.png"></image>
-        <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
-      </view>
-    </view>
-    <view class="jpdescbox">
-      <view class="jpdescbox_title">
-        <view class="cut"></view>
-        <text class="jpdescbox_txt">奖品描述</text>
-        <view class="cut"></view>
-      </view>
-      <view class="giftnumber">
-        <view class="gifttxt">本期奖品<text>{{DetailData.num}}</text>份</view>
-        <view class="gifttxt">剩余<text>{{DetailData.last_num}}</text>份</view>
-      </view>
-      <view class="rulesbox">
-        <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
-      </view>
-    </view>
-    <view class="giftintroducebox">
-      <view class="jpdescbox_title">
-        <view class="cut"></view>
-        <text class="jpdescbox_txt">{{rules.title}}</text>
-        <view class="cut"></view>
-      </view>
-      <view class="desc-wrapper">
-        <view wx:for="{{rules.content}}" wx:key="{{index}}">
-          {{item}}
-        </view>
-      </view>
-    </view>
-    <view class="jpdescbox shopDesc">
-      <view class="jpdescbox_title">
-        <view class="cut"></view>
-        <text class="jpdescbox_txt">{{DetailData.merchants_str}}</text>
-        <view class="cut"></view>
-      </view>
-      <view class="rulesbox shopDesctxt">
-        <template is="wxParse" data="{{wxParseData:article2.nodes}}"/>
-      </view>
-    </view>
-    <view class="giftintroducebox">
-      <view class="jpdescbox_title bangkan">
-        <view class="cut"></view>
-        <text class="jpdescbox_txt">帮砍名单</text>
-        <view class="cut"></view>
-      </view>
-      <view class="helpbargain">
-        <view class="titleitem">
-          <text class="titleitemname" style="flex: 4">排名</text>
-          <text class="titleitemname" style="flex: 4">姓名</text>
-          <text class="titleitemname" style="flex: 6">当前价格</text>
-        </view>
-        <repeat for="{{RankingData}}" wx:for-item="item" key:index="index" wx:if="{{RankingData.length}}">
-          <view class="titleitem people">
-              <view class="titleitemname peopleitem" style="flex: 4">{{index+1}}</view>
-              <view class="titleitemname peopleitem" style="flex: 4">{{item.nickname}}</view>
-              <view class="titleitemname peopleitem" style="flex: 6">
-                <text class="peopleitemtxt1">{{item.msg}}</text>
-                <text class="peopleitemtxt2" wx:if="{{item.is_minimum==1}}">{{item.minimum_time}}</text>
-              </view>
           </view>
-        </repeat>
+          <text class="mainBoxB-bottom-txt">{{DetailData.loss_str}}</text>
+        </view>
       </view>
-    </view>
-    <view style="height:20rpx;"></view>
-    <view class="posterBox">
-      <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
-      <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="bargainCanvas"></canvas>
-        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
-        <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
-          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
-          <text>保存图片</text>
+      <view class="shop-address {{loadingHidden?'show-shop-address':''}}">
+        <view class="shop-address-txt">
+          <text wx:if="{{DetailData.name}}">{{DetailData.name}}</text>
+          <text wx:if="{{DetailData.address}}">{{DetailData.address}}</text>
+        </view>
+        <view class="shop-adress-right">
+          <image @tap="toMap" mode="aspectFill" class="locationIcon" src="../../images/location.png"></image>
+          <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
+        </view>
+      </view>
+      <view class="jpdescbox">
+        <view class="jpdescbox_title">
+          <view class="cut"></view>
+          <text class="jpdescbox_txt">奖品描述</text>
+          <view class="cut"></view>
+        </view>
+        <view class="giftnumber">
+          <view class="gifttxt">本期奖品<text>{{DetailData.num}}</text>份</view>
+          <view class="gifttxt">剩余<text>{{DetailData.last_num}}</text>份</view>
+        </view>
+        <view class="rulesbox">
+          <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
+        </view>
+      </view>
+      <view class="giftintroducebox">
+        <view class="jpdescbox_title">
+          <view class="cut"></view>
+          <text class="jpdescbox_txt">{{rules.title}}</text>
+          <view class="cut"></view>
+        </view>
+        <view class="desc-wrapper">
+          <view wx:for="{{rules.content}}" wx:key="{{index}}">
+            {{item}}
+          </view>
+        </view>
+      </view>
+      <view class="jpdescbox shopDesc">
+        <view class="jpdescbox_title">
+          <view class="cut"></view>
+          <text class="jpdescbox_txt">{{DetailData.merchants_str}}</text>
+          <view class="cut"></view>
+        </view>
+        <view class="rulesbox shopDesctxt">
+          <template is="wxParse" data="{{wxParseData:article2.nodes}}"/>
+        </view>
+      </view>
+      <view class="giftintroducebox">
+        <view class="jpdescbox_title bangkan">
+          <view class="cut"></view>
+          <text class="jpdescbox_txt">帮砍名单</text>
+          <view class="cut"></view>
+        </view>
+        <view class="helpbargain">
+          <view class="titleitem">
+            <text class="titleitemname" style="flex: 4">排名</text>
+            <text class="titleitemname" style="flex: 4">姓名</text>
+            <text class="titleitemname" style="flex: 6">当前价格</text>
+          </view>
+          <repeat for="{{RankingData}}" wx:for-item="item" key:index="index" wx:if="{{RankingData.length}}">
+            <view class="titleitem people">
+                <view class="titleitemname peopleitem" style="flex: 4">{{index+1}}</view>
+                <view class="titleitemname peopleitem" style="flex: 4">{{item.nickname}}</view>
+                <view class="titleitemname peopleitem" style="flex: 6">
+                  <text class="peopleitemtxt1">{{item.msg}}</text>
+                  <text class="peopleitemtxt2" wx:if="{{item.is_minimum==1}}">{{item.minimum_time}}</text>
+                </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+      <view style="height:20rpx;"></view>
+      <view class="posterBox">
+        <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+        <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+          <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="bargainCanvas"></canvas>
+          <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
+          <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+            <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+            <text>保存图片</text>
+          </view>
         </view>
       </view>
     </view>
+  </block>
+  <view class="gameOver" wx:if="{{DetailData.status == 2}}">
+    <image src="http://p55e536k6.bkt.clouddn.com/empty.png" mode="widthFix" class="gameoverPic"></image>
+    <text>商品已下架</text>
   </view>
   <view class="bargain_success" >
     <view class="bargain_success_cover" wx:if="{{showBarginSuccess}}"></view>
     <view class="bargain_success_content {{showBarginSuccess?'show_bargain_success_content':''}}">
       <image src="http://applet.czsjcrm.cn/images/templete_show_image/guandage.png" mode="widthFix" class="bargain_successPic"></image>
       <text wx:if="{{isBottomPrice}}" class="bargain_success_txt">恭喜，已经砍到底价</text>
-      <text class="bargain_success_txt" wx:if="{{!isBottomPrice}}">成功帮好友砍掉<text>¥{{bargain_price}}</text></text>
+      <text class="bargain_success_txt" wx:if="{{!isBottomPrice}}">成功砍掉<text>¥{{bargain_price}}</text></text>
       <view class="iknow" @tap="closeBarginSuccess">我知道了</view>
     </view>
   </view>
@@ -416,7 +422,7 @@
         BargainModel.savePoste(this,'bargainCanvas',this.DetailData.id)
       },
       exchange(){
-      //砍到底价,去核销
+        //砍到底价,去核销
         this.exchangeState = false
         let param = {
           launch_id:this.bargain.launch.id,
@@ -504,6 +510,7 @@
       }
     }
     onLoad(options){
+      console.log(wxParse)
       this.activity_id = options.id
       this.formId = options.formID
       if(options.launch_id){
@@ -734,7 +741,7 @@
       justify-content: center;
       width: 65rpx;
       height: 65rpx;
-      border:1rpx dashed #fff;
+      border:1px dashed #fff;
       border-radius: 100%;
       font-size: 20rpx;
       color: #fff;
@@ -1336,6 +1343,9 @@
         .canvas{
           box-shadow: 0 0 20rpx rgba(119,119,119,.4);
           background-color: #fff;
+          position: absolute;
+          top: -1000px;
+          left: -500px;
         }
         .canvasImg{
           width: 650rpx;
@@ -1369,6 +1379,20 @@
         transform: rotateY(0);
         transition: 1s;
       }
+    }
+  }
+  .gameOver{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 90rpx;
+    color: #999;
+    .gameoverPic{
+      width: 500rpx;
+      height: 200rpx;
+      margin: 40rpx 0;
     }
   }
   .noScroll{

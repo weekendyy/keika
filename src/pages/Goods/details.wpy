@@ -205,7 +205,7 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="goodsCanvas"></canvas>
+        <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="goodsCanvas"></canvas>
         <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
@@ -327,7 +327,8 @@
       showPosterBox: false,
       posterImg: '',
       formId: '',
-      isBuying: false
+      isBuying: false,
+      order_id: ''
     }
     methods= {
       /* tab切换 */
@@ -435,7 +436,7 @@
       },
       gotoUse(){
         wx.navigateTo({
-          url: '../My/order/coupon?id='+this.DetailsData.order_id
+          url: '../My/order/coupon?id='+this.order_id
         })
       },
       Share(){
@@ -523,6 +524,9 @@
       },
       toMap(){
         DetailsModel.openMap(this.DetailsData.longitude,this.DetailsData.promotion_shop_name,this.DetailsData.address)
+      },
+      wxParseImgTap(){
+        console.log('sad')
       }
     }
     onLoad(options){
@@ -542,6 +546,9 @@
         if (ResData.code == 1) {
           this.loadingHidden = true
           this.DetailsData = ResData.promotion[0]
+          if(this.DetailsData.order_id){
+            this.order_id = this.DetailsData.order_id
+          }
           let article = this.DetailsData.detail
           article = article.replace(/<img>/g, '')
           wxParse.wxParse('article', 'html', article, this, 0)
@@ -553,6 +560,7 @@
       })
     }
     onShow(){
+      console.log(this.order_id)
       DetailsModel.getVipStateInfo(ResData=>{
         if( Number(ResData.code)==1 ){
           this.loadingHidden = true
@@ -1354,6 +1362,9 @@
       .canvas{
         box-shadow: 0 0 20rpx rgba(119,119,119,.4);
         background-color: #fff;
+        position: absolute;
+        top: -1000px;
+        left: -500px;
       }
       .canvasImg{
         width: 650rpx;

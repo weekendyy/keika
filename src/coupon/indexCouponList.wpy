@@ -1,0 +1,163 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view style="height: 315rpx;"></view>
+  <view class="couponlistBox">
+    <view class="couponItem beforeShow {{loadingHidden?'show-detailItem':''}}" wx:for="{{couponListData}}" wx:key="{{index}}" style="transition: .5s {{index*0.1+0.1}}s" @tap="toTakeCoupon({{item.preferential}})">
+      <image src="./images/coupontag.png" mode="widthFix" class="couponTag"></image>
+      <text class="couponTagTxt">{{fixedData.str_1}}</text>
+      <image src="{{item.magicshop.main_img}}" mode="aspectFill" class="couponPic"></image>
+      <view class="coupontxt">
+        <text class="couponTitle ellip-1">{{item.activity_name}}</text>
+        <text class="couponDesc ellip-1">满30元可用</text>
+        <text class="couponTime ellip-1">{{fixedData.str_1}}{{item.to_time}}</text>
+      </view>
+      <view class="takeCoupon">立即领取</view>
+    </view>
+  </view>
+  <view style="height: 20rpx;"></view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import CouponModel from './coupon-model.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '裂变券列表',
+      backgroundColorTop: '#FEF2D9',
+      backgroundColorBottom: '#FEF2D9'
+    }
+    data = {
+      loadingHidden: false,
+      couponListData: [],
+      fixedData: '',
+      isLoadAll: false,
+      areaId: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      toTakeCoupon(couponInfo){
+        let id = ''
+        for(let i=0, len=couponInfo.length;i<len;i++){
+          if(couponInfo[i].type == 1){
+            id = couponInfo[i].id
+          }
+        }
+        let query = {
+          into_type: 3,
+          admin_id: 0,
+          goods_id: id,
+          get_log_id: '' // 可选
+        }
+        CouponModel.navTo('../coupon/takeCoupon',query)
+      }
+    }
+    onLoad(e){
+      this.areaId = e.id
+      CouponModel.getIndexCouponListData({id: e.id},(res)=>{
+        if(res.code == 1){
+          this.couponListData = res.data.area_data[0].goods_data
+          this.fixedData = res.data.content_str
+          setTimeout(()=>{
+            this.loadingHidden = true
+            this.$apply()
+          },500)
+        }
+      })
+    }
+    onShow(){
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    width: 100%;
+    height: 100%;
+    background-image: url('http://p55e536k6.bkt.clouddn.com/banner.png');
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+    background-color: #FEF2D9;
+  }
+  .couponlistBox{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 30rpx;
+    .couponItem{
+      width: 690rpx;
+      height: 200rpx;
+      background-color: #fff;
+      margin-bottom: 30rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 25rpx;
+      position: relative;
+      box-shadow: 0 0 21rpx rgba(251,167,54,0.3);
+      .couponTag{
+        width: 170rpx;
+        height: 55rpx;
+        position: absolute;
+        top: 7rpx;
+        left: -13rpx;
+      }
+      .couponTagTxt{
+        font-size: 25rpx;
+        color: #212121;
+        position: absolute;
+        top: 24rpx;
+        left: 25rpx;
+        z-index: 10;
+      }
+      .couponPic{
+        flex: 0 0 150rpx;
+        height: 150rpx;
+        background-color: #888;
+      }
+      .coupontxt{
+        flex: 1;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .couponTitle{
+          font-size: 30rpx;
+        }
+        .couponDesc{
+          font-size: 36rpx;
+          color: #FA3B3E;
+          margin: 20rpx 0;
+        }
+        .couponTime{
+          font-size: 22rpx;
+          color: #999;
+        }
+      }
+      .takeCoupon{
+        flex: 0 0 130rpx;
+        height: 40rpx;
+        border:1px solid #F3486C;
+        border-radius: 30rpx;
+        color: #F3486C;
+        font-size: 24rpx;
+        text-align: center;
+        line-height: 40rpx;
+      }
+    }
+  }
+</style>
+

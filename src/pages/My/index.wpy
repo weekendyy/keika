@@ -2,20 +2,30 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="My-container">
     <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-    <view class="open-vip {{loadingHidden?'show-open-vip':''}}" @longpress="showDebug">
+    <view class="open-vip {{loadingHidden?'show-open-vip':''}}" @touchstart="debugStart" @touchend="debugEnd">
       <view class="open-wrapper" style="background-image: url({{vipInfo.background_img}});">
-        <view class="logo"></view>
-        <view class="user-info">
-          <open-data type="userAvatarUrl" class="pic"></open-data>
-          <view class="user-wrapper">
-            <open-data type="userNickName" class="name"></open-data>
-            <text class="date" wx:if="{{vipInfo.open_status == 1}}">{{vipInfo.end_time}}</text>
+        <view class="vipCard-Info">
+          <view class="vipInfo-left">
+            <text class="nameTxt">姓名</text>
+            <view class="userName ellip-1">
+              <open-data type="userNickName" class="ellip-1"></open-data>
+            </view>
           </view>
-          <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 2}}">{{magic_auth_str[1]}}</button>
-          <button class="btn" form-type="submit" wx:if="{{vipInfo.open_status == 1}}">{{magic_auth_str[2]}}</button>
+          <view class="vipCard-right">
+            <block wx:if="{{vipInfo.open_status == 1}}">
+              <view class="end-time-txtBox">
+                <text class="end-time-txt">到期时间</text>
+                <text class="end-time-txt1">(续费)</text>
+              </view>
+              <text class="end-time">{{vipInfo.end_time}}</text>
+            </block>
+            <block wx:if="{{vipInfo.open_status == 2}}">
+              <view class="openVip">立即开通</view>
+            </block>
+          </view>
         </view>
+        <button style="background-color: transparent;" class="formIdBtn" form-type="submit"></button>
       </view>
-      <image class="open-bg" src="http://applet.czsjcrm.cn/images/templete_image/reward_1.jpg"></image>
     </view>
     </form>
     <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}">
@@ -105,7 +115,7 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.14.3</text>
+        <text>V 1.14.5</text>
       </view>
     </view>
   </view>
@@ -121,6 +131,8 @@
     config = {
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '会员中心',
+      enablePullDownRefresh: true,
+      backgroundTextStyle: 'dark'
     }
     data = {
       orderNum: null,
@@ -177,11 +189,18 @@
       gotoLottery(){
         this.$navigate('../../lotteryDraw/lotteryOrderList',{})
       },
-      showDebug(){
-        this.debug = !this.debug
-        wx.setEnableDebug({
+      debugStart(){
+        this.timeNow = new Date().getTime()
+      },
+      debugEnd(){
+        let timeNow = new Date().getTime()
+        let durationTime = timeNow - this.timeNow
+        if(durationTime>5000){
+          this.debug = !this.debug
+          wx.setEnableDebug({
             enableDebug: this.debug
-        })
+          })
+        }
       },
       taggleCouponBtn(){
         this.showMoveBox = !this.showMoveBox
@@ -197,15 +216,23 @@
       }
     }
     onLoad(){
+      this._loadData()
+    }
+    onShow(){
+    }
+    onPullDownRefresh(){
+      this._loadData()
+    }
+    _loadData(){
       cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
+        wx.stopPullDownRefresh()
         if(ResData.code == 1){
           this.userInfo = ResData.data
           this.$apply()
         }
       })
-    }
-    onShow(){
       MyModel.getUserSpecialData(ResData=>{
+        wx.stopPullDownRefresh()
         if(Number(ResData.code) === 1) {
           this.center_index_str = ResData.data.center_index_str
           this.orderNum = ResData.data.no_pay_num
@@ -215,8 +242,12 @@
         }
       })
       MyModel.IS_VIP((ResData)=>{
+        wx.stopPullDownRefresh()
         if(ResData.code == 1){
           this.vipInfo = ResData.data
+          if(this.vipInfo.end_time){
+            this.vipInfo.end_time = this.vipInfo.end_time.substr(0,10)
+          }
           this.magic_auth_str = ResData.data.magic_auth_str
           this.loadingHidden = true
           this.$apply()
@@ -254,75 +285,79 @@
     overflow: hidden;
   }
   .open-vip{
-    padding-top: 30rpx;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: #faf9f9;
     opacity: 0;
+    margin-bottom: 30rpx;
     .open-wrapper{
-      width: 670rpx;
-      height: 408rpx;
-      background-color: #000000;
-      border-radius: 15rpx;
+      position: relative;
+      margin-top: 25rpx;
+      width: 570rpx;
+      height: 320rpx;
+      border-radius: 20rpx;
+      box-shadow: 0 0 9rpx rgba(0,0,0,0.7);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-content: center;
+      justify-content: flex-end;
       background-repeat: no-repeat;
-      background-position: center;
+      background-position: 0 0;
+      -webkit-background-size: cover;
       background-size: cover;
-      .logo{
-        width: 351rpx;
-        height: 125rpx;
-        margin-top: 94rpx;
-      }
-      .user-info{
+      background-color: #000;
+      .vipCard-Info{
+        position: relative;
         width: 100%;
+        box-sizing: border-box;
+        padding: 0 50rpx;
+        color: #fff;
         display: flex;
-        align-items: center;
-        margin-top: 42rpx;
-        .pic{
-          width: 71rpx;
-          height: 71rpx;
-          border: 4rpx solid #e6c17a;
-          border-radius: 50%;
-          margin-left: 30rpx;
-          overflow: hidden;
-        }
-        .user-wrapper{
-          flex:1;
+        justify-content: space-between;
+        margin-top: 40rpx;
+        margin-bottom: 35rpx;
+        .vipInfo-left{
           display: flex;
           flex-direction: column;
-          .name{
-            margin-left: 23rpx;
-            overflow: hidden;
-            text-overflow:ellipsis;
-            white-space: nowrap;
-            font-size: 28rpx;
-            color: #e7c375;
+          .nameTxt{
+            font-size: 25rpx;
           }
-          .date{
-            margin-top:14rpx;
-            margin-left: 23rpx;
-            font-size:18rpx;
-            color: #e7c375;
+          .userName{
+            font-size: 29rpx;
+            margin-top: 10rpx;
+            max-width:300rpx;
           }
         }
-        .btn{
-          width: 194rpx;
-          text-align: center;
-          font-size: 28rpx;
-          color: #e7c375;
-          line-height: 70rpx;
-          border: 1px solid #e3c289;
-          border-radius: 10rpx;
-          background-color: #412D2E;
-          padding: 0;
-          margin:0;
-          margin-right: 40rpx;
-
-          &::after{
-            content:none;
+        .vipCard-right{
+          display: flex;
+          flex-direction: column;
+          width: 180rpx;
+          align-items: flex-end;
+          .end-time-txtBox{
+            display: flex;
+            align-items: center;
+            .end-time-txt{
+              font-size: 25rpx;
+            }
+            .end-time-txt1{
+              color: #E6C168;
+              margin-left: 10rpx;
+              font-size: 25rpx;
+              border-bottom: 1px solid #E6C168;
+            }
+          }
+          .end-time{
+            font-size: 25rpx;
+            margin-top: 15rpx;
+          }
+          .openVip{
+            font-size: 25rpx;
+            color: #E7C375;
+            background-color: #312F31;
+            border-radius: 10rpx;
+            border: 1px solid #fff;
+            padding: 14rpx 20rpx;
           }
         }
       }

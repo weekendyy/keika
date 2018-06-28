@@ -165,8 +165,8 @@ class lotteryDraw extends Base {
   }
   // 生成海报
   buildPoster(that, canvasId, goodsName, lotteryZanzu, lotteryTime, goodsId,resData){
-    const posterWdith = that.$parent.globalData.pxRadio*650
-    const poserHeight = that.$parent.globalData.pxRadio*1000
+    const posterWdith = 195
+    const poserHeight = 300
     const ctx = wx.createCanvasContext(canvasId)
     wx.downloadFile({
       url: 'https://api.czsjcrm.cn/images/poster/big_img/reward_backgroud.jpg',
@@ -212,8 +212,6 @@ class lotteryDraw extends Base {
                 ctx.fillText(resData.data.top_name.magic_top_title, 0.5*posterWdith, 1.46*posterWdith,0.8*posterWdith)
                 ctx.draw(true)
                 wx.hideLoading()
-                that.showPosterBox = true
-                that.$apply()
                 setTimeout(()=>{
                   wx.canvasToTempFilePath({
                     x: 0,
@@ -226,10 +224,10 @@ class lotteryDraw extends Base {
                     fileType: 'jpg',
                     quality: 1,
                     success: (res)=> {
-                      wx.setStorage({
-                        key: 'posterPic_'+canvasId+'_'+goodsId,
-                        data: res.tempFilePath
-                      })
+                      wx.setStorageSync('posterPic_'+canvasId+'_'+goodsId, res.tempFilePath)
+                      that.posterImg = res.tempFilePath
+                      that.showPosterBox = true
+                      that.$apply()
                     },
                     fail: (res)=>{
                       console.log(res)

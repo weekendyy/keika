@@ -3,7 +3,7 @@
     <view class="bannerBox">
       <swiper indicator-dots="{{false}}" class="swiperBox" bindchange="bannerChange"
         previous-margin="55rpx" next-margin="55rpx" current="{{bannerIndex}}"
-        autoplay="" interval="5000" duration="500" circular="true">
+        autoplay="true" interval="5000" duration="500" circular="true">
         <block wx:for="{{bannerImgs}}" wx:key="{{index}}">
           <swiper-item style="display:flex;align-items:center;justify-content:center;">
             <view class="picBox {{isShow?'showBannerPic':''}}" style="transition: .4s {{bannerIndex == index ? '.4' : '0.5'}}s;">

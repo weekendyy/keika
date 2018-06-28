@@ -204,8 +204,8 @@ class Base {
   }
   //生成海报
   creatPoster(that,canvasId,resData,title,priceNow,pricePre,type,typeIcon,address,postPicId){
-    const posterWdith = that.$parent.globalData.pxRadio*650
-    const poserHeight = that.$parent.globalData.pxRadio*1000
+    const posterWdith = 195
+    const poserHeight = 300
     const ctx = wx.createCanvasContext(canvasId)
     wx.downloadFile({
       url: resData.qr_code_img,
@@ -274,7 +274,6 @@ class Base {
                   ctx.fillText('超值优惠', 0.5*posterWdith, 0.93*posterWdith)
                 }
                 //绘制价格--原价
-                ctx.font = 'oblique'
                 ctx.setFillStyle('#A79E9F')
                 ctx.setFontSize(parseInt(posterWdith*0.045))
                 ctx.setTextBaseline('middle')
@@ -314,8 +313,6 @@ class Base {
 
                 ctx.draw(true)
                 wx.hideLoading()
-                that.showPosterBox = true
-                that.$apply()
                 setTimeout(()=>{
                   wx.canvasToTempFilePath({
                     x: 0,
@@ -328,10 +325,10 @@ class Base {
                     fileType: 'jpg',
                     quality: 1,
                     success: (res)=> {
-                      wx.setStorage({
-                        key: 'posterPic_'+canvasId+'_'+postPicId,
-                        data: res.tempFilePath
-                      })
+                      wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, res.tempFilePath)
+                      that.posterImg = res.tempFilePath
+                      that.showPosterBox = true
+                      that.$apply()
                     },
                     fail: (res)=>{
                       console.log(res)
@@ -366,7 +363,7 @@ class Base {
       })
       return false
     }
-    if(!(/^1[345789]\d{9}$/.test(phoneNumber))){
+    if(!(/^1[23456789]\d{9}$/.test(phoneNumber))){
       wx.showToast({
         title: '手机格式错误',
         icon:'loading',

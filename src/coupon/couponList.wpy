@@ -46,7 +46,15 @@
     }
     methods = {
       toCouponDetail(couponId, shopId, activeId, activityName){
-        CouponModel.navTo('./couponIndex', {id: shopId, goodsId: couponId, activeId: activeId, activityName: activityName})
+        // CouponModel.navTo('./couponIndex', {id: shopId, goodsId: couponId, activeId: activeId, activityName: activityName})
+        // 跳转路径改为：领取优惠券页面
+        let query = {
+          into_type: 3,
+          admin_id: 0,
+          goods_id: couponId,
+          get_log_id: ''
+        }
+        CouponModel.navTo('./takeCoupon', query)
       }
     }
     onLoad(e){

@@ -148,7 +148,7 @@
           })
           return false
         }
-        if(!(/^1[345789]\d{9}$/.test(this.requirePhone))){
+        if(!(/^1[23456789]\d{9}$/.test(this.requirePhone))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',
@@ -161,7 +161,7 @@
           orderID: this.orderId,
           shipping_phone: this.requirePhone
         }
-        if(this.AddressInfo.shipping_name == ' ' && this.goods_info.address_options == 1){
+        if(JSON.stringify(this.AddressInfo) == '{}' && this.goods_info.address_options == 1){
           wx.showToast({
             title: '请填写收货地址',
             icon: 'success',
@@ -177,11 +177,15 @@
         Object.assign(param,{link_tel:this.requirePhone})
         orderModel.execPay(param, ResData=>{
           if(ResData.code == 1) {
+            let prevPage = getCurrentPages()[getCurrentPages().length-1]
+            console.log(prevPage)
+            prevPage.setData({
+              order_id: ResData.order_id
+            })
             orderModel.wxPay(ResData.date, ResData=>{
               // 支付成功以后, 跳转到状态页面 把防止重复提交的订单状态变量设置成 true
               if(ResData == 2) {
                 this.payState = true
-                let prevPage = getCurrentPages()[getCurrentPages().length-2]
                 prevPage.setData({
                   buy_log: 2
                 })

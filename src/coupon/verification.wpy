@@ -24,7 +24,7 @@
       </view>
       <view class="codeNumber">
         <text>{{fixedData.password_input}}</text>
-        <input type="number" name="" placeholder="******" @input="passwardInp" />
+        <input type="number" name="" placeholder="请输入核销密码" @input="passwardInp" />
       </view>
       <form report-submit="true" bindsubmit="numberVerification">
         <button form-type="submit" loading="{{verificationing}}">{{fixedData.button_1}}</button>

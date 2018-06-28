@@ -418,6 +418,12 @@
       let myTime = new Date()
       let timeMonth = (myTime.getMonth()+1).toString()
       let timeDay = (myTime.getDate()).toString()
+      if(timeMonth.length === 1){
+        timeMonth = '0' + timeMonth
+      }
+      if(timeDay.length === 1){
+        timeDay = '0' + timeDay
+      }
       this.time = timeMonth+'.'+timeDay
     }
     onShow(){

@@ -84,10 +84,10 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="subjectCanvas"></canvas>
+        <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="subjectCanvas"></canvas>
         <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
-          <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
+          <image src="../images/download.png" mode="widthFix" class="downPic"></image>
           <text>保存图片</text>
         </view>
       </view>
@@ -330,7 +330,7 @@
       justify-content: center;
       width: 65rpx;
       height: 65rpx;
-      border:1rpx dashed #fff;
+      border:1px dashed #fff;
       border-radius: 100%;
       font-size: 20rpx;
       color: #fff;
@@ -589,6 +589,9 @@
       .canvas{
         box-shadow: 0 0 20rpx rgba(119,119,119,.4);
         background-color: #fff;
+        position: absolute;
+        top: -1000px;
+        left: -500px;
       }
       .canvasImg{
         width: 650rpx;

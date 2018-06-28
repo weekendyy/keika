@@ -66,6 +66,7 @@
         wx.showLoading({
           title: '核销中'
         })
+        this.query.user_id = this.indexData.user_id
         CouponModel.comfirmVerification(this.query, (res)=>{
           wx.hideLoading()
           if(res.code == 1){

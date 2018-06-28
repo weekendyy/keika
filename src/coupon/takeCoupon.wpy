@@ -173,7 +173,6 @@
     }
     onLoad(e){
       // 判断用户是否授权
-      console.log(e)
       let userInfo = wx.getStorageSync('userInfo')
       if(userInfo){
         this.hasUserInfo = true
@@ -195,7 +194,6 @@
       }
       couponModel.getTakeCouponData(query,(res)=>{
         if(res.code === 1){
-          wxParse.wxParse('article', 'html', res.data.preferentialactivity.detail, this, 5)
           this.indexData = res.data
           this.fixedData = res.content_str
           this.couponStatus = res.data.check_status
@@ -203,6 +201,7 @@
             couponModel.navTo('./couponIndex', {id: this.indexData.magicshop.id, goodsId: this.goods_id, activeId: this.indexData.activity_id, activityName: this.indexData.preferentialactivity.activity_name})
           }
           this.loadingHidden = true
+          wxParse.wxParse('article', 'html', res.data.preferentialactivity.detail, this, 5)
           this.$apply()
         } else {
           couponModel.showTips(res.message)

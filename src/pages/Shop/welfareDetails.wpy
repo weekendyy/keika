@@ -74,7 +74,7 @@
   <view class="posterBox">
     <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
     <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-      <canvas disable-scroll="true" wx:if="{{showPosterBox && !posterImg}}" class="canvas" style="width: 650rpx; height: 1000rpx;" canvas-id="welfareCanvas"></canvas>
+      <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="welfareCanvas"></canvas>
       <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
       <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
         <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
@@ -548,6 +548,9 @@
       .canvas{
         box-shadow: 0 0 20rpx rgba(119,119,119,.4);
         background-color: #fff;
+        position: absolute;
+        top: -1000px;
+        left: -500px;
       }
       .canvasImg{
         width: 650rpx;

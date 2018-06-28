@@ -34,7 +34,7 @@ class Index extends Base {
   // 获取首页主要信息
   getMainData(callback){
     let param = {
-      url: 'v5/magic_home_area/home_area',
+      url: 'v5/magic_home_area/home_area_new',
       sCallback: function(ResData) {
         callback && callback(ResData)
       }

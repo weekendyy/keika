@@ -1,0 +1,104 @@
+<template>
+  <view class="couponAreaItem" @tap="toTakeCoupon({{item.preferential}})">
+    <image src="{{item.magicshop.main_img}}" mode="aspectFill" class="couponPic"></image>
+    <view class="coupontxt">
+      <text class="couponTitle ellip-2">{{item.magicshop.magic_shop_name}}</text>
+      <text class="couponDesc ellip-1">{{item.activity_name}}</text>
+    </view>
+    <view class="takeCoupon">立即领取</view>
+    <view class="bottomLine"></view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import HomeModel from '../pages/Index/index-model.js'
+  export default class Banner extends wepy.component {
+    props = {
+      
+    }
+    computed = {
+    }
+    data = {
+    }
+    components = {
+      
+    }
+    methods = {
+      toTakeCoupon(couponInfo){
+        let id = ''
+        for(let i=0, len=couponInfo.length;i<len;i++){
+          if(couponInfo[i].type == 1){
+            id = couponInfo[i].id
+          }
+        }
+        let query = {
+          into_type: 3,
+          admin_id: 0,
+          goods_id: id,
+          get_log_id: ''
+        }
+        HomeModel.navTo('../../coupon/takeCoupon',query)
+      }
+    }
+    onLoad(){
+      
+    }
+  }
+</script>
+<style type="less">
+  .couponAreaItem{
+    width: 670rpx;
+    height: 160rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    .bottomLine{
+      width: 525rpx;
+      height: 1px;
+      background-color: #F2F2F2;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+    .couponPic{
+      flex: 0 0 125rpx;
+      height: 125rpx;
+      border-radius: 10rpx;
+      background-color: #999;
+    }
+    .coupontxt{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      box-sizing: border-box;
+      padding-left: 20rpx;
+      padding-right: 20rpx;
+      overflow: hidden;
+      .couponTitle{
+        font-size: 30rpx;
+        color: #000;
+        line-height: 40rpx;
+        width: 100%;
+      }
+      .couponDesc{
+        font-size: 34rpx;
+        color: #FA3B3E;
+        font-weight: 500;
+        line-height: 44rpx;
+        width: 100%;
+      }
+    }
+    .takeCoupon{
+        flex: 0 0 135rpx;
+        height: 50rpx;
+        background: linear-gradient(90deg,#FD4E7B,#FF5865);
+        color: #fff;
+        text-align: center;
+        line-height: 50rpx;
+        font-size: 22rpx;
+        border-radius: 7rpx;
+    }
+  }
+</style>

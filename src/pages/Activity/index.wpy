@@ -7,8 +7,8 @@
         <view class="vipCard-Info">
           <view class="vipInfo-left">
             <text class="nameTxt">姓名</text>
-            <view class="userName">
-              <open-data type="userNickName"></open-data>
+            <view class="userName ellip-1">
+              <open-data type="userNickName" class="ellip-1"></open-data>
             </view>
           </view>
           <view class="vipCard-right">
@@ -38,7 +38,7 @@
       </view>
       <view class="vipRight-content">
         <view class="vipRightItem" wx:for="{{vipRight}}" wx:key="{{index}}">
-          <image src="{{item.url}}" mode="widthFix" class="rightIcon"></image>
+          <image src="{{item.url}}" mode="aspectFill" class="rightIcon"></image>
           <text>{{item.name}}</text>
         </view>
       </view>
@@ -79,6 +79,7 @@
               <form report-submit="true" bindsubmit="toWealfare">
               <view class="listStyle-six" style="height: 440rpx">
                 <image src="{{item.banner_img}}" mode="aspectFill" class="goodsPic"></image>
+                <text class="coupon-last">剩余: {{item.repertory_num-item.get_num}}份</text>
                 <view class="goodsTips">{{fixedData.str_9}}</view>
                 <text class="goodsTitle ellip-2">{{item.description_title}}</text>
                 <view class="priceBox">
@@ -106,7 +107,9 @@
   import ActivityModel from './Activity-model.js'
   export default class Index extends wepy.page {
     config = {
-      navigationBarTitleText: '会员专区'
+      navigationBarTitleText: '会员专区',
+      enablePullDownRefresh: true,
+      backgroundTextStyle: 'dark'
     }
     components = {
       
@@ -203,7 +206,16 @@
       
     }
     onLoad() {
+      this._loadData()
+    }
+    onPullDownRefresh(){
+      this._loadData()
+    }
+    onShow(){
+    }
+    _loadData(){
       ActivityModel.getActiveData({type: 2},(res)=>{
+        wx.stopPullDownRefresh()
         if(res.code === 1){
           this.fixedData = res.data.content_str
           this.vipRight = [
@@ -223,6 +235,7 @@
         }
       })
       ActivityModel.getActiveData({type: 1},(res)=>{
+        wx.stopPullDownRefresh()
         if(res.code === 1){
           if(res.data.goods_data){
             this.countTabContent[1] = res.data.goods_data.goods_data
@@ -231,9 +244,6 @@
           ActivityModel.showTips(res.message)
         }
       })
-
-    }
-    onShow(){
     }
   }
 </script>
@@ -244,11 +254,6 @@
   }
   .shopBox{
     width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    overflow-x: hidden;
-    overflow-y: scroll;
     .VipCardBox{
       width: 100%;
       height: 467rpx;
@@ -268,7 +273,7 @@
         margin-top: 25rpx;
         width: 570rpx;
         height: 320rpx;
-        border-radius: 10rpx;
+        border-radius: 20rpx;
         box-shadow: 0 0 9rpx rgba(0,0,0,0.7);
         display: flex;
         flex-direction: column;
@@ -300,6 +305,7 @@
             .userName{
               font-size: 29rpx;
               margin-top: 10rpx;
+              max-width: 300rpx;
             }
           }
           .vipCard-right{
@@ -476,6 +482,19 @@
             padding-bottom: 15rpx;
             display: inline-block;
             margin-right: 23rpx;
+            .coupon-last{
+              position: absolute;
+              top: 170rpx;
+              right: 0rpx;
+              background-color: #FC4858;
+              color: #fff;
+              padding: 0rpx 15rpx;
+              font-size: 22rpx;
+              height: 40rpx;
+              text-align: center;
+              line-height: 40rpx;
+              border-top-left-radius: 15rpx;
+            }
             .goodsPic{
               width: 100%;
               height: 210rpx;

@@ -118,7 +118,7 @@
          this.requirePhone = $event.detail.value.trim()
       },
       buy(){
-        if(!this.AddressInfo.shipping_name && this.choose_address == 1) {
+        if(JSON.stringify(this.AddressInfo) == '{}' && this.choose_address == 1) {
           wx.showToast({
             title: '请填写收货地址',
             icon:'loading',
@@ -127,7 +127,7 @@
           })
           return false
         }
-        if(!(/^1[345789]\d{9}$/.test(this.requirePhone))){
+        if(!(/^1[23456789]\d{9}$/.test(this.requirePhone))){
           wx.showToast({
             title: '手机格式错误',
             icon:'loading',

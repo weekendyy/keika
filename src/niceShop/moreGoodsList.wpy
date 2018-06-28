@@ -17,7 +17,7 @@
         <view class="listStyle-three" @tap="toGoodsDetail({{item.goods_type}},{{item.id}})">
           <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleThree"></image>
           <view class="goodsContent-styleThree">
-            <text class="goodsTitle-styleThree">{{item.goods_name}}</text>
+            <text class="goodsTitle-styleThree ellip-2">{{item.goods_name}}</text>
             <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
             <view class="priceBox-styleThree">
               <view class="goods-price">
@@ -186,6 +186,7 @@
           font-size: 32rpx;
           font-weight: 600;
           line-height: 40rpx;
+          width: 100%;
         }
         .goodsDesc-styleThree{
           font-size: 25rpx;

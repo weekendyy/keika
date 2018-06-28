@@ -74,7 +74,7 @@ class Address extends Base{
   }
   //获取地理位置
   getGeoAndUserInfo(sCallBack){
-    let Geography = wx.getStorageSync('GeographyData')
+    let Geography = ''
     if(!Geography){
       MyModel.getCityName((ResData)=>{
         wx.setStorageSync('GeographyData', ResData)
