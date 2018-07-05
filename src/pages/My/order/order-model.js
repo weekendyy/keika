@@ -131,10 +131,11 @@ class order extends Base {
    */
   destory_promotion(PostData, callback){
     let param = {
-      url: 'v2/order/destory_promotion_merge',
+      url: 'v2/order/destory_promotion_merge1',
       data:{
         password: PostData.password,
         orderID: PostData.orderID,
+        destroy_num: PostData.destroy_num
       },
       sCallback(ResData){
         callback && callback(ResData)

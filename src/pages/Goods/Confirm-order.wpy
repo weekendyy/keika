@@ -35,14 +35,14 @@
         </view>
         <view class="goods_Price">
           <text>¥{{goods_info.original_price}}</text>
-          <text>¥{{goods_info.discount_price}}</text>
+          <text>¥{{goods_info.unit_price}}</text>
           <text>x{{goods_info.buy_num}}</text>
         </view>
       </view>
       <view class="discount">
         <view class="total">
           <text>商品总价</text>
-          <text>￥{{goods_info.original_price}}</text>
+          <text>￥{{goods_info.original_price*goods_info.buy_num}}</text>
         </view>
         <view class="Member" wx:if="{{goods_info.vip_status == 1}}">
           <text>会员折扣</text>
@@ -50,7 +50,7 @@
         </view>
         <view class="Member" wx:if="{{goods_info.vip_status == 0}}">
           <text>优惠折扣</text>
-          <text>-￥{{((goods_info.original_price * 100) - (goods_info.pay_price *  100))/100}}</text>
+          <text>-￥{{goods_info.original_price*goods_info.buy_num-goods_info.pay_price}}</text>
         </view>
         <view class="Actual">
           <text>订单总价</text>

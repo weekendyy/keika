@@ -54,17 +54,24 @@ class Base {
         }
       },
       fail: function (err) {
-        that._processError(err)
+        that._processError(err,params)
         params.fCallback && params.fCallback()
       }
     })
   }
 
-  _processError (err) {
-    wx.showToast({
-      title:'请求失败，请重试',
-      icon: 'none'
-    })
+  _processError (err,params) {
+    // let that = this
+    // wx.showModal({
+    //   title: '网络出错，请点击重试',
+    //   success: function(res) {
+    //     if (res.confirm) {
+    //       that._refetch(params)
+    //     } else if (res.cancel) {
+    //       that._refetch(params)
+    //     }
+    //   }
+    // })
     console.log(err)
   }
   _refetch(param) {
@@ -325,7 +332,7 @@ class Base {
                     fileType: 'jpg',
                     quality: 1,
                     success: (res)=> {
-                      wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, res.tempFilePath)
+                      wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, [res.tempFilePath,priceNow,pricePre])
                       that.posterImg = res.tempFilePath
                       that.showPosterBox = true
                       that.$apply()

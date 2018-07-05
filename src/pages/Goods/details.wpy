@@ -18,10 +18,16 @@
     </view>
     <view class="goods-header">
       <view class="goods-header-title">
-        <text class="goods-header-title_left">共{{DetailsData.num}}份/剩{{DetailsData.residue}}份</text>
-        <view class="goods-header-title_right">
-          <image src="img/look.png" mode="widthFix" class="lookIcon"></image>
-          <text class="follow">{{DetailsData.click_count}}人关注</text>
+        <view style="display: flex">
+          <text class="goods-header-title_left">共{{DetailsData.num}}份/可购{{DetailsData.residue-DetailsData.shopping_num}}份</text>
+          <view class="goods-header-title_left" style="margin-left: 20rpx" wx:if="{{DetailsData.shopping_num!=0}}">{{DetailsData.shopping_num}}{{DetailsData.shopping_txt}}</view>
+        </view>
+        <view class="rightBox">
+          <text class="perLimit">每人限购{{DetailsData.buy_max_num}}份</text>
+          <view class="goods-header-title_right">
+            <image src="img/look.png" mode="widthFix" class="lookIcon"></image>
+            <text class="follow">{{DetailsData.click_count}}人关注</text>
+          </view>
         </view>
       </view>
       <view class="goods-header-main">
@@ -106,7 +112,7 @@
           <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
         </view>
         <view class="main-details" hidden="{{ currentTabsIndex != 1 }}">
-          <block wx:for="{{EvaluateData}}" wx:for-item="item" key="index" wx:for-index="idx">
+          <block wx:for="{{EvaluateData}}" wx:for-item="item" wx:key="index" wx:for-index="idx">
             <view class="Evaluate-item">
               <view class="Evaluate-head">
                 <image class="Avatar" src="{{item.portrait_img}}"></image>
@@ -168,8 +174,8 @@
       </view>
       <!--进行中  -->
       <block wx:if="{{DetailsData.new_time_status == 1}}">
-        <button loading="{{isBuying}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="buyGoods" wx:if="{{buy_log == 1}}" class="Buy">
-          立即抢购
+        <button loading="{{isBuying}}" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="chooseGoods" wx:if="{{buy_log == 1}}" class="Buy">
+          {{(DetailsData.residue-DetailsData.shopping_num)==0?'已售空':'立即抢购'}}
         </button> 
         <view wx:if="{{buy_log == 2}}" class="Buy" bindtap="gotoUse">
           立即使用
@@ -214,6 +220,8 @@
       </view>
     </view>
   </view>
+  <!-- 选择产品数量 -->
+  <goodsChooseNum :choosePic.sync="DetailsData" :maxNum.sync="maxChooseNum"></goodsChooseNum>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -297,13 +305,15 @@
   import DetailsModel from './details-model'
   import MyModel from '@/pages/My/index-model'
   import BackHome from '../../components/backHome'
+  import goodsChooseNum from '../../components/goodsChooseNum'
   import Address from '../../utils/address.js'
   export default class Index extends wepy.page {
     config = {
       navigationBarTitleText: '套餐详情'
     }
     components = {
-      BackHome: BackHome
+      BackHome: BackHome,
+      goodsChooseNum: goodsChooseNum
     }
     data = {
       currentTabsIndex: 0,
@@ -328,7 +338,88 @@
       posterImg: '',
       formId: '',
       isBuying: false,
-      order_id: ''
+      order_id: '',
+      maxChooseNum: -1
+    }
+    events = {
+      /* 下单 */
+      buyGoods(num){
+        if(num == 0){
+          DetailsModel.showTips("暂无可购买数量")
+          return false
+        }
+        if(this.isBuying){
+          return false
+        }
+        this.isBuying = true
+        let query = {
+          id: this.goods_id,
+          num: num
+        }
+        DetailsModel.delOrder(query,ResData=>{
+          this.isBuying = false
+          if(Number(ResData.code) == ERR_OK) {
+            wx.showToast({
+              title: '抢购成功',
+              icon: 'success',
+              duration: 2000
+            })
+            wx.navigateTo({
+              url: './Confirm-order?orderId='+ ResData.order_id
+            })
+          }
+          if(Number(ResData.code) == 0) {
+            wx.showToast({
+              title: '订单异常',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 2) {
+            wx.showToast({
+              title: ResData.message,
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 3) {
+            wx.showToast({
+              title: '商品下架了!!!',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 4) {
+            wx.showToast({
+              title: '活动过期啦!!!',
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+          if(Number(ResData.code) == 11) {
+            wx.showToast({
+              title: ResData.message,
+              icon: 'success',
+              duration: 1200
+            })
+            this.payState = false
+            this.$apply()
+            return false
+          }
+        })
+      }
     }
     methods= {
       /* tab切换 */
@@ -362,76 +453,13 @@
           }
         })
       },
-      /* 下单 */
-      buyGoods(res){
-        this.isBuying = true
+      // 弹出选择商品数量
+      chooseGoods(res){
+        if(this.DetailsData.residue-this.DetailsData.shopping_num == 0){
+          return false
+        }
         Address.getUser(res,()=>{
-          DetailsModel.delOrder(this.goods_id,ResData=>{
-            this.isBuying = false
-            if(Number(ResData.code) == ERR_OK) {
-              wx.showToast({
-                title: '抢购成功',
-                icon: 'success',
-                duration: 2000
-              })
-              wx.navigateTo({
-                url: './Confirm-order?orderId='+ ResData.order_id
-              })
-            }
-            if(Number(ResData.code) == 0) {
-              wx.showToast({
-                title: '订单异常',
-                icon: 'success',
-                duration: 1200
-              })
-              this.payState = false
-              this.$apply()
-              return false
-            }
-            if(Number(ResData.code) == 2) {
-              wx.showToast({
-                title: '库存不够啦!!!',
-                icon: 'success',
-                duration: 1200
-              })
-              this.payState = false
-              this.$apply()
-              return false
-            }
-            if(Number(ResData.code) == 3) {
-              wx.showToast({
-                title: '商品下架了!!!',
-                icon: 'success',
-                duration: 1200
-              })
-              this.payState = false
-              this.$apply()
-              return false
-            }
-            if(Number(ResData.code) == 4) {
-              wx.showToast({
-                title: '活动过期啦!!!',
-                icon: 'success',
-                duration: 1200
-              })
-              this.payState = false
-              this.$apply()
-              return false
-            }
-            if(Number(ResData.code) == 11) {
-              wx.showToast({
-                title: ResData.message,
-                icon: 'success',
-                duration: 1200
-              })
-              this.payState = false
-              this.$apply()
-              return false
-            }
-          })
-        },()=>{
-          this.isBuying = false
-          this.$apply()
+          this.$broadcast('showChooseBox')
         })
       },
       gotoUse(){
@@ -455,8 +483,8 @@
           title: '生成卡片中',
         })
         let posterPic = wx.getStorageSync('posterPic_'+'goodsCanvas'+'_'+this.goods_id)
-        if(posterPic){
-          this.posterImg = posterPic
+        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.DetailsData.discount_price && posterPic[2] == this.DetailsData.original_price){
+          this.posterImg = posterPic[0]
           this.showPosterBox = true
           wx.hideLoading()
           this.$apply()
@@ -473,7 +501,7 @@
         })
       },
       onShareAppMessage(name){
-        let that = this;
+        let that = this
         let shareTitle = that.DetailsData.name
         return {
           title: shareTitle,
@@ -546,6 +574,11 @@
         if (ResData.code == 1) {
           this.loadingHidden = true
           this.DetailsData = ResData.promotion[0]
+          if((this.DetailsData.residue-this.DetailsData.shopping_num) >= ResData.promotion[0].buy_max_num){
+            this.maxChooseNum = ResData.promotion[0].buy_max_num
+          } else {
+            this.maxChooseNum = this.DetailsData.residue - this.DetailsData.shopping_num
+          }
           if(this.DetailsData.order_id){
             this.order_id = this.DetailsData.order_id
           }
@@ -660,17 +693,26 @@
         font-size: 25rpx;
         margin-left: 20rpx;
       }
-      .goods-header-title_right{
+      .rightBox{
         display: flex;
         align-items: center;
-        .lookIcon{
-          width: 30rpx;
-          height: 30rpx;
-          margin-right: 10rpx;
-        }
-        .follow{
+        .perLimit{
           font-size: 25rpx;
+          color: #fff;
           margin-right: 20rpx;
+        }
+        .goods-header-title_right{
+          display: flex;
+          align-items: center;
+          .lookIcon{
+            width: 30rpx;
+            height: 30rpx;
+            margin-right: 10rpx;
+          }
+          .follow{
+            font-size: 25rpx;
+            margin-right: 20rpx;
+          }
         }
       }
     }

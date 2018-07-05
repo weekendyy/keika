@@ -8,10 +8,6 @@
         <text class="coupon-title">{{indexData.preferential.goods_name}}</text>
         <view class="coupin-content">
           <text class="coupon-number">数量：1</text>
-          <view class="coupon-price">
-            <text>¥13.8</text>
-            <image src="images/righticon.png" mode="widthFix"></image>
-          </view>
         </view>
         <text class="coupon-time">有效期：{{indexData.preferential.from_time}}-{{indexData.preferential.end_time}}</text>
       </view>

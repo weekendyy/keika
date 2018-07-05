@@ -3,7 +3,7 @@
     height: 100%;
   }
   text{
-    line-height:1;
+    line-height:1.1em;
     font-family: 'PingFang SC';
   }
   image{
@@ -86,7 +86,6 @@ export default class extends wepy.app {
       'pages/Vip/Index', // 开通黑卡VIP 首页
       'pages/Shop/shopIndex', // 推荐店铺
       'pages/Shop/welfareDetails', // 福利活动详情
-      'pages/Shop/shopDetails', // 店铺详情页面
       'pages/Goods/Confirm-order', // 秒杀订单支付页面(立即购买)
       'pages/Goods/details',  // 秒杀活动商品详情页
       'pages/Goods/pay-result', // 秒杀支付成功结果页面

@@ -160,6 +160,7 @@
           </form>
         </block>
       </block>
+      <view style="height: 1px;"></view>
       <!-- 裂变券 -->
       <block wx:if="{{item.type == 3}}">
         <view class="couponContent" wx:if="{{couponColumnNum.length != 0}}">

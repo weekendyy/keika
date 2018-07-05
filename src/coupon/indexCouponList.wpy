@@ -8,7 +8,7 @@
       <image src="{{item.magicshop.main_img}}" mode="aspectFill" class="couponPic"></image>
       <view class="coupontxt">
         <text class="couponTitle ellip-1">{{item.activity_name}}</text>
-        <text class="couponDesc ellip-1">满30元可用</text>
+        <text class="couponDesc ellip-1">{{item.preferential[0].limit_that}}</text>
         <text class="couponTime ellip-1">{{fixedData.str_1}}{{item.to_time}}</text>
       </view>
       <view class="takeCoupon">立即领取</view>

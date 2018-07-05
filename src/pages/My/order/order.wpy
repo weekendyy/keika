@@ -90,7 +90,8 @@
                   <block wx:else>
                     <text class="new">{{item.pay_price}}</text>
                   </block>
-                  <text class="num">x1</text>
+                  <text class="num" wx:if="{{item.goods_order_type != 1}}">x1</text>
+                  <text class="num" wx:if="{{item.goods_order_type == 1}}">x{{item.buy_num}}</text>
               </view>
             </view>
             <view class="payment-info" wx:if="{{item.goods_type != 5}}">
@@ -138,6 +139,8 @@
               <!--交易关闭-->
               <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
               <!--秒杀未付款-->
+              <view wx:if="{{item.status != 2}}"></view>
+              <view wx:if="{{item.status == 2}}">共{{item.buy_num}}份，{{item.buy_num-item.destroy_num}}份可使用</view>
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
               <text wx:if="{{item.status == 2 && item.deadline>=time}}" @tap.stop="orderUse({{index}})">去使用</text>
               <text wx:if="{{item.status == 2 && item.deadline<time}}">已过期</text>
@@ -630,8 +633,12 @@
         height:80rpx;
         border-top:1px solid #e5e5e8;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         align-items: center;
+        view{
+          font-size: 26rpx;
+          color: #666;
+        }
         text{
           width:148rpx;
           height:54rpx;

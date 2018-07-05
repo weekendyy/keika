@@ -1,0 +1,86 @@
+<template>
+  <view class="countBox">
+    <view class="reduce {{countValue<2?'noDisplay':''}}" @tap="reduce">-</view>
+    <input disabled="true" class="countInp" value="{{countValue}}" />
+    <view class="reduce plus {{countValue>=maxNum?'noDisplay':''}}" @tap="plus">+</view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class Count extends wepy.component {
+    props = {
+      maxNum: String,
+      countValue: {
+        type: Number,
+        default: 0,
+        twoWay: true
+      }
+    }
+    computed = {
+
+    }
+    data = {
+    }
+    components = {
+      
+    }
+    methods = {
+      reduce(){
+        if(this.countValue<2){
+          return false
+        }
+        this.countValue --
+        this.$apply()
+      },
+      plus(){
+        if(this.countValue>=this.maxNum){
+          return false
+        }
+        this.countValue ++
+        this.$apply()
+      }
+    }
+    onLoad(){
+    }
+  }
+</script>
+<style type="less">
+  @countH: 50rpx;
+  .countBox{
+    display: flex;
+    align-items: center;
+    height: @countH;
+    margin-top: 10rpx;
+    border: 1px solid #fff;
+    width: @countH*3;
+    box-sizing: border-box;
+    background-color: #F5F5F5;
+    .reduce{
+      flex: 0 0 @countH;
+      height: @countH;
+      text-align: center;
+      line-height: 46rpx;
+      box-sizing: border-box;
+      color: #666;
+      border-right: 1px solid #fff;
+      font-weight: 600;
+    }
+    .noDisplay{
+      color: #DEDEDE;
+    }
+    .countInp{
+      flex: 0 0 @countH;
+      height: @countH;
+      box-sizing: border-box;
+      color: #666;
+      font-size: 25rpx;
+      text-align: center;
+      line-height: @countH;
+      font-weight: 600;
+    }
+    .plus{
+      border-right: 0px solid #fff;
+      border-left: 1px solid #fff;
+    }
+  }
+</style>

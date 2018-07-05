@@ -2,7 +2,7 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <import src="../../wxParse/wxParse.wxml"/>
   <!-- <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view> -->
-  <block wx:if="{{DetailData.status == 1}}">
+  <block>
     <view class="container {{showPosterBox?'noScroll':''}}">
       <image src="{{DetailData.img}}" class="bannerpic {{loadingHidden?'showBannerpic':''}}" mode="aspectFill"/>
       <view wx:if="{{loadingHidden}}">
@@ -119,9 +119,12 @@
                   </block>
                 </block>
                 <!-- 商品已经卖完 -->
-                <view class="starttime" wx:if="{{DetailData.last_num == 0 || DetailData.last_num < 0}}">
+                <view class="starttime" wx:if="{{DetailData.last_num <= 0}}">
                   <view class="menpiaobtn success" @tap="gotoMy()" wx:if="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 0}}">
                     <view class="kanyidao">去使用</view>
+                  </view>
+                  <view class="menpiaobtn success" wx:elif="{{bargain.launch.receive_status == 1 && bargain.launch.use_status == 1}}">
+                    <view class="kanyidao">已使用</view>
                   </view>
                   <view wx:else class="starttimetxt">已售罄</view>
                 </view>
@@ -246,7 +249,7 @@
       </view>
     </view>
   </block>
-  <view class="gameOver" wx:if="{{DetailData.status == 2}}">
+  <view class="gameOver" wx:if="{{false}}">
     <image src="http://p55e536k6.bkt.clouddn.com/empty.png" mode="widthFix" class="gameoverPic"></image>
     <text>商品已下架</text>
   </view>
@@ -397,8 +400,8 @@
           title: '生成卡片中',
         })
         let posterPic = wx.getStorageSync('posterPic_'+'bargainCanvas'+'_'+this.DetailData.id)
-        if(posterPic){
-          this.posterImg = posterPic
+        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.DetailData.floor_price && posterPic[2] == this.DetailData.price){
+          this.posterImg = posterPic[0]
           this.showPosterBox = true
           wx.hideLoading()
           this.$apply()
@@ -493,10 +496,10 @@
           BargainModel.bargainLaunch(param,(ResData)=>{
             this.bargain = ResData
             this.DetailData.current_price = ResData.launch.now_price
-            wx.setStorage({
-              key:"launch_id",
-              data: this.bargain.launch.id
-            })
+            // wx.setStorage({
+            //   key:"launch_id",
+            //   data: this.bargain.launch.id
+            // })
             this.shareState = true
             this.$apply()
           })
@@ -526,13 +529,15 @@
     onShow(){
       clearInterval(timer)
       let that = this
-      if(wx.getStorageSync('launch_id')){
-        this.param.launch_id = wx.getStorageSync('launch_id')
-      }
+      // if(wx.getStorageSync('launch_id')){
+      //   this.param.launch_id = wx.getStorageSync('launch_id')
+      // }
       this.loadBarginData(this)
     }
     loadBarginData(that){
       BargainModel.getLuckyDetail(that.param,(ResData)=>{
+        console.log('shuju')
+        console.log(ResData)
         that.DetailData = ResData.activity_attr
         that.bargain = ResData.bargain
         that.floor_data = ResData.floor_data

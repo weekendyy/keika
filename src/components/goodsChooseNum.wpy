@@ -1,0 +1,127 @@
+<template>
+  <view class="goodsNumChooseBox">
+    <view class="cover1 {{showGoodsChoose?'showCover1':''}}" @tap="closeChooseBox"></view>
+    <view class="contentBox {{showGoodsChoose?'showcontentBox':''}}">
+      <image src="{{choosePic.arr_banner[0]}}" mode="aspectFill" class="chooePic"></image>
+      <view class="chooseNumBox">
+        <text>购买数量(可购{{maxNum}}份)</text>
+        <count :maxNum.sync="maxNum" :countValue.sync="countValue"></count>
+      </view>
+      <view class="confirmBtn" @tap="confirmTap">确定</view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import count from './count'
+  export default class goodsChooseNum extends wepy.component {
+    props = {
+      choosePic: Object,
+      maxNum: String
+    }
+    computed = {
+    }
+    data = {
+      countValue: 1,
+      showGoodsChoose: false
+    }
+    events = {
+      showChooseBox(){
+        this.showGoodsChoose = true
+        this.$apply()
+      }
+    }
+    components = {
+      count: count
+    }
+    methods = {
+      closeChooseBox(){
+        this.showGoodsChoose = false
+        this.$apply()
+      },
+      confirmTap(){
+        if(this.maxNum == 0){
+          this.$emit('buyGoods',0)
+        } else{
+          this.$emit('buyGoods',this.countValue)
+        }
+        this.showGoodsChoose = false
+        this.$apply()
+      }
+    }
+    onLoad(){
+      
+    }
+  }
+</script>
+<style type="less">
+  .goodsNumChooseBox{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1000;
+    .cover1{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      transition: .4s;
+      opacity: 0;
+    }
+    .showCover1{
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @contentH: 1000rpx;
+    .contentBox{
+      width: 100%;
+      height: 800rpx;
+      position: absolute;
+      bottom: -@contentH;
+      left: 0;
+      background-color: #fff;
+      border-top-left-radius: 20rpx;
+      border-top-right-radius: 20rpx;
+      transition: .4s;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 50rpx 20rpx; 
+      .chooePic{
+        width: 690rpx;
+        height: 488rpx;
+        background-color: #999;
+      }
+      .chooseNumBox{
+        width: 90%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text{
+          font-size: 28rpx;
+        }
+      }
+      .confirmBtn{
+        width: 100%;
+        height: 70rpx;
+        background: linear-gradient(to right, #FF7602,#FD4A05);
+        border-radius: 40rpx;
+        color: #fff;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 30rpx;
+      }
+    }
+    .showcontentBox{
+      transform: translateY(-@contentH);
+    }
+  }
+</style>

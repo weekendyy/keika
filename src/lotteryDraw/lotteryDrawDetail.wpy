@@ -69,7 +69,8 @@
             </view>
             <text class="prizetxt">{{fixedData.open_reward_2}}</text>
             <view class="prizeOpation">
-              <view class="prizeAddress" @tap="toAddress">{{addressTxt}}</view>
+              <view class="prizeAddress" @tap="toAddress" wx:if="{{false}}">{{addressTxt}}</view>
+              <view class="prizeAddress" @tap="toCancle">去核销</view>
               <button open-type="share" class="shareTofriend">{{fixedData.xyyx}}</button>
             </view>
           </block>
@@ -180,6 +181,11 @@
       </view>
     </view>
   </view>
+  <view class="cancel {{showCancelBox?'showCancel':''}}">
+    <image src="./image/close.png" mode="widthFix" class="closeIcon" @tap="closeCancleBox"></image>
+    <input placeholder="请输入核销密码" focus="{{isCancleing}}" type="number" class="cancleInp" />
+    <view class="cancleBtn">确认</view>
+  </view>
   <view wx:if="{{!showContent}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -210,7 +216,9 @@
       userInfo: false,
       formId: '',
       posterImg: '',
-      showPosterBox: ''
+      showPosterBox: '',
+      showCancelBox: false,
+      isCancleing: false
     }
     computed = {
         
@@ -257,6 +265,25 @@
           goodsId: this.detailData.id,
           orderId: this.detailData.order_id
         })
+      },
+      toCancle(){
+        wx.setNavigationBarTitle({
+          title: '核销'
+        })
+        this.showCancelBox = true
+        setTimeout(()=>{
+          this.isCancleing = true
+          this.$apply()
+        },400)
+        this.$apply()
+      },
+      closeCancleBox(){
+        wx.setNavigationBarTitle({
+          title: '抽奖详情'
+        })
+        this.showCancelBox = false
+        this.isCancleing = false
+        this.$apply()
       },
       backHome(){
         Address.navTo('/pages/Index/index')
@@ -1153,5 +1180,50 @@
       transform: rotateY(0);
       transition: 1s;
     }
+  }
+  .cancel{
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    position: fixed;
+    bottom: -100%;
+    transition: .4s;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    .closeIcon{
+      width: 40rpx;
+      height: 40rpx;
+      position: absolute;
+      right: 40rpx;
+      top: 20rpx;
+    }
+    .cancleInp{
+      width: 500rpx;
+      height: 80rpx;
+      box-sizing: border-box;
+      padding: 0 20rpx;
+      line-height: 80rpx;
+      font-size: 35rpx;
+      border-bottom: 1px solid #575757;
+      text-align: center;
+    }
+    .cancleBtn{
+      width: 500rpx;
+      height: 80rpx;
+      background-color: #575757;
+      color: #fff;
+      margin-top: 50rpx;
+      text-align: center;
+      line-height: 80rpx;
+      font-size: 30rpx;
+      margin-bottom: 200rpx;
+    }
+  }
+  .showCancel{
+    transform: translateY(-100%);
   }
 </style>

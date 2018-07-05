@@ -865,6 +865,7 @@
           text-overflow:ellipsis;
           white-space: nowrap;
           font-size:34rpx;
+          line-height: 40rpx;
           color: #000;
           font-weight: bold;
         }

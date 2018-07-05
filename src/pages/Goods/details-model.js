@@ -35,7 +35,8 @@ class Details extends Base{
       url: 'v2/order/place',
       data: {
         type: 1,
-        promotionID: param,
+        promotionID: param.id,
+        buy_num: param.num,
         versions: 'vip5'
       },
       sCallback(ResData) {

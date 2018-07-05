@@ -30,25 +30,46 @@
       <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
   </view>
-  <view class="gussYouLike {{loadingHidden?'show-likeItem':''}}">
-    <view class="titleBox" wx:if="{{likeArr.length !== 0}}">
-      <text class="titleTxt">{{fixedData.guess_like}}</text>
-      <view class="moreBox" @tap="changeLike">
-        <image src="images/moreicon.png" mode="widthFix"></image>
-        <text>{{fixedData.next_one}}</text>
+  <block wx:if="{{likeArr.length != 0}}">
+    <view class="gussYouLike {{loadingHidden?'show-likeItem':''}}">
+      <view class="titleBox" wx:if="{{likeArr.length !== 0}}">
+        <text class="titleTxt">{{fixedData.guess_like}}</text>
+        <view class="moreBox" @tap="changeLike">
+          <image src="images/moreicon.png" mode="widthFix"></image>
+          <text>{{fixedData.next_one}}</text>
+        </view>
+      </view>
+      <view class="likeBox">
+        <view class="likeItem" wx:for="{{likeArr[likeIndex%likeArr.length]}}" wx:key="{{index}}" wx:if="{{index<3}}">
+          <form report-submit="true" bindsubmit="toGoodsDetail" data-goodstype="{{item.goods_type}}" data-id="{{item.id}}">
+            <button form-type="submit" class="formIdBtn"></button>
+          </form>
+          <image src="{{item.banner_url}}" mode="aspectFill"></image>
+          <text class="goods-title">{{item.goods_name}}</text>
+          <text class="goods-price">¥<text class="priceTxt">{{item.goods_price}}</text></text>
+        </view>
       </view>
     </view>
-    <view class="likeBox">
-      <view class="likeItem" wx:for="{{likeArr[likeIndex%likeArr.length]}}" wx:key="{{index}}" wx:if="{{index<3}}">
-        <form report-submit="true" bindsubmit="toGoodsDetail" data-goodstype="{{item.goods_type}}" data-id="{{item.id}}">
+  </block>
+  <block wx:if="{{likeArr.length === 0}}">
+    <view class="coupon-header-bottom {{loadingHidden?'showCouponBottom':''}}">
+      <view class="info-item">
+        <form class="formBox" report-submit="true" bindsubmit="toShopDetail({{indexData.shop.id}})">
           <button form-type="submit" class="formIdBtn"></button>
         </form>
-        <image src="{{item.banner_url}}" mode="aspectFill"></image>
-        <text class="goods-title">{{item.goods_name}}</text>
-        <text class="goods-price">¥<text class="priceTxt">{{item.goods_price}}</text></text>
+        <text>{{indexData.shop.magic_shop_name}}<text style="color: #0F8ED3;margin-left: 15rpx;">(进店逛逛~)</text></text>
+        <image src="images/home.png"></image>
+      </view>
+      <view class="info-item" @tap="callPhone({{indexData.shop.link_tel}})">
+        <text>电话：{{indexData.shop.link_tel}}</text>
+        <image src="images/phone.png"></image>
+      </view>
+      <view class="info-item" style="border-bottom: 0;" @tap="toMap({{indexData.shop.longitude}})">
+        <text>地址：{{indexData.shop.address}}</text>
+        <image src="images/address.png"></image>
       </view>
     </view>
-  </view>
+  </block>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -116,6 +137,15 @@
         // if(this.likeIndex%this.likeArr.length == this.likeArr.length-1){
         //   CouponModel.showTips('没有更多了哦')
         // }
+      },
+      toShopDetail(id){
+        CouponModel.navTo('../niceShop/niceShopIndex',{id:id})
+      },
+      callPhone(phoneNum){
+        CouponModel.makePhoneCall(phoneNum)
+      },
+      toMap(logLat){
+        CouponModel.openMap(logLat)
       }
     }
     onLoad(e){
@@ -293,6 +323,63 @@
         }
       }
     }
+  }
+  .coupon-header-bottom{
+    background-color: #fff;
+    width: 690rpx;
+    box-sizing: border-box;
+    padding: 0 30rpx;
+    opacity: 1;
+    transform: scale(1);
+    margin-left: 30rpx;
+    border-radius: 8rpx;
+    opacity: 0;
+    transition: .4s .6s;
+    transform: translateX(50rpx);
+    .info-item{
+      width: 100%;
+      height: 90rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px dashed #D6D6D6;
+      position: relative;
+      .formBox{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        .formIdBtn{
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          background:transparent;
+          &::after{
+            content:none;
+          }
+        }
+      }
+      text{
+        font-size: 28rpx;
+        color: #353535;
+        max-width: 580rpx;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      image{
+        width: 35rpx;
+        height: 35rpx;
+      }
+    }
+  }
+  .showCouponBottom{
+    opacity: 1;
+    transform: translateX(0);
   }
   .show-likeItem{
     transform: translateY(0);

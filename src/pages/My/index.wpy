@@ -115,7 +115,7 @@
         </view>
       </view>
       <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.14.5</text>
+        <text>V 1.14.6</text>
       </view>
     </view>
   </view>

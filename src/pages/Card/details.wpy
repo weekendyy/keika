@@ -217,8 +217,8 @@
           title: '生成卡片中',
         })
         let posterPic = wx.getStorageSync('posterPic_'+'luckyCanvas'+'_'+this.goodsInfo.id)
-        if(posterPic){
-          this.posterImg = posterPic
+        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == '0.00' && posterPic[2] == this.pricePre){
+          this.posterImg = posterPic[0]
           this.showPosterBox = true
           wx.hideLoading()
           this.$apply()

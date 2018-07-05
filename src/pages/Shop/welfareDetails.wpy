@@ -180,7 +180,7 @@
         })
         let posterPic = wx.getStorageSync('posterPic_'+'welfareCanvas'+'_'+this.id)
         if(posterPic){
-          this.posterImg = posterPic
+          this.posterImg = posterPic[0]
           this.showPosterBox = true
           this.actionSheetHidden =  true
           wx.hideLoading()

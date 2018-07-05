@@ -3,10 +3,10 @@
     <view class="bannerBox">
       <swiper indicator-dots="{{false}}" class="swiperBox" bindchange="bannerChange"
         previous-margin="55rpx" next-margin="55rpx" current="{{bannerIndex}}"
-        autoplay="true" interval="5000" duration="500" circular="true">
+        autoplay="true" interval="6000" duration="600" circular="true">
         <block wx:for="{{bannerImgs}}" wx:key="{{index}}">
-          <swiper-item style="display:flex;align-items:center;justify-content:center;">
-            <view class="picBox {{isShow?'showBannerPic':''}}" style="transition: .4s {{bannerIndex == index ? '.4' : '0.5'}}s;">
+          <swiper-item>
+            <view class="picBox {{isShow?'showBannerPic':''}}" style="transition: .4s;">
               <image style="transform: scale({{bannerIndex == index ? '1' : '0.93'}})" src="{{item.banner_url}}" mode="aspectFill" class="bannerImg" />
               <button class="formIdBtn" form-type="submit" data-url="{{item.banner_path}}"></button>
             </view>
@@ -71,6 +71,9 @@
         border-radius: 10rpx;
         opacity: 0;
         transform: scale(0.8);
+        display:flex;
+        align-items:center;
+        justify-content:center;
       }
       .bannerImg{
         width: 630rpx;

@@ -237,7 +237,7 @@
         })
         let posterPic = wx.getStorageSync('posterPic_'+'shopCanvas'+'_'+this.shopId)
         if(posterPic){
-          this.posterImg = posterPic
+          this.posterImg = posterPic[0]
           this.showPosterBox = true
           wx.hideLoading()
           this.$apply()
