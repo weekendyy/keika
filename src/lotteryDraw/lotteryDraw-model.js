@@ -267,6 +267,23 @@ class lotteryDraw extends Base {
       }
     })
   }
+  // 核销
+  cancle(queryData, callback){
+    let param = {
+      url: 'v8/reward_order/destroy_reward_order',
+      data: {
+       password: queryData.password,
+       order_id: queryData.orderId
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      },
+      fCallback(){
+        fcallBack && fcallBack()
+      }
+    }
+    this.request(param)
+  }
 }
 const lotteryDrawModel = new lotteryDraw()
 export default lotteryDrawModel

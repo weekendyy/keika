@@ -124,7 +124,7 @@ class Address extends Base{
         icon: 'none',
         duration: 3000
       })
-      fCallBack()
+      fCallBack && fCallBack()
     }
   }
 }

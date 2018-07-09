@@ -1,0 +1,276 @@
+<template>
+  <view class="posterText {{showContent?'showposterText':''}}" @tap="getUserInfo">
+    <view class="posterT {{posting?'posterHover':''}}">
+      <view class="posterTxtBox {{posting?'postStay':''}}">
+        <text>生成</text>
+        <text>海报</text>
+      </view>
+    </view>
+  </view>
+  <view class="posterBox">
+    <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
+    <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
+        <!-- 首页画板 -->
+      <canvas wx:if="{{type == 9}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="shopCanvas"></canvas>
+      <!-- 砍价画板 -->
+      <canvas wx:if="{{type == 3}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="bargainCanvas"></canvas>
+      <!-- 抢购画板 -->
+      <canvas wx:if="{{type == 1}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="goodsCanvas"></canvas>
+      <!-- 拼团画板 -->
+      <canvas wx:if="{{type == 2}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="groupCanvas"></canvas>
+      <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
+      <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+        <image src="../images/download.png" mode="widthFix" class="downPic"></image>
+        <text>保存图片</text>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import HomeModel from '../pages/Index/index-model.js'
+  export default class poster extends wepy.component {
+    props = {
+      showContent: Boolean,
+      posterInfo: Object,
+      type: String,    //9新版好店首页  3砍价海报  1抢购  2拼团
+      priceNow: String,
+      pricePre: String
+    }
+    data = {
+      showPosterBox: false,
+      posterImg: '',
+      canvasName: '',
+      posting: false
+    }
+    computed = {
+      
+    }
+    components = {
+      
+    }
+    events = {
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        this.posting = true
+        let posterPic = wx.getStorageSync('posterPic_'+ this.canvasName +'_'+ this.posterInfo.id)
+        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.priceNow && posterPic[2] == this.pricePre){
+          this.posterImg = posterPic[0]
+          this.showPosterBox = true
+          this.posting = false
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
+        let param = {}
+        param.id = this.posterInfo.id
+        param.type = this.type
+        HomeModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            if(this.type == '9'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id)
+            }
+            if(this.type == '3'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.floor_price, this.posterInfo.price,'砍价','/images/posterTy.png', '', this.posterInfo.id)
+            }
+            if(this.type == '1'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, this.posterInfo.original_price,'抢购','/images/posterTy.png', '', this.posterInfo.id)
+            }
+            if(this.type == '2'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.group_price, this.posterInfo.original_price,'拼团','/images/posterTy.png', '', this.posterInfo.id)
+            }
+          }
+        })
+      }
+    }
+    methods = {
+      getUserInfo(res){
+        wx.showLoading({
+          title: '生成卡片中',
+        })
+        this.posting = true
+        let posterPic = wx.getStorageSync('posterPic_'+ this.canvasName +'_'+ this.posterInfo.id)
+        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.priceNow && posterPic[2] == this.pricePre){
+          this.posterImg = posterPic[0]
+          this.showPosterBox = true
+          this.posting = false
+          wx.hideLoading()
+          this.$apply()
+          return false
+        }
+        let param = {}
+        param.id = this.posterInfo.id
+        param.type = this.type
+        HomeModel.getPostData(param,ResData=>{
+          if(ResData.code == 1){
+            if(this.type == '9'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id)
+            }
+            if(this.type == '3'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.floor_price, this.posterInfo.price,'砍价','/images/posterTy.png', '', this.posterInfo.id)
+            }
+            if(this.type == '1'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, this.posterInfo.original_price,'抢购','/images/posterTy.png', '', this.posterInfo.id)
+            }
+            if(this.type == '2'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.group_price, this.posterInfo.original_price,'拼团','/images/posterTy.png', '', this.posterInfo.id)
+            }
+          }
+        })
+      },
+      closePosterBox(){
+        this.showPosterBox = false
+        this.$apply()
+      },
+      savePostePic(){
+        HomeModel.savePoste(this,this.canvasName,this.posterInfo.id)
+      }
+    }
+    onLoad(){
+        if(this.type == '9'){
+            this.canvasName = 'shopCanvas'
+        }
+        if(this.type == '3'){
+            this.canvasName = 'bargainCanvas'
+        }
+        if(this.type == '1'){
+            this.canvasName = 'goodsCanvas'
+        }
+        if(this.type == '2'){
+            this.canvasName = 'groupCanvas'
+        }
+        console.log(this.canvasName)
+    }
+  }
+</script>
+<style type="less">
+  .posterText{
+    padding: 0;
+    margin: 0;
+    width: 80rpx;
+    height: 80rpx;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 530rpx;
+    right: 20rpx;
+    z-index: 1;
+    opacity: 0;
+    transform: scale(.5);
+    &::after{
+      content:none;
+    }
+    .posterT{
+      width: 65rpx;
+      height: 65rpx;
+      border:1px dashed #fff;
+      font-size: 20rpx;
+      color: #fff;
+      transition: .1s linear;
+      border-radius: 100%;
+      .posterTxtBox{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 65rpx;
+        height: 65rpx;
+        border-radius: 100%;
+        text{
+          margin: 3rpx 0;
+        }
+      }
+      .postStay{
+        transform: rotate(-720deg);
+        transition: 20s linear;
+      }
+    }
+    .posterHover{
+      transform: rotate(720deg);
+      transition: 20s linear;
+    }
+  }
+  .showposterText{
+    opacity: 1;
+    transform: scale(1);
+    transition: .5s .3s;
+  }
+  .posterBox{
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    .poster_cover{
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.6);
+      pointer-events: auto;
+    }
+    .poster_content{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotateY(0deg);
+      transition: .4s;
+      .posterImg{
+        width: 650rpx;
+        height: 1080rpx;
+        margin-bottom: 20rpx;
+      }
+      .canvas{
+        position: absolute;
+        top: -1000px;
+        left: -500px;
+        box-shadow: 0 0 20rpx rgba(119,119,119,.4);
+        background-color: #fff;
+      }
+      .canvasImg{
+        width: 650rpx;
+        height: 1000rpx;
+      }
+      .saveImg{
+        width: 650rpx;
+        height: 80rpx;
+        background-color: #FE6420;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 28rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        pointer-events: none;
+        margin-top: 20rpx;
+        .downPic{
+          width: 35rpx;
+          height: 35rpx;
+          margin-right: 20rpx;
+        }
+      }
+      .canSave{
+        pointer-events: auto;
+      }
+    }
+    .showPosterBox{
+      opacity: 1;
+      transform: rotateY(0);
+      transition: 1s;
+    }
+  }
+</style>

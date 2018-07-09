@@ -162,6 +162,22 @@ class Details extends Base{
     }
     this.request(param)
   }
+  // 商户申请
+  postBusinessInfo(query,callback){
+    let param = {
+      url: 'v11/shop/contact',
+      data: {
+        name: query.name,
+        phone: query.phone,
+        type: 4,
+        shop_id: this.shopConfig.shopID
+      },
+      sCallback: function(data) {
+        callback && callback(data)
+      }
+    }
+    this.request(param)
+  }
 }
 const DetailsModel = new Details()
 export default DetailsModel

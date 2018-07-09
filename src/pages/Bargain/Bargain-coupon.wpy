@@ -38,12 +38,16 @@
       goodsInfo: '',
       passModel:'',
       launch_id: '',
+      verificating: false
     }
     methods = {
       bindKeyInput($event){
         this.passModel = $event.detail.value.trim()
       },
       passVerification(){
+        if(this.verificating){
+          return false
+        }
         if(Number(this.passModel.length)==0){
           wx.showToast({
             title: '请输入验证密码',
@@ -60,11 +64,16 @@
           })
           return false
         }
+        this.verificating = true
+        wx.showLoading({
+          title: '核销中...'
+        })
         let param = {
           password: this.passModel,
           launch_id: this.launch_id,
         }
         BargainModel.end_cancel(param, ResData=>{
+          wx.hideLoading()
           if(ResData.code == 1) {
             wx.showToast({
               title: "核销成功",

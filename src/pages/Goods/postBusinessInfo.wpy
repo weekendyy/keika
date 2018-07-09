@@ -1,0 +1,134 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="indexBox">
+    <text class="contactTop">留下您的联系方式</text>
+    <view class="contactDesc">
+      <view class="cut"></view>
+      <text>Reservation consultatio</text>
+      <view class="cut"></view>
+    </view>
+    <input placeholder="请输入店铺名称" value="{{shopName}}" class="inp" bindinput="inpname" />
+    <input placeholder="请输入联系电话" type="number" value="{{phoneNumber}}" class="inp" bindinput="inpphone" />
+    <view class="comfirm" @tap="comfirm">提交</view>
+  </view>
+  <view wx:if="{{!loadingHidden}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import DetailsModel from './details-model'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '商户申请'
+    }
+    components = {
+      
+    }
+    data = {
+      loadingHidden: false,
+      phoneNumber: '',
+      shopName: ''
+    }
+    events = {
+      
+    }
+    methods= {
+      inpname(e){
+        this.shopName = e.detail.value
+      },
+      inpphone(e){
+        this.phoneNumber = e.detail.value
+      },
+      comfirm(){
+        if(!this.shopName){
+          DetailsModel.showTips('请输入店铺名称')
+          return false
+        }
+        if(DetailsModel.verifyPhoneNumber(this.phoneNumber)){
+          wx.showLoading({
+            title: '预约中...'
+          })
+          let query = {
+            name: this.shopName,
+            phone: this.phoneNumber
+          }
+          DetailsModel.postBusinessInfo(query,(res)=>{
+            wx.hideLoading()
+            DetailsModel.showTips(res.msg)
+            if(res.error == 0){
+              setTimeout(()=>{
+                wx.navigateBack({
+                  delta: 1
+                })
+              },1000)
+            }
+          })
+        }
+      }
+    }
+    onLoad(){
+      this.loadingHidden = true
+      this.$apply()
+    }
+    onShow(){
+    }
+    onHide(){
+    }
+    onUnload(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../tpls/loading/loading.wxss';
+  Page{
+  }
+  .indexBox{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .contactTop{
+      font-size: 40rpx;
+      font-weight: 600;
+      margin-top: 200rpx;
+    }
+    .contactDesc{
+      display: flex;
+      align-items: center;
+      margin-top: 30rpx;
+      margin-bottom: 60rpx;
+      .cut{
+        width: 200rpx;
+        height: 1px;
+        background-color: #CDCDCD;
+      }
+      text{
+        font-size: 21rpx;
+        color: #CDCDCD;
+        margin: 0 10rpx;
+      }
+    }
+    .inp{
+      width: 690rpx;
+      height: 100rpx;
+      box-sizing: border-box;
+      padding: 0 40rpx;
+      line-height: 100rpx;
+      font-size: 27rpx;
+      background-color: #F6F5F5;
+      margin-bottom: 40rpx;
+    }
+    .comfirm{
+      width: 240rpx;
+      height: 80rpx;
+      background-color: #54805F;
+      color: #fff;
+      font-size: 32rpx;
+      line-height: 80rpx;
+      text-align: center;
+      margin-top: 30rpx;
+    }
+  }
+</style>

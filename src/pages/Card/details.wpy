@@ -321,7 +321,7 @@
           this.goodsInfo = ResData.data
           const article = ResData.data.prize_detail
           wxParse.wxParse('article', 'html', article, this, 0)
-          this.likeNum = ResData.data.browse_num
+          ResData.data.browse_num && (this.likeNum = ResData.data.browse_num)
           this.loadingHidden = true
         }
         this.$apply()

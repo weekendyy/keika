@@ -63,14 +63,15 @@
       <!-- 已经开奖，活动结束 -->
       <view class="lotteryDetail" wx:if="{{detailData.time_status == 4 && detailData.join_status == 2}}">
         <view class="lotteryDetailContent">
-          <block wx:if="{{detailData.is_reward == 2}}">
+          <block wx:if="{{detailData.is_reward == 2 || detailData.is_reward == 3}}">
             <view class="prizeIconBox">
               <image class="prizeIcon" mode="aspectFill" src="image/gift.png"></image>
             </view>
             <text class="prizetxt">{{fixedData.open_reward_2}}</text>
             <view class="prizeOpation">
-              <view class="prizeAddress" @tap="toAddress" wx:if="{{false}}">{{addressTxt}}</view>
-              <view class="prizeAddress" @tap="toCancle">去核销</view>
+              <view class="prizeAddress" @tap="toAddress" wx:if="{{detailData.destroy_type == 1}}">{{addressTxt}}</view>
+              <view class="prizeAddress" @tap="toCancle" wx:if="{{detailData.destroy_type == 2 && !isCancle}}">核销</view>
+              <view class="prizeAddress" wx:if="{{detailData.destroy_type == 2 && isCancle}}">已核销</view>
               <button open-type="share" class="shareTofriend">{{fixedData.xyyx}}</button>
             </view>
           </block>
@@ -125,13 +126,15 @@
           <view class="lotteryDetailBox {{showLotteryStart?'showLotteryDetailBox':''}}">
             <view class="lotteryDetail {{showLotteryStart?'showLotteryDetail':''}}">
               <view class="lotteryDetailContent {{showLotteryStart?'showlotteryDetailContent':''}}">
-                <block wx:if="{{detailData.is_reward == 2}}">
+                <block wx:if="{{detailData.is_reward == 2  || detailData.is_reward == 3}}">
                   <view class="prizeIconBox">
                     <image class="prizeIcon" mode="aspectFill" src="image/gift.png"></image>
                   </view>
                   <text class="prizetxt">{{fixedData.open_reward_2}}</text>
                   <view class="prizeOpation">
-                    <view class="prizeAddress" @tap="toAddress">{{addressTxt}}</view>
+                    <view class="prizeAddress" @tap="toAddress" wx:if="{{detailData.destroy_type == 1}}">{{addressTxt}}</view>
+                    <view class="prizeAddress" @tap="toCancle" wx:if="{{detailData.destroy_type == 2 && !isCancle}}">核销</view>
+                    <view class="prizeAddress" wx:if="{{detailData.destroy_type == 2 && isCancle}}">已核销</view>
                     <button open-type="share" style="pointer-events: {{showLotteryStart?'auto':'none'}}" class="shareTofriend">{{fixedData.xyyx}}</button>
                   </view>
                 </block>
@@ -183,8 +186,8 @@
   </view>
   <view class="cancel {{showCancelBox?'showCancel':''}}">
     <image src="./image/close.png" mode="widthFix" class="closeIcon" @tap="closeCancleBox"></image>
-    <input placeholder="请输入核销密码" focus="{{isCancleing}}" type="number" class="cancleInp" />
-    <view class="cancleBtn">确认</view>
+    <input placeholder="请输入核销密码" bindinput="passwordInp" value="{{password}}" focus="{{isCancleing}}" type="number" class="cancleInp" />
+    <view class="cancleBtn" @tap="cancleConfirm">确认</view>
   </view>
   <view wx:if="{{!showContent}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -218,7 +221,9 @@
       posterImg: '',
       showPosterBox: '',
       showCancelBox: false,
-      isCancleing: false
+      isCancleing: false,
+      password: '',
+      isCancle: false
     }
     computed = {
         
@@ -284,6 +289,37 @@
         this.showCancelBox = false
         this.isCancleing = false
         this.$apply()
+      },
+      passwordInp(e){
+        this.password = e.detail.value
+      },
+      cancleConfirm(){
+        if(!this.password){
+          lotteryDrawModel.showTips('请输入密码')
+          return false
+        }
+        wx.showLoading({
+          title: '核销中...'
+        })
+        let query = {
+          password: this.password,
+          orderId: this.detailData.order_id
+        }
+        lotteryDrawModel.cancle(query,(res)=>{
+          wx.hideLoading()
+          if(res.error == 0){
+            lotteryDrawModel.showTips("核销成功")
+            wx.setNavigationBarTitle({
+              title: '抽奖详情'
+            })
+            this.showCancelBox = false
+            this.isCancleing = false
+            this.isCancle = true
+            this.$apply()
+          } else {
+            lotteryDrawModel.showTips(res.message)
+          }
+        })
       },
       backHome(){
         Address.navTo('/pages/Index/index')
@@ -389,6 +425,9 @@
           this.$apply()
           this.detailData = res.data
           this.fixedData = res.content_str
+          if(this.detailData.is_reward == 3){
+            this.isCancle = true
+          }
           if (this.detailData.is_write == 1) {
             this.addressTxt = res.content_str.add_address
           } else {

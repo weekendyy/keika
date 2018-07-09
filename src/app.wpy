@@ -105,7 +105,8 @@ export default class extends wepy.app {
       'pages/Groups/Groups-coupon', // 拼团 核销页面
       'pages/Shop/shopList', //好店推荐 好店列表
       'pages/My/login', //登录
-      'pages/My/update' // 更新微信版本
+      'pages/My/update', // 更新微信版本
+      'pages/Goods/postBusinessInfo'  //商户提交
     ],
     "subPackages": [
       {

@@ -152,9 +152,11 @@
                 <text @tap.stop="orderDetails({{index}})">查看订单</text>
               </view>
             </view>
+            <!-- 拼团 -->
             <view class="payment-btn" wx:if="{{item.goods_order_type == 2 && item.check_pay_type == 1}}">
               <!--交易关闭-->
               <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
+                <view></view>
                 <!--秒杀未付款-->
                 <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
                 <text wx:if="{{item.status == 2}}" @tap.stop="orderUse({{index}})">去使用</text>
@@ -169,7 +171,7 @@
             <view class="payment-btn" wx:if="{{item.goods_order_type == 2 && item.check_pay_type == 2}}">
               <!--交易关闭-->
               <!-- <text class="del" wx:if="{{item.status == 0 || item.status == 8}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
-
+              <view></view>
               <!--拼团未付款-->
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
               <!-- 拼团未分享 -->
@@ -183,7 +185,9 @@
                 <text @tap.stop="orderDetails({{index}})">查看订单</text>
               </view>
             </view>
+            <!-- 集卡 -->
             <view class="payment-btn" wx:if="{{item.goods_type == 5}}">
+              <view></view>
               <text wx:if="{{item.status == 1}}" @tap.stop="orderUse({{index}})">去使用</text>
               <text wx:if="{{item.status == 2}}" @tap.stop="orderDetails({{index}})">已使用</text>
               <!-- <text wx:if="{{item.status == 3}}" @tap.stop="orderDetails({{index}})">删除订单</text> -->
@@ -194,6 +198,7 @@
               <!--交易关闭-->
               <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
               <!--秒杀未付款-->
+              <view></view>
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
               <text wx:if="{{item.status == 2 && item.use_status == 0}}" @tap.stop="orderUse({{index}})">
                 <block>去使用</block>

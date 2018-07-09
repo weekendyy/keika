@@ -2,11 +2,11 @@
   <form report-submit="true" bindsubmit="toBannerUrl">
     <view class="bannerBox">
       <swiper indicator-dots="{{false}}" class="swiperBox" bindchange="bannerChange"
-        previous-margin="55rpx" next-margin="55rpx" current="{{bannerIndex}}"
+        previous-margin="55rpx" next-margin="55rpx" 
         autoplay="true" interval="6000" duration="600" circular="true">
         <block wx:for="{{bannerImgs}}" wx:key="{{index}}">
           <swiper-item>
-            <view class="picBox {{isShow?'showBannerPic':''}}" style="transition: .4s;">
+            <view class="picBox">
               <image style="transform: scale({{bannerIndex == index ? '1' : '0.93'}})" src="{{item.banner_url}}" mode="aspectFill" class="bannerImg" />
               <button class="formIdBtn" form-type="submit" data-url="{{item.banner_path}}"></button>
             </view>
@@ -69,8 +69,6 @@
         width: 640rpx;
         height: 370rpx;
         border-radius: 10rpx;
-        opacity: 0;
-        transform: scale(0.8);
         display:flex;
         align-items:center;
         justify-content:center;
@@ -82,10 +80,6 @@
         border-radius: 10rpx;
         transition: .5s;
         margin-left: 5rpx;
-      }
-      .showBannerPic{
-        opacity: 1;
-        transform: scale(1);
       }
     }
   }

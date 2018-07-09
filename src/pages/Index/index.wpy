@@ -306,7 +306,7 @@
           if(this.bannerImgs.length < 3){
             this.bannerIndex = 0
           } else {
-            this.bannerIndex = 1
+            this.bannerIndex = 0
           }
           // 设置商品列表
           this.goodsList = res.data.area_data

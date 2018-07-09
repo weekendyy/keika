@@ -80,7 +80,7 @@
     @contentH: 1000rpx;
     .contentBox{
       width: 100%;
-      height: 800rpx;
+      height: 900rpx;
       position: absolute;
       bottom: -@contentH;
       left: 0;
@@ -94,7 +94,7 @@
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
-      padding: 50rpx 20rpx; 
+      padding: 70rpx 20rpx 50rpx; 
       .chooePic{
         width: 690rpx;
         height: 488rpx;
@@ -112,7 +112,7 @@
       .confirmBtn{
         width: 100%;
         height: 70rpx;
-        background: linear-gradient(to right, #FF7602,#FD4A05);
+        background: linear-gradient(to right, #FE667F,#FB4D69);
         border-radius: 40rpx;
         color: #fff;
         text-align: center;

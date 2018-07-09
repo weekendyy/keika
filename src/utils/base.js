@@ -188,7 +188,7 @@ class Base {
     wx.showLoading({title:'保存中...'})
     let posterPic =  wx.getStorageSync('posterPic_'+canvasId+'_'+postPicId)
     wx.saveImageToPhotosAlbum({
-      filePath: posterPic,
+      filePath: posterPic[0],
       success:()=>{
         wx.showToast({
           title: '保存成功！',
@@ -324,8 +324,8 @@ class Base {
                   wx.canvasToTempFilePath({
                     x: 0,
                     y: 0,
-                    width: that.$parent.globalData.pxRadio*650,
-                    height: that.$parent.globalData.pxRadio*1000,
+                    width: 650,
+                    height: 1000,
                     destWidth: 650,
                     destHeight: 1000,
                     canvasId: canvasId,
@@ -335,6 +335,7 @@ class Base {
                       wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, [res.tempFilePath,priceNow,pricePre])
                       that.posterImg = res.tempFilePath
                       that.showPosterBox = true
+                      that.posting = false
                       that.$apply()
                     },
                     fail: (res)=>{
