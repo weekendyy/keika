@@ -122,12 +122,13 @@ class Bargain extends Base {
       data: {
         launch_id: queryData.launch_id,
         activity_id: queryData.activity_id,
-        type: "event",
+        type: "event"
       },
       sCallback(ResData) {
         callback && callback(ResData)
       }
     }
+    queryData.disId && (param.data.dis_id = queryData.disId)
     this.request(param)
   }
 
@@ -138,12 +139,13 @@ class Bargain extends Base {
     let param = {
       url: "v7/bargain/launch",
       data: {
-        activity_id: queryData.activity_id,
+        activity_id: queryData.activity_id
       },
       sCallback(ResData) {
         callback && callback(ResData)
       }
     }
+    queryData.disId && (param.data.dis_id = queryData.disId)
     this.request(param)
   }
 
@@ -328,6 +330,18 @@ class Bargain extends Base {
       data: {
         time_status:'2',
         page_num:PageNum || '1',
+      },
+      sCallback: function(data) {
+        callback && callback(data)
+      }
+    }
+    this.request(param)
+  }
+  // 社群接口
+  getcommunityData(PageNum,callback){
+    let param = {
+      url: 'v2/shop/ad',
+      data: {
       },
       sCallback: function(data) {
         callback && callback(data)

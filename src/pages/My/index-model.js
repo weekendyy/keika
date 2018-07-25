@@ -163,6 +163,20 @@ class My extends Base {
     }
     this.request(param)
   }
+  // 登录
+  login(queryData, callback){
+    let param = {
+      url: 'v13/distribut_user/login',
+      data: {
+        phone: queryData.phone,
+        password: queryData.password
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
 }
 const MyModel = new My()
 export default MyModel

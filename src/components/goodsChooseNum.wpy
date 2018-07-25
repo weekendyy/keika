@@ -2,10 +2,27 @@
   <view class="goodsNumChooseBox">
     <view class="cover1 {{showGoodsChoose?'showCover1':''}}" @tap="closeChooseBox"></view>
     <view class="contentBox {{showGoodsChoose?'showcontentBox':''}}">
-      <image src="{{choosePic.arr_banner[0]}}" mode="aspectFill" class="chooePic"></image>
+      <view class="orderTips">请您于下单<text>5分钟</text>内完成支付，逾期订单将自动取消</view>
+      <view class="goodsInfo">
+        <image class="goodsPic" mode="aspectFill" src="{{goodsInfo.arr_banner[0]}}"></image>
+        <view class="goodsInfoRight">
+          <text class="goodstitle">{{goodsInfo.name}}</text>
+          <text class="goodsPrice" wx:if="{{goodsInfo.magic_vip_status==1}}">¥{{goodsInfo.magic_vip_price == 0?goodsInfo.discount_price:goodsInfo.magic_vip_price}}</text>
+          <text class="goodsPrice" wx:if="{{goodsInfo.magic_vip_status==2}}">¥{{goodsInfo.discount_price}}</text>
+        </view>
+      </view>
+      <view style="flex:1"></view>
+      <view class="sumPriceBox">
+        <text>合计:</text>
+        <text class="sumPrice">¥{{sumPrice}}元</text>
+      </view>
       <view class="chooseNumBox">
         <text>购买数量(可购{{maxNum}}份)</text>
         <count :maxNum.sync="maxNum" :countValue.sync="countValue"></count>
+      </view>
+      <view class="phoneNumber">
+        <text>手机号</text>
+        <input placeholder="请输入手机号" cursor-spacing="100" value="{{phoneNumber}}" type="number" bindinput="phoneInp" />
       </view>
       <view class="confirmBtn" @tap="confirmTap">确定</view>
     </view>
@@ -14,19 +31,34 @@
 <script>
   import wepy from 'wepy'
   import count from './count'
+  import model from '../pages/Shop/shop-model.js'
   export default class goodsChooseNum extends wepy.component {
     props = {
-      choosePic: Object,
+      goodsInfo: Object,
       maxNum: String
     }
     computed = {
+      sumPrice(){
+        let sumPrice = ''
+        if(this.goodsInfo){
+          if(this.goodsInfo.magic_vip_status == 1){
+            sumPrice = this.goodsInfo.magic_vip_price*100*this.countValue/100
+          }
+          if(this.goodsInfo.magic_vip_status == 2){
+            sumPrice = this.goodsInfo.discount_price*100*this.countValue/100
+          }
+        }
+        return sumPrice
+      }
     }
     data = {
       countValue: 1,
-      showGoodsChoose: false
+      showGoodsChoose: false,
+      phoneNumber: ''
     }
     events = {
       showChooseBox(){
+        this.phoneNumber = this.goodsInfo.shipping_phone
         this.showGoodsChoose = true
         this.$apply()
       }
@@ -40,13 +72,19 @@
         this.$apply()
       },
       confirmTap(){
-        if(this.maxNum == 0){
-          this.$emit('buyGoods',0)
-        } else{
-          this.$emit('buyGoods',this.countValue)
+        if(model.verifyPhoneNumber(this.phoneNumber)){
+          if(this.maxNum == 0){
+            this.$emit('buyGoods',0,this.phoneNumber)
+          } else{
+            this.$emit('buyGoods',this.countValue,this.phoneNumber)
+          }
+          this.showGoodsChoose = false
+          this.$apply()
         }
-        this.showGoodsChoose = false
-        this.$apply()
+      },
+      phoneInp(e){
+        let value = e.detail.value
+        this.phoneNumber = value
       }
     }
     onLoad(){
@@ -80,7 +118,7 @@
     @contentH: 1000rpx;
     .contentBox{
       width: 100%;
-      height: 900rpx;
+      height: 800rpx;
       position: absolute;
       bottom: -@contentH;
       left: 0;
@@ -94,29 +132,101 @@
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
-      padding: 70rpx 20rpx 50rpx; 
+      padding: 40rpx 40rpx 50rpx;
+      .orderTips{
+        color: #99989E;
+        font-size: 25rpx;
+        width: 100%;
+        height: 50rpx;
+        background-color: #F0EFF5;
+        line-height: 50rpx;
+        text-align: center;
+        border-radius: 10rpx;
+        text{
+          color: #E28F96;
+        }
+      }
+      .goodsInfo{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-top: 40rpx;
+        .goodsPic{
+          flex: 0 0 200rpx;
+          height: 200rpx;
+        }
+        .goodsInfoRight{
+          flex: 1;
+          margin-left: 20rpx;
+          display: flex;
+          flex-direction: column;
+          .goodstitle{
+            font-size: 30rpx;
+            line-height: 40rpx;
+          }
+          .goodsPrice{
+            color: #E02636;
+            font-size: 33rpx;
+            margin-top: 60rpx;
+          }
+        }
+      }
+      .phoneNumber{
+        margin-bottom: 30rpx;
+        width: 100%;
+        height: 80rpx;
+        display: flex;
+        align-content: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #F0EFF5;
+        text{
+          color: #242527;
+          font-size: 26rpx;
+          flex: 0 0 150rpx;
+          line-height: 80rpx;
+        }
+        input{
+          flex: 1;
+          line-height: 80rpx;
+          font-size: 26rpx;
+          height: 80rpx;
+        }
+      }
+      .sumPriceBox{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        font-size: 26rpx;
+        .sumPrice{
+          color: #FB2C37;
+          margin-left: 20rpx;
+          font-weight: 500;
+          font-size: 30rpx;
+        }
+      }
       .chooePic{
         width: 690rpx;
         height: 488rpx;
         background-color: #999;
       }
       .chooseNumBox{
-        width: 90%;
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        margin: 30rpx 0;
         text{
-          font-size: 28rpx;
+          font-size: 26rpx;
         }
       }
       .confirmBtn{
         width: 100%;
-        height: 70rpx;
+        height: 80rpx;
         background: linear-gradient(to right, #FE667F,#FB4D69);
         border-radius: 40rpx;
         color: #fff;
         text-align: center;
-        line-height: 70rpx;
+        line-height: 80rpx;
         font-size: 30rpx;
       }
     }

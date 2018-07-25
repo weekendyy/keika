@@ -37,12 +37,14 @@ class Details extends Base{
         type: 1,
         promotionID: param.id,
         buy_num: param.num,
-        versions: 'vip5'
+        versions: 'vip5',
+        shipping_phone: param.phone
       },
       sCallback(ResData) {
         callback && callback(ResData)
       }
     }
+    param.disId && (allPrams.data.dis_id = param.disId)
     this.request(allPrams)
   }
 

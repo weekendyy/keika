@@ -5,7 +5,7 @@
     <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
       <block wx:for="{{bannerpics}}" wx:key="bannerpics">
         <swiper-item class="swiperitembox">
-          <image src="{{item.banner_url}}" class="bannerpic" mode="scaleToFill"/>
+          <image src="{{item.banner_url}}" @tap="toUrl({{item.banner_path}})" class="bannerpic" mode="scaleToFill"/>
         </swiper-item>
       </block>
     </swiper>
@@ -13,42 +13,46 @@
       <view class='itemtab'>
         <view wx:for="{{tabitems}}" wx:key="tabitems" class="tabitem {{activeitem==index?'activeitem':''}}" @tap="itemTap({{index}})">{{item}}</view>
       </view>
-      <scroll-view wx:if="{{activeitem==0}}" scroll-y class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
-        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="{{index}}" @tap="gotoDetails({{index}})">
-          <image src="{{item.main_img}}" mode="aspectFill" class="goodspic"></image>
-          <view class="rightbox">
-            <text class="itemtitle">{{item.name}}</text>
-            <view class="priceaandtake">
-              <view class="price">
-                <view class="pricenow"><text>¥</text>{{item.discount_price}}</view>
-                <view class="priceori">¥ {{item.original_price}}</view>
+      <view wx:if="{{activeitem==0}}" class="goodslist">
+        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="scareBuyingList">
+          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="gotoDetails({{index}})" class="activityFormId"></button>
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+          <view class="goodsContent-styleThree">
+            <text class="goodsTitle-styleThree ellip-2">{{item.name}}</text>
+            <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
+            <view class="priceBox-styleThree">
+              <view class="goods-price">
+                <text class="price-now">¥{{item.discount_price}}</text>
+                <text class="price-pre">¥{{item.original_price}}</text>
               </view>
-              <view class="takepartin" style="background: {{activeitem==0?'linear-gradient(to left,#FF4722,#FF7422);':(activeitem==1?'#B5B5B5':'')}}">{{activeitem==0?'我要参与':(activeitem==1?'已过期':'')}}</view>
+              <view class="barginbtn">立即抢购</view>
             </view>
           </view>
         </view>
         <view wx:if="{{isGoodsEmpty.NowIsGoodsEmpty}}">
           <template is="emptyGoodsTips"></template>
         </view>
-      </scroll-view>
-      <scroll-view wx:if="{{activeitem==1}}" scroll-y class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
-        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="{{index}}" wx:for-item="goods" @tap="gotoDetails({{index}})">
-          <image src="{{goods.main_img}}" mode="aspectFill" class="goodspic"></image>
-          <view class="rightbox">
-            <text class="itemtitle">{{goods.name}}</text>
-            <view class="priceaandtake">
-              <view class="price">
-                <view class="pricenow {{activeitem == 1?'noactive':''}}"><text>¥</text>{{goods.discount_price}}</view>
-                <view class="priceori">¥ {{goods.original_price}}</view>
+      </view>
+      <view wx:if="{{activeitem==1}}" class="goodslist">
+        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="scareBuyingList">
+          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="gotoDetails({{index}})" class="activityFormId"></button>
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+          <view class="goodsContent-styleThree">
+            <text class="goodsTitle-styleThree ellip-2">{{item.name}}</text>
+            <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
+            <view class="priceBox-styleThree">
+              <view class="goods-price">
+                <text class="price-now">¥{{item.discount_price}}</text>
+                <text class="price-pre">¥{{item.original_price}}</text>
               </view>
-              <view class="takepartin" style="background: {{activeitem==0?'linear-gradient(to left,#FF4722,#FF7422);':(activeitem==1?'#B5B5B5':'')}}">{{activeitem==0?'我要参与':(activeitem==1?'已过期':'')}}</view>
+              <view class="barginbtn">立即抢购</view>
             </view>
           </view>
         </view>
         <view wx:if="{{isGoodsEmpty.OldIsGoodsEmpty}}">
           <template is="emptyGoodsTips"></template>
         </view>
-      </scroll-view>
+      </view>
     </view>
   </view>
   <view wx:if="{{!loadingHidden}}">
@@ -95,6 +99,7 @@
             if(data.goods_data.length==0){
               this.isGoodsEmpty.NowIsGoodsEmpty=true
             }
+            this.exchangeTime(this.NowActivityData)
             wx.setNavigationBarTitle({
               title: data.header_title
             })
@@ -102,6 +107,15 @@
           }
           this.$apply()
       })
+    }
+    exchangeTime(data){
+      let len = data.length
+      for(let i = 0; i<len; i++){
+        let bTime = data[i].from_time
+        let eTime = data[i].to_time
+        data[i].from_time = bTime.slice(5,7)+'.'+bTime.slice(8,10)
+        data[i].to_time = eTime.slice(5,7)+'.'+eTime.slice(8,10)
+      }
     }
     methods = {
       itemTap(index){
@@ -111,6 +125,7 @@
           DetailsModel.getIndexOldActivity('1',ResData=>{
             if (ResData.code == 1){
               this.isGoodsEmpty.OldIsGoodsEmpty=false
+              this.exchangeTime(ResData.goods_data)
               this.OldActivityData = ResData.goods_data
               //无商品的情况
               if(ResData.goods_data.length==0){
@@ -142,6 +157,11 @@
           id = this.OldActivityData[index].id
         }
         this.$navigate('../Goods/details',{id:id})
+      },
+      toUrl(url){
+        if(url){
+          DetailsModel.navTo(url)
+        }
       }
     }
     components = {
@@ -153,6 +173,7 @@
           this.pageNum.NowActivityPage++
           DetailsModel.getIndexNowActivity(this.pageNum.NowActivityPage,ResData=>{
             if (ResData.code == 1){
+              this.exchangeTime(ResData.goods_data)
               this.NowActivityData = [...this.NowActivityData,...ResData.goods_data]
               if(ResData.goods_data.length==0){
                 this.isLoadedAll.NowIsLoadedAll=true
@@ -173,6 +194,7 @@
           this.pageNum.OldActivityPage++
           DetailsModel.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
             if (ResData.code == 1){
+              this.exchangeTime(ResData.goods_data)
               this.OldActivityData = [...this.OldActivityData,...ResData.goods_data]
               if(ResData.goods_data.length == 0){
                 this.isLoadedAll.OldIsLoadedAll=true
@@ -242,80 +264,88 @@
         }
       }
       .goodslist{
-        margin-top: 12rpx;
-        width:100%;
+        width:750rpx;
         background-color: #fff;
         margin-bottom: 20rpx;
+        padding-top: 30rpx;
         .goodsitem{
-          width:100%;
-          display: flex;
-          border-bottom:1rpx solid #B2B1B2;
-          padding:20rpx 10rpx 23rpx;
-          height:264rpx;
+          width: 670rpx;
+          height: 226rpx;
+          margin-left: 40rpx;
           box-sizing: border-box;
-          &:last-child{
-            border-bottom:1px solid #fff;
+          padding-bottom: 30rpx;
+          margin-bottom: 30rpx;
+          display: flex;
+          border-bottom: 1px solid #DFDFDF;
+          position: relative;
+          .activityFormId{
+            width: 100%;
+            height: 264rpx;
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            border-radius: 0;
+            background-color: transparent;
+            z-index: 20;
+            &::after{
+              content: none;
+            }
           }
-          .goodspic{
-            flex:0 0 220rpx;
-            height:220rpx;
+          .goodsPic-styleThree{
+            flex: 0 0 280rpx;
+            height: 190rpx;
+            border-radius: 6rpx;
           }
-          .rightbox{
-            flex:1;
-            height:100%;
+          .goodsContent-styleThree{
+            flex: 1;
+            box-sizing: border-box;
+            padding-left: 30rpx;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding-left: 20rpx;
-            .itemtitle{
-              font-size:28rpx;
-              color: #222222;
+            .goodsTitle-styleThree{
+              font-size: 32rpx;
+              font-weight: 600;
+              line-height: 40rpx;
               width: 100%;
-              text-overflow: ellipsis;
-              overflow: hidden;
-              display:-webkit-box;
-              -webkit-line-clamp:2;
-              -webkit-box-orient:vertical;
             }
-            .priceaandtake{
-              width:100%;
+            .goodsDesc-styleThree{
+              font-size: 25rpx;
+              color: #9B9B9B;
+              margin-bottom: 15rpx;
+            }
+            .priceBox-styleThree{
               display: flex;
               justify-content: space-between;
-              align-items: flex-end;
-              .price{
-                display: flex;
-                flex-direction: column;
-                .pricenow{
-                  font-size: 37rpx;
-                  color:#f02b2b;
-                  line-height:40rpx;
-                  text{
-                    margin-right: 10rpx;
-                  }
-                }
-                .noactive{
-                  color: #888;
-                }
-                .priceori{
-                  font-size: 26rpx;
-                  color:#848689;
-                  text-decoration:line-through;
-                  line-height:40rpx;
-                  text{
-                    margin-right: 10rpx;
-                    text-decoration:line-through;
-                  }
-                }
-              }
-              .takepartin{
-                height: 66rpx;
-                width:180rpx;
-                color:#fff;
-                border-radius: 5rpx;
-                font-size: 28rpx;
-                background:linear-gradient(to left,#FF4722,#FF7422);
+              .barginbtn{
+                width: 120rpx;
+                height: 50rpx;
+                background-color: #FF5766;
+                border-radius: 8rpx;
+                font-size: 23rpx;
+                color: #fff;
                 text-align: center;
-                line-height: 66rpx;
+                line-height: 50rpx;
+              }
+              .goods-price{
+                display: flex;
+                align-items: baseline;
+                .price-now{
+                  font-family: 'priceFont';
+                  font-size: 38rpx;
+                  color: #FA3B3E;
+                  font-weight: 600;
+                }
+                .price-pre{
+                  font-family: 'priceFont';
+                  color: #999;
+                  margin-left: 20rpx;
+                  font-size: 23rpx;
+                  text-decoration: line-through;
+                }
               }
             }
           }

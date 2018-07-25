@@ -18,8 +18,10 @@
       <canvas wx:if="{{type == 1}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="goodsCanvas"></canvas>
       <!-- 拼团画板 -->
       <canvas wx:if="{{type == 2}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="groupCanvas"></canvas>
+      <!-- 会员卡 -->
+      <canvas wx:if="{{type == 10}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="VipCanvas"></canvas>
       <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
-      <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
+      <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic" style="background-color: {{dis?'#FB4D69':'#FE6420'}}">
         <image src="../images/download.png" mode="widthFix" class="downPic"></image>
         <text>保存图片</text>
       </view>
@@ -33,9 +35,10 @@
     props = {
       showContent: Boolean,
       posterInfo: Object,
-      type: String,    //9新版好店首页  3砍价海报  1抢购  2拼团
+      type: String,    //9新版好店首页  3砍价海报  1抢购  2拼团  10会员卡
       priceNow: String,
-      pricePre: String
+      pricePre: String,
+      dis: String
     }
     data = {
       showPosterBox: false,
@@ -50,7 +53,22 @@
       
     }
     events = {
-      getUserInfo(res){
+      getUserInfo(disQRCode){
+        if(this.type == '9'){
+            this.canvasName = 'shopCanvas'
+        }
+        if(this.type == '3'){
+            this.canvasName = 'bargainCanvas'
+        }
+        if(this.type == '1'){
+            this.canvasName = 'goodsCanvas'
+        }
+        if(this.type == '2'){
+            this.canvasName = 'groupCanvas'
+        }
+        if(this.type == '10'){
+            this.canvasName = 'VipCanvas'
+        }
         wx.showLoading({
           title: '生成卡片中',
         })
@@ -69,17 +87,26 @@
         param.type = this.type
         HomeModel.getPostData(param,ResData=>{
           if(ResData.code == 1){
+            let posterTag = ''  
+            if(disQRCode){
+              posterTag = '/images/disposter.png'
+            }else{
+              posterTag = '/images/posterTy.png'
+            }
             if(this.type == '9'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id)
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id,disQRCode)
             }
             if(this.type == '3'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.floor_price, this.posterInfo.price,'砍价','/images/posterTy.png', '', this.posterInfo.id)
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.floor_price, this.posterInfo.price,'砍价',posterTag, '', this.posterInfo.id,disQRCode)
             }
             if(this.type == '1'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, this.posterInfo.original_price,'抢购','/images/posterTy.png', '', this.posterInfo.id)
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, this.posterInfo.original_price,'抢购',posterTag, '', this.posterInfo.id,disQRCode)
             }
             if(this.type == '2'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.group_price, this.posterInfo.original_price,'拼团','/images/posterTy.png', '', this.posterInfo.id)
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.group_price, this.posterInfo.original_price,'拼团',posterTag, '', this.posterInfo.id,disQRCode)
+            }
+            if(this.type == '10'){
+                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, '','会员',posterTag, '', this.posterInfo.id,disQRCode)
             }
           }
         })
@@ -87,6 +114,18 @@
     }
     methods = {
       getUserInfo(res){
+        if(this.type == '9'){
+            this.canvasName = 'shopCanvas'
+        }
+        if(this.type == '3'){
+            this.canvasName = 'bargainCanvas'
+        }
+        if(this.type == '1'){
+            this.canvasName = 'goodsCanvas'
+        }
+        if(this.type == '2'){
+            this.canvasName = 'groupCanvas'
+        }
         wx.showLoading({
           title: '生成卡片中',
         })
@@ -125,23 +164,36 @@
         this.$apply()
       },
       savePostePic(){
-        HomeModel.savePoste(this,this.canvasName,this.posterInfo.id)
+        let that = this
+        if(this.dis){
+          wx.showLoading({title:'保存中...'})
+          wx.saveImageToPhotosAlbum({
+            filePath: this.posterImg,
+            success:()=>{
+              wx.showToast({
+                title: '保存成功！',
+                icon: 'success',
+                duration: 1000
+              })
+              that.showPosterBox = false
+              that.$apply()
+            },
+            fail:(e)=>{
+              that.showPosterBox = false
+              that.$apply()
+              wx.showToast({
+                title: '保存失败！',
+                icon: 'success',
+                duration: 1000
+              })
+            }
+          })
+        }else{
+          HomeModel.savePoste(this,this.canvasName,this.posterInfo.id)
+        }
       }
     }
     onLoad(){
-        if(this.type == '9'){
-            this.canvasName = 'shopCanvas'
-        }
-        if(this.type == '3'){
-            this.canvasName = 'bargainCanvas'
-        }
-        if(this.type == '1'){
-            this.canvasName = 'goodsCanvas'
-        }
-        if(this.type == '2'){
-            this.canvasName = 'groupCanvas'
-        }
-        console.log(this.canvasName)
     }
   }
 </script>
@@ -247,7 +299,6 @@
       .saveImg{
         width: 650rpx;
         height: 80rpx;
-        background-color: #FE6420;
         text-align: center;
         line-height: 70rpx;
         font-size: 28rpx;

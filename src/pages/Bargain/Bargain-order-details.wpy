@@ -144,8 +144,6 @@
     }
     onLoad(options){
       this.launch_id = options.launch_id
-    }
-    onShow(){
       BargainModel.getOrderDetail({launch_id: this.launch_id}, ReaData=> {
         if(ReaData.code ==1) {
           this.DetailsData = ReaData.data
@@ -153,6 +151,8 @@
           this.$apply()
         }
       })
+    }
+    onShow(){
     }
   }
 </script>

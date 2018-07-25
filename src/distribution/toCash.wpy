@@ -1,0 +1,355 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="indexBox">
+    <view class="head">
+      <text class="headNumber beforShow {{showContent?'showDone':''}}" style="transition: .4s .1s;">{{cashNum}}</text>
+      <text class="headTxt beforShow {{showContent?'showDone':''}}" style="transition: .4s;">可提现(元)</text>
+      <image src="./images/move1.png" mode="widthFix" class="move1"></image>
+      <image src="./images/move2.png" mode="widthFix" class="move1 move2"></image>
+      <!-- <view class="cashing" wx:if="{{cashing!=0}}">{{cashing}}元提现审核中</view> -->
+      <view class="databackBox beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;"></view>
+      <view class="dataShowBox beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;">
+        <view class="dataShowItem">
+          <text class="dataItemNumber">{{allNum}}</text>
+          <text class="dataItemTxt">总收益(元)</text>
+        </view>
+        <view class="dataShowItem">
+          <text class="dataItemNumber">{{hasCashed}}</text>
+          <text class="dataItemTxt">已提现(元)</text>
+        </view>
+        <view class="dataShowItem">
+          <text class="dataItemNumber">{{cashing}}</text>
+          <text class="dataItemTxt">提现中(元)</text>
+        </view>
+      </view>
+    </view>
+    <view @tap="toWithdraw" class="toCashItem beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;">
+      <view class="cashItemLeft">
+        <image src="./images/cardicon.png" mode="widthFix" class="cardIcon"></image>
+        <text>提现金额</text>
+      </view>
+      <view class="arrow"></view>
+    </view>
+    <view class="income-recently">
+      <view class="recentlyHead beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;">
+        <text>最近收支</text>
+        <image src="./images/ordercash.png" mode="widthFix" class="rightPic"></image>
+      </view>
+      <block wx:for="{{incomeData}}" wx:key="{{index}}">
+        <view class="incomeItem beforShow {{showContent?'showDone':''}}" style="transition: .4s {{index*0.1+0.2}}s;">
+          <image src="./images/tocash2.png" wx:if="{{item.money_type == 2}}" mode="aspectFill" class="incomeIcon"></image>
+          <image src="./images/income.png" wx:if="{{item.money_type == 1}}" mode="aspectFill" class="incomeIcon"></image>
+          <view class="incomeItemright">
+            <view class="rightItem-top">
+              <block wx:if="{{item.money_type == 2}}">
+                <text>提现</text>
+                <text class="incomeNumber">-{{item.commission}}元</text>
+              </block>
+              <block wx:if="{{item.money_type == 1}}">
+                <text>收入</text>
+                <text style="color: #E14D43" class="incomeNumber">+{{item.commission}}元</text>
+              </block>
+            </view>
+            <text class="incomeName" wx:if="{{item.money_type == 1}}">[{{item.user.wechat_name}}]</text>
+            <open-data type="userNickName" class="incomeName" wx:if="{{item.money_type == 2}}"></open-data>
+            <text class="incomeTime">{{item.valid_time}}</text>
+          </view>
+        </view>
+      </block>
+      <view style="height: 20rpx;background-color: #fff"></view>
+    </view>
+  </view>
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import disModel from './distributionModel.js'
+  export default class extends wepy.page {
+    config = {
+      backgroundColorTop: '#FEA377',
+      navigationBarBackgroundColor: "#FEA377",
+      navigationBarTextStyle: 'white',
+      navigationBarTitleText: '我的收入',
+    }
+    data = {
+      showContent: false,
+      incomeData: [],
+      pageNum: 1,
+      isLoadAll: false,
+      cashNum: '',
+      cashing: 0,
+      hasCashed: 0,
+      allNum: 0
+    }
+    computed = {
+        
+    }
+    methods = {
+      toWithdraw(){
+        disModel.navTo('./withdraw')
+      }
+    }
+    exchangeTime(data){
+      let len = data.length
+      for(let i = 0; i<len; i++){
+        data[i].valid_time = disModel.getLocalTime(data[i].valid_time)
+      }
+    }
+    onLoad(e){
+      this.cashNum = e.cashNum
+      this.hasCashed = e.cashed
+      this.allNum = e.allNum
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        wx.showLoading({
+          title: '加载中...'
+        })
+        this.pageNum++
+        disModel.myMoneyDetail({pageNum: this.pageNum},(res)=>{
+          wx.hideLoading()
+          if(res.code == 1){
+            if(res.data.length == 0){
+              this.isLoadAll = true
+              disModel.showTips('已经到底了')
+              return false
+            }
+            this.incomeData = [...this.incomeData,...res.data]
+            this.$apply()
+          }else{
+            disModel.showTips(res.message)
+            this.isLoadAll = true
+          }
+        })
+      }
+    }
+    onShow(){
+      disModel.myMoneyDetail({pageNum:1},(res)=>{
+        if(res.code == 1){
+          this.incomeData = res.data
+          this.exchangeTime(this.incomeData)
+          res.applying_money && (this.cashing = res.applying_money)
+          this.$apply()
+          wx.setStorageSync('cashNum',this.cashNum)
+          this.showContent = true
+          this.$apply()
+        }else{
+          disModel.showTips(res.message)
+        }
+      })
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F8F8;
+  }
+  .beforShow{
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .showDone{
+    opacity: 1;
+    transform: scale(1);
+  }
+  .indexBox{
+    width: 100%;
+    overflow: hidden;
+  }
+  .head{
+    width: 100%;
+    height: 270rpx;
+    background: linear-gradient(to top,#FC7071,#FEA377);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    color: #fff;
+    position: relative;
+    .headTxt{
+      font-size: 26rpx;
+      color: #FFDBD6;
+      margin-top: 20rpx;
+      margin-bottom: 100rpx;
+    }
+    .move1{
+      width: 1500rpx;
+      height: 147rpx;
+      position: absolute;
+      bottom: -20rpx;
+      left: 0;
+      animation: movewater 10s linear infinite alternate;
+    }
+    .cashing{
+      height: 50rpx;
+      padding: 0 20rpx;
+      border-radius: 30rpx;
+      background: rgba(0,0,0,.4);
+      color: #fff;
+      font-size: 25rpx;
+      line-height: 50rpx;
+      position: absolute;
+      bottom: 30rpx;
+      left: 30rpx;
+    }
+    .dataShowBox{
+      width: 690rpx;
+      height: 140rpx;
+      border-radius: 15rpx;
+      background-color: #fff;
+      display: flex;
+      justify-content: space-around;
+      position: absolute;
+      bottom: -73rpx;
+      left: 30rpx;
+      box-shadow: 0 6rpx 40rpx rgba(253,157,117,.2);
+      .dataShowItem{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        .dataItemNumber{
+          color: #FC7D72;
+          font-size: 38rpx;
+          font-weight: 700;
+        }
+        .dataItemTxt{
+          color: #383838;
+          font-size: 27rpx;
+          margin-top: 16rpx;
+        }
+      }
+    }
+    .databackBox{
+      width: 660rpx;
+      height: 100rpx;
+      background-color: #fff;
+      border-radius: 15rpx;
+      position: absolute;
+      bottom: -19rpx;
+      left: 45rpx;
+      opacity: 0.6;
+    }
+    .move2{
+    }
+    @keyframes movewater{
+      form{
+        transform: translateX(0);
+      }
+      to{
+        transform: translateX(-750rpx);
+      }
+    }
+    .headNumber{
+      font-size: 70rpx;
+      font-weight: 600;
+    }
+  }
+  .toCashItem{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100rpx;
+    box-sizing: border-box;
+    padding: 0 30rpx;
+    background-color: #fff;
+    margin-top: 110rpx;
+    .cashItemLeft{
+      display: flex;
+      align-items: center;
+      .cardIcon{
+        width: 40rpx;
+        height: 40rpx;
+        margin-right: 20rpx;
+      }
+      text{
+        color: #3E4552;
+        font-size: 30rpx;
+      }
+    }
+    .arrow{
+      width: 14rpx;
+      height: 14rpx;
+      border-top: 1px solid #ABABAB;
+      border-right: 1px solid #ABABAB;
+      transform: rotate(45deg);
+    }
+  }
+  .income-recently{
+    width: 100%;
+    margin-top: 20rpx;
+    .recentlyHead{
+      width: 100%;
+      height: 100rpx;
+      box-sizing: border-box;
+      padding: 0 30rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #EDEDED;
+      background-color: #fff;
+      text{
+        font-size: 30rpx;
+        color: #353535;
+      }
+      .rightPic{
+        width: 35rpx;
+        height: 35rpx;
+      }
+    }
+    .incomeItem{
+      width: 100%;
+      height: 180rpx;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      padding-left: 30rpx;
+      background-color: #fff;
+      .incomeIcon{
+        flex: 0 0 80rpx;
+        height: 80rpx;
+        box-sizing: border-box;
+        padding: 20rpx;
+        margin-bottom: 30rpx;
+        border-radius: 100%;
+        background-color: #FC7571;
+      }
+      .incomeItemright{
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-left: 30rpx;
+        padding-right: 30rpx;
+        border-bottom: 1px solid #EDEDED;
+        overflow: hidden;
+        .rightItem-top{
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          font-size: 30rpx;
+          color: #353535;
+          .incomeNumber{
+            font-weight: 600;
+          }
+        }
+        .incomeName{
+          font-size: 26rpx;
+          color: #414141;
+          margin: 17rpx 0 22rpx;
+        }
+        .incomeTime{
+          font-size: 21rpx;
+          color: #ACACAC;
+        }
+      }
+    }
+  }
+</style>
+

@@ -5,7 +5,7 @@
     <swiper autoplay="true" interval="5000" duration="500" class="swiperBox">
       <block wx:for="{{bannerpics}}" wx:key="{{key}}">
         <swiper-item class="swiperitembox">
-          <image src="{{item.banner_url}}" class="bannerpic" mode="scaleToFill"/>
+          <image src="{{item.banner_url}}" @tap="toUrl({{item.banner_path}})" class="bannerpic" mode="scaleToFill"/>
         </swiper-item>
       </block>
     </swiper>
@@ -13,58 +13,46 @@
       <view class='itemtab'>
         <view wx:for="{{tabitems}}" class="tabitem {{activeitem==index?'activeitem':''}}" @tap="itemTap({{index}})" wx:key="{{key}}">{{item}}</view>
       </view>
-      <scroll-view scroll-y wx:if="{{activeitem==0}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
-        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="{{key}}"  @tap="gotoDetails({{index}})">
-          <image src="{{item.main_img}}" mode="scaleToFill" class="goodspic"></image>
-          <view class="rightbox">
-            <view class="itemtop">
-              <text class="itemtitle">{{item.goods_name}}</text>
-              <text class="itemtitle2">{{item.title_name}}</text>
-              <view class="huodong">
-              	<image wx:for="{{item.portrait_img}}" wx:key="{{key}}" src="{{item}}" mode="aspectFill" class="gouppic" wx:if="{{index<3}}"></image>
-                <text class="huodongtxt2">{{item.sale_count}}</text>
+      <view wx:if="{{activeitem==0}}" class="goodslist">
+        <view class="goodsitem" wx:for="{{NowActivityData}}" wx:key="scareBuyingList">
+          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="gotoDetails({{index}})" class="activityFormId"></button>
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+          <view class="goodsContent-styleThree">
+            <text class="goodsTitle-styleThree ellip-2">{{item.goods_name}}</text>
+            <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.end_time}}</text>
+            <view class="priceBox-styleThree">
+              <view class="goods-price">
+                <text class="price-now">¥{{item.group_price}}</text>
+                <text class="price-pre">¥{{item.original_price}}</text>
               </view>
-            </view>
-            <view class="priceaandtake">
-              <view class="price">
-                <view class="pricenow"><text>¥</text>{{item.group_price}}</view>
-                <view class="priceori">¥ {{item.original_price}}</view>
-              </view>
-              <view class="takepartin {{activeitem==0?'':'takepartin_activedowm'}}">{{activeitem==0?'我要参与':(activeitem==1?'去看看':'')}}</view>
+              <view class="barginbtn">立即抢购</view>
             </view>
           </view>
-          <text class="grouptips">{{item.group_person}}</text>
         </view>
         <view wx:if="{{isGoodsEmpty.NowIsGoodsEmpty}}">
           <template is="emptyGoodsTips"></template>
         </view>
-      </scroll-view>
-      <scroll-view scroll-y wx:if="{{activeitem==1}}" class="goodslist" bindscrolltolower="scrollbottom" bindscroll="scroll">
-        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="{{key}}"  @tap="gotoDetails({{index}})">
-          <image src="{{item.main_img}}" mode="aspectFill" class="goodspic"></image>
-          <view class="rightbox">
-            <view class="itemtop">
-              <text class="itemtitle">{{item.goods_name}}</text>
-              <text class="itemtitle2">{{item.title_name}}</text>
-              <view class="huodong">
-                <image wx:for="{{item.portrait_img}}" wx:key="{{key}}" src="{{item}}" mode="aspectFill" class="gouppic" wx:if="{{index<3}}"></image>
-                <text class="huodongtxt2 {{activeitem == 1?'noactive':''}}">{{item.sale_count}}</text>
+      </view>
+      <view wx:if="{{activeitem==1}}" class="goodslist">
+        <view class="goodsitem" wx:for="{{OldActivityData}}" wx:key="scareBuyingList">
+          <button data-index="{{index}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="gotoDetails({{index}})" class="activityFormId"></button>
+          <image src="{{item.main_img}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+          <view class="goodsContent-styleThree">
+            <text class="goodsTitle-styleThree ellip-2">{{item.goods_name}}</text>
+            <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.end_time}}</text>
+            <view class="priceBox-styleThree">
+              <view class="goods-price">
+                <text class="price-now">¥{{item.group_price}}</text>
+                <text class="price-pre">¥{{item.original_price}}</text>
               </view>
-            </view>
-            <view class="priceaandtake">
-              <view class="price">
-                <view class="pricenow {{activeitem == 1 ?'noactive':''}}"><text>¥</text>{{item.group_price}}</view>
-                <view class="priceori">¥ {{item.original_price}}</view>
-              </view>
-              <view class="takepartin {{activeitem==0?'':'takepartin_activedowm'}}">{{activeitem==0?'我要参与':(activeitem==1?'去看看':'')}}</view>
+              <view class="barginbtn">立即抢购</view>
             </view>
           </view>
-          <text class="grouptips">{{item.group_person}}</text>
         </view>
         <view wx:if="{{isGoodsEmpty.OldIsGoodsEmpty}}">
           <template is="emptyGoodsTips"></template>
         </view>
-      </scroll-view>
+      </view>
 
      <!--  <view class="isLoadedAll" wx:if="{{(isLoadedAll.NowIsLoadedAll && activeitem==0)||(isLoadedAll.OldIsLoadedAll && activeitem==1)}}">
         -------- 已经到底了 --------
@@ -110,6 +98,7 @@
       Groups.getIndexNowActivity(query,(data)=>{
           if (data.code == 1){
             this.NowActivityData = data.goods_data
+            this.exchangeTime(this.NowActivityData)
             this.bannerpics = data.banner_list
             //无商品的情况
             if(data.goods_data.length==0){
@@ -123,6 +112,15 @@
           this.$apply()
       })
     }
+    exchangeTime(data){
+      let len = data.length
+      for(let i = 0; i<len; i++){
+        let bTime = data[i].from_time
+        let eTime = data[i].end_time
+        data[i].from_time = bTime.slice(5,7)+'.'+bTime.slice(8,10)
+        data[i].end_time = eTime.slice(5,7)+'.'+eTime.slice(8,10)
+      }
+    }
     methods = {
       itemTap(index){
         this.activeitem=index
@@ -132,6 +130,7 @@
             if (ResData.code == 1){
               this.isGoodsEmpty.OldIsGoodsEmpty = false
               this.OldActivityData = ResData.goods_data
+              this.exchangeTime(this.OldActivityData)
               //无商品的情况
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.OldIsGoodsEmpty=true
@@ -144,6 +143,7 @@
             if (ResData.code == 1){
               this.isGoodsEmpty.NowIsGoodsEmpty = false
               this.NowActivityData = ResData.goods_data
+              this.exchangeTime(this.NowActivityData)
               //无商品的情况
               if(ResData.goods_data.length==0){
                 this.isGoodsEmpty.NowIsGoodsEmpty=true
@@ -162,6 +162,11 @@
           id = this.OldActivityData[index].id
         }
         this.$navigate('../Groups/Groups-details',{id:id})
+      },
+      toUrl(url){
+        if(url){
+          Groups.navTo(url)
+        }
       }
     }
     components = {
@@ -174,6 +179,7 @@
           this.pageNum.NowActivityPage++
           Groups.getIndexNowActivity(this.pageNum.NowActivityPage,ResData=>{
             if (ResData.code == 1){
+              this.exchangeTime(ResData.goods_data)
               this.NowActivityData = [...this.NowActivityData,...ResData.goods_data]
               if(ResData.goods_data.length==0){
                 this.isLoadedAll.NowIsLoadedAll=true
@@ -194,6 +200,7 @@
           this.pageNum.OldActivityPage++
           Groups.getIndexOldActivity(this.pageNum.OldActivityPage,ResData=>{
             if (ResData.code == 1){
+              this.exchangeTime(this.OldActivityData)
               this.OldActivityData = [...this.OldActivityData,...ResData.goods_data]
               if(ResData.goods_data.length==0){
                 this.isLoadedAll.OldIsLoadedAll=true
@@ -268,148 +275,87 @@
         width:750rpx;
         background-color: #fff;
         margin-bottom: 20rpx;
+        padding-top: 30rpx;
         .goodsitem{
-          width:100%;
-          display: flex;
-          border-bottom:1rpx solid #B2B1B2;
-          padding:24rpx;
-          height:264rpx;
-          border-bottom: 2rpx solid #EFEFEF;
-          position: relative;
+          width: 670rpx;
+          height: 226rpx;
+          margin-left: 40rpx;
           box-sizing: border-box;
-          &:last-child{
-            border-bottom:2rpx solid #fff;
+          padding-bottom: 30rpx;
+          margin-bottom: 30rpx;
+          display: flex;
+          border-bottom: 1px solid #DFDFDF;
+          position: relative;
+          .activityFormId{
+            width: 100%;
+            height: 264rpx;
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            border-radius: 0;
+            background-color: transparent;
+            z-index: 20;
+            &::after{
+              content: none;
+            }
           }
-          &:last-child{
-            border-bottom:1px solid #fff;
+          .goodsPic-styleThree{
+            flex: 0 0 280rpx;
+            height: 190rpx;
+            border-radius: 6rpx;
           }
-          .goodspic{
-            flex:0 0 220rpx;
-            height:220rpx;
-            border-radius: 8rpx;
-          }
-          .rightbox{
-            flex:1;
-            height:100%;
+          .goodsContent-styleThree{
+            flex: 1;
+            box-sizing: border-box;
+            padding-left: 30rpx;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding-left: 20rpx;
-            overflow: hidden;
-            .itemtop{
-              display: flex;
-              flex-direction: column;
-              .itemtitle{
-                font-size:28rpx;
-                color: #222222;
-                width: 100%;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              }
-              .itemtitle2{
-                font-size:24rpx;
-                color: #666;
-                width: 80%;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                margin-top: 15rpx;
-              }
-              .huodong{
-                display: flex;
-                align-items: center;
-                margin:15rpx 0;
-                .gouppic{
-                  width:32rpx;
-                  height: 32rpx;
-                  border-radius: 100%;
-                  border:2rpx solid #fff;
-                  &:nth-child(2){
-                    margin-left:-10rpx;
-                  };
-                  &:nth-child(3){
-                    margin-left:-10rpx;
-                  }
-                }
-                .activedowm{
-                  background-color: #888888;
-                  border:none;
-                  color: #fff;
-                  padding:0 10rpx;
-                }
-                .huodongtxt2{
-                  font-size: 24rpx;
-                  color:#ff4422;
-                  margin-left: 15rpx;
-                }
-                .noactive{
-                  color: #888;
-                }
-              }
-              .shengyu{
-                font-size: 24rpx;
-                color: #888;
-              }
+            .goodsTitle-styleThree{
+              font-size: 32rpx;
+              font-weight: 600;
+              line-height: 40rpx;
+              width: 100%;
             }
-            .priceaandtake{
-              width:100%;
+            .goodsDesc-styleThree{
+              font-size: 25rpx;
+              color: #9B9B9B;
+              margin-bottom: 15rpx;
+            }
+            .priceBox-styleThree{
               display: flex;
               justify-content: space-between;
-              align-items: flex-end;
-              .price{
+              .barginbtn{
+                width: 120rpx;
+                height: 50rpx;
+                background-color: #FF5766;
+                border-radius: 8rpx;
+                font-size: 23rpx;
+                color: #fff;
+                text-align: center;
+                line-height: 50rpx;
+              }
+              .goods-price{
                 display: flex;
                 align-items: baseline;
-                .pricenow{
-                  font-size: 46rpx;
-                  color:#ff5031;
-                  font-weight: 550;
-                  line-height:40rpx;
-                  margin-right: 10rpx;
-                  text{
-                    margin-right: 10rpx;
-                    font-size: 26rpx;
-                  }
+                .price-now{
+                  font-family: 'priceFont';
+                  font-size: 38rpx;
+                  color: #FA3B3E;
+                  font-weight: 600;
                 }
-                .noactive{
-                  color: #888;
+                .price-pre{
+                  font-family: 'priceFont';
+                  color: #999;
+                  margin-left: 20rpx;
+                  font-size: 23rpx;
+                  text-decoration: line-through;
                 }
-                .priceori{
-                  font-size: 22rpx;
-                  color:#848689;
-                  text-decoration:line-through;
-                  line-height:40rpx;
-                  text{
-                    margin-right: 10rpx;
-                    text-decoration:line-through;
-                  }
-                }
-              }
-              .takepartin{
-                height: 66rpx;
-                width:180rpx;
-                color:#fff;
-                border-radius: 5rpx;
-                font-size: 28rpx;
-                background:linear-gradient(to left,#FF4722,#FF7422);
-                text-align: center;
-                line-height: 66rpx;
-              }
-              .takepartin_activedowm{
-                background: #888;
-                color:#fff;
               }
             }
-          }
-          .grouptips{
-            position: absolute;
-            top:24rpx;
-            left: 24rpx;
-            padding:5rpx 10rpx;
-            background:linear-gradient(to left,#FD6346,#FD9346);
-            font-size: 20rpx;
-            color: #fff;
-            border-radius: 7rpx 0;
           }
         }
       }

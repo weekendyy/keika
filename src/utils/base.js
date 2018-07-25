@@ -210,12 +210,13 @@ class Base {
     })
   }
   //生成海报
-  creatPoster(that,canvasId,resData,title,priceNow,pricePre,type,typeIcon,address,postPicId){
+  creatPoster(that,canvasId,resData,title,priceNow,pricePre,type,typeIcon,address,postPicId,disQRCode){
     const posterWdith = 195
     const poserHeight = 300
+    console.log(disQRCode)
     const ctx = wx.createCanvasContext(canvasId)
     wx.downloadFile({
-      url: resData.qr_code_img,
+      url: disQRCode?disQRCode:resData.qr_code_img,
       success: function (res) {
         let qrCodePic = res.tempFilePath
         wx.downloadFile({
@@ -332,7 +333,9 @@ class Base {
                     fileType: 'jpg',
                     quality: 1,
                     success: (res)=> {
-                      wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, [res.tempFilePath,priceNow,pricePre])
+                      if(!disQRCode){
+                        wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, [res.tempFilePath,priceNow,pricePre])
+                      }
                       that.posterImg = res.tempFilePath
                       that.showPosterBox = true
                       that.posting = false
@@ -356,7 +359,7 @@ class Base {
     if(Number(phoneNumber.length) === 0){
       wx.showToast({
         title: '请输入手机号码',
-        icon:'loading',
+        icon:'none',
         duration: 1000,
         mask: true,
       })
@@ -365,7 +368,7 @@ class Base {
     if(Number(phoneNumber.length) <= 10){
       wx.showToast({
         title: '手机长度不足',
-        icon:'loading',
+        icon:'none',
         duration: 1000,
         mask: true,
       })
@@ -374,7 +377,7 @@ class Base {
     if(!(/^1[23456789]\d{9}$/.test(phoneNumber))){
       wx.showToast({
         title: '手机格式错误',
-        icon:'loading',
+        icon:'none',
         duration: 1000,
         mask: true,
       })
@@ -478,6 +481,10 @@ class Base {
     }
 
     return 0
+  }
+  // 时间戳转成日期格式
+  getLocalTime(nS) { 
+    return new Date(parseInt(nS) * 1000).toLocaleString().replace(/:\d{1,2}$/,' ');     
   }
 }
 

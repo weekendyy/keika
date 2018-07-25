@@ -1,0 +1,624 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="indexBox">
+    <!-- 切换按钮 -->
+    <view class="itemTabBox beforShow {{showContent?'showDone':''}}" style="transition: .5s;">
+      <view class="tabItem {{activeItemIndex == 0 ? 'activeItem': ''}}" @tap="itemTab(0)" style="transition: .5s">抢购</view>
+      <view class="tabItem {{activeItemIndex == 1 ? 'activeItem': ''}}" @tap="itemTab(1)" style="transition: .5s">砍价</view>
+      <view class="tabItem {{activeItemIndex == 2 ? 'activeItem': ''}}" @tap="itemTab(2)" style="transition: .5s">拼团</view>
+      <view class="tabItem {{activeItemIndex == 3 ? 'activeItem': ''}}" @tap="itemTab(3)" style="transition: .5s">会员</view>
+      <view class="moveItem" style="transition: .5s;transform: translateX({{activeItemIndex*187.5}}rpx)">
+        <view class="moveBar"></view>
+      </view>
+    </view>
+    <view style="height: 90rpx;"></view>
+    <!-- 内容 -->
+    <block wx:for="{{activeItemIndex == 0?goodsData:(activeItemIndex == 1?barginData:(activeItemIndex==2?groupData:(activeItemIndex==3?vipCardData:'')))}}" wx:key="{{index}}">
+      <view class="goodsItem beforShow {{showContent?'showDone':''}}" style="transition: .5s {{index*0.1+0.1}}s" @tap="toGoodsDetail({{item}})">
+        <image src="{{item.main_img}}" mode="aspectFill" class="goodsPic"></image>
+        <view class="goodsInfo">
+          <!-- 抢购 VIP -->
+          <text class="goodsTitle" wx:if="{{activeItemIndex == 0 || activeItemIndex == 3}}">{{item.name}}</text>
+          <!-- 砍价 -->
+          <text class="goodsTitle" wx:if="{{activeItemIndex == 1}}">{{item.title}}</text>
+          <!-- 砍价 -->
+          <text class="goodsTitle" wx:if="{{activeItemIndex == 2}}">{{item.goods_name}}</text>
+          <view class="goodsInfo-bottom">
+            <!-- 抢购 VIP -->
+            <text class="goodsPrice" wx:if="{{activeItemIndex == 0 || activeItemIndex == 3}}">¥{{item.discount_price}}</text>
+            <!-- 砍价 -->
+            <text class="goodsPrice" wx:if="{{activeItemIndex == 1}}">¥{{item.floor_price}}</text>
+            <!-- 拼团 -->
+            <text class="goodsPrice" wx:if="{{activeItemIndex == 2}}">¥{{item.group_price}}</text>
+            <view class="cut"></view>
+            <text class="commission">佣金</text>
+            <text class="commissionNumber">¥{{item.commission1}}</text>
+            <view class="shareBtn" @tap.stop="shareTap({{index}})">分享赚钱</view>
+          </view>
+        </view>
+        <view class="cover {{item.showShare?'showCover':''}}" @tap.stop="closeShareBox({{index}})"></view>
+        <view class="shareItems">
+          <button class="shareBtn2 position2 {{item.showShare?'showshareBtn':''}}" open-type="share">分享好友</button>
+          <button class="shareBtn2 {{item.showShare?'showshareBtn':''}}" @tap.stop="buildPoster({{index}})">生成海报</button>
+          <view class="cancle {{item.showShare?'showCancle':''}}" @tap.stop="closeShareBox({{index}})">取消</view>
+        </view>
+      </view>
+    </block>
+    <view class="loadAll" wx:if="{{isLoadAll[0] && activeItemIndex == 0}}">
+      <text>已经到底了~</text>
+    </view>
+    <view class="loadAll" wx:if="{{isLoadAll[1] && activeItemIndex == 1}}">
+      <text>已经到底了~</text>
+    </view>
+    <view class="loadAll" wx:if="{{isLoadAll[2] && activeItemIndex == 2}}">
+      <text>已经到底了~</text>
+    </view>
+    <view class="loadAll" wx:if="{{isLoadAll[3] && activeItemIndex == 3}}">
+      <text>已经到底了~</text>
+    </view>
+    <canvas style="width: 200px; height: 345px;" class="canvas" canvas-id="posterId"></canvas>
+    <!-- 无产品提示 -->
+    <view class="noneGoods" wx:if="{{isNone}}">暂无商品</view>
+    <view style="height: 30rpx"></view>
+  </view>
+  <!-- 海报 -->
+  <Poster :showContent.sync="{{false}}" :priceNow.sync="priceNow" :pricePre.sync="pricePre" :posterInfo.sync="DetailsData" :type.sync="posterType" dis='true'></Poster>
+
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import disModel from './distributionModel.js'
+  import Poster from '../components/poster'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '分销商品',
+    }
+    components = {
+      Poster: Poster
+    }
+    data = {
+      showContent: false,
+      activeItemIndex: 0,
+      barginData: [],
+      goodsData: [],
+      groupData: [],
+      vipCardData: [],
+      preIndex: 0,
+      shareCurrIndex: 0,
+      pageNum: [1,1,1,1],
+      isLoadAll: [false, false, false, false],
+      isNone: false,
+      posterImg: '',
+      priceNow: 200,
+      pricePre: 100,
+      DetailsData: '',
+      posterType: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      itemTab(index){
+        this.isNone = false
+        this.activeItemIndex = index
+        this.preIndex = 0
+        let type = ''
+        this.$apply()
+        if(index == 1 && this.barginData.length === 0){
+          type = 3
+          wx.showLoading({
+            title: '加载中...'
+          })
+          this._loadData(type,1,(res)=>{
+            this.barginData = res
+            if(res.length < 10){
+              this.isLoadAll[1] = true
+            }
+            if(res.length == 0){
+              this.isNone = true
+            }
+            this.$apply()
+          })
+        }
+        if(index == 2 && this.groupData.length === 0){
+          type = 2
+          wx.showLoading({
+            title: '加载中...'
+          })
+          this._loadData(type,1,(res)=>{
+            if(res.length <10){
+              this.isLoadAll[2] = true
+            }
+            if(res.length == 0){
+              this.isNone = true
+            }
+            this.groupData = res
+            this.$apply()
+          })
+        }
+        if(index == 3 && this.vipCardData.length === 0){
+          type = 4
+          wx.showLoading({
+            title: '加载中...'
+          })
+          this._loadData(type,1,(res)=>{
+            if(res.month_status == 1){
+              this._pushCardInfo(res,res.month_commission1,res.month_price,res.magic_card_name+'('+'月卡'+')')
+            }
+            if(res.season_status == 1){
+              this._pushCardInfo(res,res.season_commission1,res.season_price,res.magic_card_name+'('+'季卡'+')')
+            }
+            if(res.year_status == 1){
+              this._pushCardInfo(res,res.year_commission1,res.year_price,res.magic_card_name+'('+'年卡'+')')
+            }
+            this.$apply()
+          })
+        }
+      },
+      shareTap(index){
+        this.shareCurrIndex = index
+        let activeData = []
+        if(this.activeItemIndex == 0){
+          activeData = this.goodsData
+        }
+        if(this.activeItemIndex == 1){
+          activeData = this.barginData
+        }
+        if(this.activeItemIndex == 2){
+          activeData = this.groupData
+        }
+        if(this.activeItemIndex == 3){
+          activeData = this.vipCardData
+        }
+        activeData[this.preIndex].showShare = false
+        this.preIndex = index
+        activeData[index].showShare = true
+        this.$apply()
+      },
+      closeShareBox(index){
+        let activeData = []
+        if(this.activeItemIndex == 0){
+          activeData = this.goodsData
+        }
+        if(this.activeItemIndex == 1){
+          activeData = this.barginData
+        }
+        if(this.activeItemIndex == 2){
+          activeData = this.groupData
+        }
+        if(this.activeItemIndex == 3){
+          activeData = this.vipCardData
+        }
+        activeData[index].showShare = false
+        this.$apply()
+      },
+      toGoodsDetail(item){
+        if(item.showShare == true){
+          return false
+        }
+        if(this.activeItemIndex == 0){
+          disModel.navTo('../pages/Goods/details',{id:item.id})
+        }
+        if(this.activeItemIndex == 1){
+          disModel.navTo('../pages/Bargain/details',{id:item.id})
+        }
+        if(this.activeItemIndex == 2){
+          disModel.navTo('../pages/Groups/Groups-details',{id:item.id})
+        }
+        if(this.activeItemIndex == 3){
+          disModel.navTo('../pages/Vip/Index')
+        }
+      },
+      buildPoster(index){
+        let activeData = []
+        let type = ''
+        let goodsId = ''
+        if(this.activeItemIndex == 0){
+          activeData = this.goodsData
+          this.posterType = '1'
+          type = 1
+          this.DetailsData = this.goodsData[index]
+        }
+        if(this.activeItemIndex == 1){
+          activeData = this.barginData
+          this.posterType = '3'
+          type = 3
+          this.DetailsData = this.barginData[index]
+        }
+        if(this.activeItemIndex == 2){
+          activeData = this.groupData
+          this.posterType = '2'
+          type = 2
+          this.DetailsData = this.groupData[index]
+        }
+        if(this.activeItemIndex == 3){
+          activeData = this.vipCardData
+          this.posterType = '10'
+          type = 4
+          this.DetailsData = this.vipCardData[index]
+        }
+        goodsId = activeData[index].id
+        activeData[index].showShare = false
+        this.$apply()
+        let disId = wx.getStorageSync('distributionInfo')
+        let query = {
+          type: type,
+          goodsId: goodsId,
+          disId: disId.id
+        }
+        disModel.creatPoster(query,(res)=>{
+          if(res.code == 1){
+            this.$broadcast('getUserInfo',res.data.data)
+          }else{
+            disModel.showTips(res.message)
+          }
+        })
+      }
+    }
+    onLoad(e){
+      console.log(e)
+      this._loadData(1,1,(res)=>{
+        this.goodsData = res
+        this.$apply()
+        this.showContent = true
+        if(res.length <10){
+          this.isLoadAll[0] = true
+        }
+        if(res.length == 0){
+          this.isNone = true
+        }
+        this.$apply()
+      })
+    }
+    _pushCardInfo(res,commission1,price,name){
+      this.vipCardData.push({
+        name: name,
+        commission1: commission1,
+        discount_price: price,
+        main_img: res.background_img,
+        id: res.id
+      })
+    }
+    _loadData(type,pageNum,scallback){
+      let query = {
+        type: type,
+        pageNum: pageNum
+      }
+      disModel.getLotteryList(query,(res)=>{
+        wx.hideLoading()
+        if(res.error === 0){
+          scallback && scallback(res.data)
+        } else {
+          disModel.showTips(res.msg)
+        }
+      })
+    }
+    onShow(){
+    }
+    onShareAppMessage(){
+      let disId = wx.getStorageSync('distributionInfo')
+      let title = ''
+      let path = ''
+      let img = ''
+      if(this.activeItemIndex == 0){
+        title = this.goodsData[this.shareCurrIndex].name
+        path = '/pages/Goods/details?id=' + this.goodsData[this.shareCurrIndex].id + '&dis_id=' + disId.id
+        img = this.goodsData[this.shareCurrIndex].main_img
+      }
+      if(this.activeItemIndex == 1){
+        title = this.barginData[this.shareCurrIndex].name
+        path = '/pages/Bargain/details?id=' + this.barginData[this.shareCurrIndex].id + '&dis_id=' + disId.id
+        img = this.barginData[this.shareCurrIndex].main_img
+      }
+      if(this.activeItemIndex == 2){
+        title = this.groupData[this.shareCurrIndex].name
+        path = '/pages/Groups/Groups-details?id=' + this.groupData[this.shareCurrIndex].id + '&dis_id=' + disId.id
+        img = this.groupData[this.shareCurrIndex].main_img
+      }
+      if(this.activeItemIndex == 3){
+        title = '会员卡'
+        path = '/pages/Vip/Index' + '?dis_id=' + disId.id
+        img = this.vipCardData[this.shareCurrIndex].main_img
+      }
+      return {
+        title: title,
+        path: path,
+        imageUrl: img,
+        complete: ()=>{
+          let activeData = []
+          if(this.activeItemIndex == 0){
+            activeData = this.goodsData
+          }
+          if(this.activeItemIndex == 1){
+            activeData = this.barginData
+          }
+          if(this.activeItemIndex == 2){
+            activeData = this.groupData
+          }
+          if(this.activeItemIndex == 3){
+            activeData = this.vipCardData
+          }
+          activeData[this.preIndex].showShare = false
+          console.log(path)
+          this.$apply()
+        }
+      }
+    }
+    onReachBottom(){
+      this._loadBottomData(0,1)
+      this._loadBottomData(1,3)
+      this._loadBottomData(2,2)
+      this._loadBottomData(3,4)
+    }
+    _loadBottomData(index,type){
+      if(this.activeItemIndex == index && !this.isLoadAll[index]){
+        wx.showLoading({
+          title: '加载中...'
+        })
+        this.pageNum[index]++
+        this._loadData(type,this.pageNum[index],(res)=>{
+          if(res.length === 0){
+            wx.hideLoading()
+            disModel.showTips("已经到底了")
+            this.isLoadAll[index] = true
+          }
+          if(index == 0){
+            this.goodsData = [...this.goodsData, ...res]
+          }
+          if(index == 1){
+            this.barginData = [...this.barginData, ...res]
+          }
+          if(index == 2){
+            this.groupData = [...this.groupData, ...res]
+          }
+          if(index == 3){
+            this.vipCardData = [...this.vipCardData, ...res]
+          }
+          this.$apply()
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #fff;
+  }
+  .beforShow{
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .showDone{
+    opacity: 1;
+    transform: scale(1);
+  }
+  .itemTabBox{
+    width: 100%;
+    height: 87rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background-color: #fff;
+    transition: .5s;
+    border-bottom: 1px solid #F1F1F1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 0 0 20rpx rgba(0,0,0,.1);
+    background-color: #fff;
+    z-index: 10;
+    .tabItem{
+      color: #424242;
+      font-size: 30rpx;
+      font-weight: 500;
+      text-align: center;
+      flex: 1;
+    }
+    .activeItem{
+      color: #FC7D72;
+    }
+    .moveItem{
+      position: absolute;
+      bottom: 0rpx;
+      left: 0;
+      width: 187.5rpx;
+      height: 2px;
+      transition: .3s;
+      display: flex;
+      justify-content: center;
+      .moveBar{
+        background-color: #FB897F;
+        width: 55rpx;
+        height: 2px;
+      }
+    }
+    .nextItem{
+      transform: translateX(170rpx);
+    }
+    .designerIcon2{
+      width: 55rpx;
+      height: 55rpx;
+      border-radius: 100%;
+      position: absolute;
+      right: 30rpx;
+      top: 50rpx;
+      opacity: 0;
+      transform: translateX(100rpx);
+      transition: .7s;
+    }
+    .showdesignerIcon2{
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  .goodsItem{
+    width: 100%;
+    height: 210rpx;
+    display: flex;
+    box-sizing: border-box;
+    padding: 30rpx;
+    border-bottom: 1px solid #F2F2F2;
+    position: relative;
+    overflow: hidden;
+    .goodsPic{
+      flex: 0 0 150rpx;
+      height: 150rpx;
+      border-radius: 10rpx;
+      background-color: #E3E0E0;
+    }
+    .goodsInfo{
+      flex: 1;
+      overflow: hidden;
+      margin-left: 30rpx;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      .goodsTitle{
+        font-size: 30rpx;
+        color: #353535;
+        line-height: 40rpx;
+      }
+      .goodsInfo-bottom{
+        display: flex;
+        align-items: flex-end;
+        .goodsPrice{
+          font-size: 35rpx;
+          color: #FA3B3E;
+          font-weight: 600;
+        }
+        .cut{
+          width: 1px;
+          height: 36rpx;
+          background-color: #FA3B3E;
+          margin: 0 20rpx;
+        }
+        .commission{
+          font-size: 25rpx;
+          color: #9E9E9E;
+          margin-right: 12rpx;
+        }
+        .commissionNumber{
+          color: #FA4144;
+          font-size: 25rpx;
+          flex: 1;
+        }
+        .shareBtn{
+          width: 150rpx;
+          height: 50rpx;
+          border: 1px solid #FF6494;
+          border-radius: 30rpx;
+          color: #FF6494;
+          font-size: 27rpx;
+          text-align: center;
+          line-height: 50rpx;
+        }
+      }
+    }
+    .cover{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0,0,0,.4);
+      opacity: 0;
+      transition: .4s;
+      pointer-events: none;
+    }
+    .showCover{
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .shareItems{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      pointer-events: none;
+      .shareBtn2{
+        width: 300rpx;
+        height: 70rpx;
+        background-color: #FF6494;
+        border-radius: 40rpx;
+        color: #fff;
+        text-align: center;
+        line-height: 70rpx;
+        font-size: 28rpx;
+        padding: 0;
+        margin: 0;
+        border: none;
+        transition: .4s;
+        opacity: 0;
+        transform: translateX(350rpx);
+        &::after{
+          content: none;
+        }
+      }
+      .position2{
+        transform: translateX(-350rpx);
+      }
+      .showshareBtn{
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .cancle{
+        width: 100rpx;
+        height: 50rpx;
+        background-color: #FF6494;
+        border-top-left-radius: 25rpx;
+        color: #fff;
+        font-size: 26rpx;
+        line-height: 50rpx;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .showCancle{
+        pointer-events: auto;
+        opacity: 1;
+      }
+    }
+  }
+  .loadAll{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50rpx;
+    font-size: 23rpx;
+    background-color: #F2F2F2;
+    color: #BFBFBF;
+    margin-top: 20rpx;
+  }
+  .canvas{
+    position: fixed;
+    top: -500rpx;
+    left: -500rpx;
+  }
+  .noneGoods{
+    width: 100%;
+    height: 200rpx;
+    line-height: 200rpx;
+    text-align: center;
+    font-size: 26rpx;
+    color: #999;
+  }
+</style>
+

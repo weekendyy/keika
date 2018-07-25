@@ -45,7 +45,7 @@
   }
 </script>
 <style type="less">
-  @countH: 50rpx;
+  @countH: 65rpx;
   .countBox{
     display: flex;
     align-items: center;
@@ -59,11 +59,12 @@
       flex: 0 0 @countH;
       height: @countH;
       text-align: center;
-      line-height: 46rpx;
+      line-height: 61rpx;
       box-sizing: border-box;
       color: #666;
       border-right: 1px solid #fff;
       font-weight: 600;
+      font-size: 35rpx;
     }
     .noDisplay{
       color: #DEDEDE;
@@ -73,7 +74,7 @@
       height: @countH;
       box-sizing: border-box;
       color: #666;
-      font-size: 25rpx;
+      font-size: 30rpx;
       text-align: center;
       line-height: @countH;
       font-weight: 600;

@@ -201,7 +201,7 @@
     </view>
   </view>
   <!-- 选择产品数量 -->
-  <goodsChooseNum :choosePic.sync="DetailsData" :maxNum.sync="maxChooseNum"></goodsChooseNum>
+  <goodsChooseNum :goodsInfo.sync="DetailsData" :maxNum.sync="maxChooseNum"></goodsChooseNum>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -223,7 +223,7 @@
           that.DetailsData = ResData.promotion[0]
           that.buy_log = that.DetailsData.buy_log;
           that.end_time = that.DetailsData.residue_time*1000
-          if(!that.DetailsData.time_status){
+          if(that.DetailsData.new_time_status == 2){
             clearInterval(timer)
           }else{
             countdown(that)
@@ -313,11 +313,12 @@
       pricePre: '',
       showShareBox: false,
       showAdWindow: false,
-      shopId: ''
+      shopId: '',
+      disId: ''
     }
     events = {
       /* 下单 */
-      buyGoods(num){
+      buyGoods(num,phone){
         if(num == 0){
           DetailsModel.showTips("暂无可购买数量")
           return false
@@ -328,7 +329,11 @@
         this.isBuying = true
         let query = {
           id: this.goods_id,
-          num: num
+          num: num,
+          phone: phone
+        }
+        if(this.disId){
+          query.disId = this.disId
         }
         DetailsModel.delOrder(query,ResData=>{
           this.isBuying = false
@@ -478,6 +483,9 @@
       }
     }
     onLoad(options){
+      if(options.dis_id){
+        this.disId = options.dis_id
+      }
       if(options.formID){
         this.formId = options.formID
       }

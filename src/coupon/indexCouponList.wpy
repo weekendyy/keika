@@ -1,6 +1,12 @@
 <template>
   <import src="/pages/tpls/loading/loading.wxml" />
-  <view style="height: 315rpx;"></view>
+  <swiper indicator-dots="{{false}}" class="swiperBox">
+    <block wx:for="{{bannerImgs}}" wx:key="{{index}}">
+      <swiper-item>
+        <image src="{{item}}" mode="aspectFill" class="bannerImg" />
+      </swiper-item>
+    </block>
+  </swiper>
   <view class="couponlistBox">
     <view class="couponItem beforeShow {{loadingHidden?'show-detailItem':''}}" wx:for="{{couponListData}}" wx:key="{{index}}" style="transition: .5s {{index*0.1+0.1}}s" @tap="toTakeCoupon({{item.preferential}})">
       <image src="./images/coupontag.png" mode="widthFix" class="couponTag"></image>
@@ -34,7 +40,8 @@
       couponListData: [],
       fixedData: '',
       isLoadAll: false,
-      areaId: ''
+      areaId: '',
+      bannerImgs: ''
     }
     computed = {
         
@@ -62,6 +69,7 @@
         if(res.code == 1){
           this.couponListData = res.data.area_data[0].goods_data
           this.fixedData = res.data.content_str
+          this.bannerImgs = res.data.banner_data
           setTimeout(()=>{
             this.loadingHidden = true
             this.$apply()
@@ -83,12 +91,20 @@
   Page{
     width: 100%;
     height: 100%;
-    background-image: url('http://p55e536k6.bkt.clouddn.com/banner.png');
     background-position: 0 0;
     background-repeat: no-repeat;
     -webkit-background-size: contain;
     background-size: contain;
     background-color: #FEF2D9;
+  }
+  .swiperBox{
+    width: 100%;
+    height: 230rpx;
+    margin-bottom: 40rpx;
+    .bannerImg{
+      width: 100%;
+      height: 100%;
+    }
   }
   .couponlistBox{
     width: 100%;

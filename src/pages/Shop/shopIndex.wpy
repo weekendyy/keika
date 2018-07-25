@@ -383,6 +383,7 @@
       
     }
     onPullDownRefresh(){
+      this.pageNum.shopPage = 1
       this._loadData()
     }
     _loadData(){

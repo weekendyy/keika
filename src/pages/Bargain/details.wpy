@@ -175,6 +175,25 @@
           <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
         </view>
       </view>
+      <!-- 进客广告 -->
+      <block wx:if="{{true}}">
+        <view class="ADBox beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .4s">
+          <button class="adBtn" @tap="showadWindowTap"></button>
+          <image src="{{adData.img_src}}" mode="aspectFill" class="adPic"></image>
+          <view class="adTxtBox">
+            <text class="adTxt1 ellip-1">{{adData.title}}</text>
+            <text class="adTxt2 ellip-1">{{adData.desc}}</text>
+          </view>
+          <image src="../Goods/img/joinUs.png" mode="aspectFill" class="joinPic"></image>
+        </view>
+      </block>
+      <!-- 进客广告弹窗 -->
+      <view class="cover-ad {{showAdWindow?'showcoverAd':''}}" @tap="closeAdWindow"></view>
+      <view class="adwindow {{showAdWindow?'showadwindow':''}}">
+        <text class="adwindow-title">加入群聊</text>
+        <text class="adwindow-tips">请在客服窗口输入 '{{adData.keyword}}'</text>
+        <button bindcontact="contactBack" session-from="{{shopId}}" open-type="contact" class="adBtnwindow">知道了</button>
+      </view>
       <view class="jpdescbox">
         <view class="jpdescbox_title">
           <view class="cut"></view>
@@ -262,6 +281,12 @@
       <view class="iknow" @tap="closeBarginSuccess">我知道了</view>
     </view>
   </view>
+  <!-- 商户报名 -->
+  <view class="takePartIn" @tap="tobusiness">
+    <image src="../Goods/img/add.png" mode="widthFix" class="addIcon"></image>
+    <text class="aDDtext">我是商户，我也要做抢购活动</text>
+  </view>
+  <view style="height: 30rpx;"></view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -373,7 +398,11 @@
       posterImg:'',
       formId: '',
       secondLoad: false,
-      isBottomPrice: false
+      isBottomPrice: false,
+      showAdWindow: false,
+      adData: '',
+      shopId: '',
+      disId: ''
     }
     methods = {
       gotoBuy(){
@@ -454,6 +483,9 @@
           launch_id: this.bargain.launch.id,
           activity_id: this.DetailData.id
         }
+        if(this.disId){
+          param.disId = this.disId
+        }
         BargainModel.bargainDetail(param, (ResData)=>{
           if(ResData.bargain.code == 1){
             this.bargain_price = ResData.bargain.bargain_price
@@ -491,7 +523,7 @@
         Address.getUser(res,()=>{
           this.shareState = false
           let param = {
-            activity_id: this.DetailData.id,
+            activity_id: this.DetailData.id
           }
           BargainModel.bargainLaunch(param,(ResData)=>{
             this.bargain = ResData
@@ -510,10 +542,29 @@
       },
       toMap(){
         BargainModel.openMap(this.DetailData.longitude,this.DetailData.name,this.DetailData.address)
+      },
+      tobusiness(){
+        BargainModel.navTo('../Goods/postBusinessInfo')
+      },
+      showadWindowTap(){
+        this.showAdWindow = true
+        this.$apply()
+      },
+      closeAdWindow(){
+        this.showAdWindow = false
+        this.$apply()
+      },
+      contactBack(){
+        this.showAdWindow = false
+        this.$apply()
       }
     }
     onLoad(options){
-      console.log(wxParse)
+      console.log(options)
+      if(options.dis_id){
+        this.disId = options.dis_id
+      }
+      this.shopId = BargainModel.shopConfig.shopID
       this.activity_id = options.id
       this.formId = options.formID
       if(options.launch_id){
@@ -525,6 +576,12 @@
       if(this.formId){
         this.param.magic_form_id = this.formId
       }
+      BargainModel.getcommunityData({},(res)=>{
+        if(res.code == 0){
+          res.data && (this.adData = res.data)
+          this.$apply()
+        }
+      })
     }
     onShow(){
       clearInterval(timer)
@@ -535,9 +592,10 @@
       this.loadBarginData(this)
     }
     loadBarginData(that){
+      if(this.disId){
+        this.param.dis_id = this.disId
+      }
       BargainModel.getLuckyDetail(that.param,(ResData)=>{
-        console.log('shuju')
-        console.log(ResData)
         that.DetailData = ResData.activity_attr
         that.bargain = ResData.bargain
         that.floor_data = ResData.floor_data
@@ -1467,6 +1525,143 @@
       transform: translateY(0);
       pointer-events: auto;
     }
+  }
+  .takePartIn{
+    width: 710rpx;
+    border-radius: 10rpx;
+    height: 100rpx;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20rpx 0 20rpx 20rpx;
+    .addIcon{
+      width: 45rpx;
+      height: 45rpx;
+    }
+    .aDDtext{
+      color: #548425;
+      margin-left: 20rpx;
+      font-size: 28rpx;
+    }
+  }
+  .ADBox{
+    width: 710rpx;
+    border-radius: 10rpx;
+    height: 130rpx;
+    box-sizing: border-box;
+    padding: 0 30rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    position: relative;
+    margin-bottom: 20rpx;
+    .adBtn{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: transparent;
+      border: 0px solid #fff;
+      &::after{
+        content: none;
+      }
+    }
+    .adPic{
+      flex: 0 0 80rpx;
+      height: 80rpx;
+      background-color: #666;
+    }
+    .adTxtBox{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      margin: 0 20rpx;
+      overflow: hidden;
+      .adTxt1{
+        font-size: 28rpx;
+        color: #666;
+      }
+      .adTxt2{
+        font-size: 28rpx;
+        color: #BBBBBB;
+        margin-top: 10rpx;
+      }
+    }
+    .joinPic{
+      flex: 0 0 65rpx;
+      height: 65rpx;
+      box-sizing: border-box;
+      padding: 13rpx;
+      border-radius: 100%;
+      background: linear-gradient(to left , #FA907D,#F35C4A);
+    }
+  }
+  .cover-ad{
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,.7);
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: .4s;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .showcoverAd{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .adwindow{
+    width: 500rpx;
+    height: 300rpx;
+    position: fixed;
+    top: 500rpx;
+    left: 125rpx;
+    border-radius: 20rpx;
+    background-color: #fff;
+    transition: .4s;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-20rpx);
+    z-index: 10;
+    .adwindow-title{
+      font-size: 28rpx;
+      color: #FB4D69;
+      font-weight: 600;
+    }
+    .adwindow-tips{
+      font-size: 24rpx;
+      color: #FB4D69;
+      margin: 30rpx 0 60rpx;
+    }
+    .adBtnwindow{
+      background-color: #FB4D69;
+      color: #fff;
+      width: 150rpx;
+      height: 50rpx;
+      line-height: 50rpx;
+      text-align: center;
+      font-size: 24rpx;
+      border-radius: 10rpx;
+      border: 0px solid #fff;
+      &::after{
+        content: none;
+      }
+    }
+  }
+  .showadwindow{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
   }
   Page{
     background:url('http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_002.jpg');

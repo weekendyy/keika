@@ -73,8 +73,8 @@
       </view>
     </view>
     <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
-      <text>手机号(必填)</text>
-      <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
+      <text>手机号</text>
+      <input type="number" disabled="true" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
     </view>
     <view class="footer">
       <text class="pay-text">实付:</text>
@@ -98,7 +98,6 @@
       orderId: '',
       goods_info: '',
       payState: true,
-      requirePhone: '',
       orderType: '',
       groupsData: '',
       groupsPay_type: '',
@@ -126,40 +125,10 @@
           }
         })
       },
-      phoneInput($event){
-         this.requirePhone = $event.detail.value.trim()
-      },
       buy(){
-        if(Number(this.requirePhone.length) === 0){
-          wx.showToast({
-            title: '请输入手机号码',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(Number(this.requirePhone.length) <= 10){
-          wx.showToast({
-            title: '手机长度不足',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(!(/^1[23456789]\d{9}$/.test(this.requirePhone))){
-          wx.showToast({
-            title: '手机格式错误',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false;
-        }
         let param = {
           orderID: this.orderId,
-          shipping_phone: this.requirePhone
+          shipping_phone: this.real_tel
         }
         if(JSON.stringify(this.AddressInfo) == '{}' && this.goods_info.address_options == 1){
           wx.showToast({
@@ -287,9 +256,8 @@
           this.goods_info.shipping_city && (this.AddressInfo.shipping_city = this.goods_info.shipping_city)
           this.goods_info.shipping_area && (this.AddressInfo.shipping_area = this.goods_info.shipping_area)
           this.goods_info.shipping_street && (this.AddressInfo.shipping_street = this.goods_info.shipping_street)
-          this.goods_info.shipping_phone && (this.AddressInfo.shipping_tel = this.goods_info.shipping_phone)
-          this.goods_info.real_tel && (this.real_tel = this.goods_info.real_tel)
-          this.goods_info.real_tel && (this.requirePhone = this.goods_info.real_tel)
+          this.goods_info.real_tel && (this.AddressInfo.shipping_tel = this.goods_info.real_tel)
+          this.goods_info.shipping_phone && (this.real_tel = this.goods_info.shipping_phone)
           this.$apply()
         }
       })
@@ -398,14 +366,8 @@
   justify-content: space-between;
   font-size: 30rpx;
   text {
-    color: #e7573d;
+    color: #666;
     position: relative;
-    &::after{
-      content:'*';
-      position: absolute;
-      right: -20rpx;
-      color: #e7573d;
-    }
   }
   input {
     width: 400rpx;

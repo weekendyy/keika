@@ -1,0 +1,292 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="indexBox">
+    <!-- 切换按钮 -->
+    <view class="itemTabBox">
+      <view class="tabItem {{activeItemIndex == 0 ? 'activeItem': ''}}" @tap="itemTab(0)" style="transition: .5s">全部</view>
+      <view class="tabItem {{activeItemIndex == 1 ? 'activeItem': ''}}" @tap="itemTab(1)" style="transition: .5s">我的订单</view>
+      <view class="tabItem {{activeItemIndex == 2 ? 'activeItem': ''}}" @tap="itemTab(2)" style="transition: .5s">下级订单</view>
+      <view class="moveItem" style="transition: .5s;transform: translateX({{activeItemIndex*250}}rpx)"></view>
+    </view>
+    <!-- 订单内容 -->
+    <view class="oerderList">
+      <block wx:for="{{activeItemIndex==0?allList:(activeItemIndex==1?myList:other)}}" wx:key="{{index}}">
+        <view class="orderItem {{showContent?'showorderItem':''}}" style="transition: .4s cubic-bezier(0,1.5,.64,1.64) {{index*0.1}}s">
+          <text class="orderNumber">订单号: {{item.order_num}}</text>
+          <text class="yongTxt">佣金</text>
+          <view class="priceBox">
+            <text class="priceTxt">¥</text>
+            <text class="priceNumber">{{item.commission}}</text>
+          </view>
+          <view class="infoItem">
+            <text class="infoTxt">商品名称</text>
+            <text class="infoDesc">{{item.goods_name}}</text>
+          </view>
+          <view class="infoItem">
+            <text class="infoTxt" style="letter-spacing: 60rpx">姓名</text>
+            <text class="infoDesc ellip-1">{{item.user.wechat_name}}</text>
+          </view>
+          <view class="infoItem">
+            <text class="infoTxt">联系电话</text>
+            <text class="infoDesc">{{item.user.shipping_phone}}</text>
+          </view>
+          <view class="infoItem">
+            <text class="infoTxt">当前状态</text>
+            <!-- 已核销 -->
+            <text wx:if="{{item.is_destroy == 1}}" class="infoDesc">已核销</text>
+            <!-- 未核销 -->
+            <text wx:if="{{item.is_destroy == 0 && item.buy_num == 0}}" class="infoDesc">未核销</text>
+            <text wx:if="{{item.is_destroy == 0 && item.buy_num != 0}}" class="infoDesc">共{{item.buy_num}}份，已核销{{item.destroy_num}}份</text>
+          </view>
+        </view>
+      </block>
+      <view class="noneOrder" wx:if="{{isNone}}">
+        <text>暂无订单</text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import disModel from './distributionModel.js'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '订单明细',
+    }
+    data = {
+      showContent: false,
+      activeItemIndex: 0,
+      allList: [],
+      myList: [],
+      other: [],
+      pageNum: [1,1,1],
+      isLoadAll: [false,false,false],
+      isNone: false
+    }
+    computed = {
+        
+    }
+    methods = {
+      itemTab(index){
+        this.isNone = false
+        this.activeItemIndex = index
+        if(index == 1 && this.myList.length ==0){
+          this._loadData(1,1,(res)=>{
+            this.myList = res
+            if(res.length == 0){
+              this.isNone = true
+            }
+            this.$apply()
+          })
+        }
+        if(index == 2 && this.other.length ==0){
+          this._loadData(2,1,(res)=>{
+            this.other = res
+            if(res.length == 0){
+              this.isNone = true
+            }
+            this.$apply()
+          })
+        }
+        this.$apply()
+      }
+    }
+    onLoad(e){
+      this._loadData(0,1,(res)=>{
+        this.allList = res
+        this.showContent = true
+        if(res.length == 0){
+          this.isNone = true
+        }
+        this.$apply()
+      })
+    }
+    _loadData(type,pageNum,scallback){
+      disModel.getOrderInfo({type: type,pageNum:pageNum},(res)=>{
+        if(res.error == 0){
+          scallback && scallback(res.data)
+          this.$apply()
+        }else{
+          disModel.showTips(res.message)
+        }
+      })
+    }
+    onReachBottom(){
+      this._loadBottomData(0,0)
+      this._loadBottomData(1,1)
+      this._loadBottomData(2,2)
+    }
+    _loadBottomData(index,type){
+      if(this.activeItemIndex == index && !this.isLoadAll[index]){
+        wx.showLoading({
+          title: '加载中...'
+        })
+        this.pageNum[index]++
+        this._loadData(type,this.pageNum[index],(res)=>{
+          wx.hideLoading()
+          if(res.length === 0){
+            disModel.showTips("已经到底了")
+            this.isLoadAll[index] = true
+          }
+          if(index == 0){
+            this.allList = [...this.allList, ...res]
+          }
+          if(index == 1){
+            this.myList = [...this.myList, ...res]
+          }
+          if(index == 2){
+            this.other = [...this.other, ...res]
+          }
+          this.$apply()
+        })
+      }
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F8F8;
+  }
+  .itemTabBox{
+    width: 100%;
+    height: 87rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20rpx;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background-color: #fff;
+    transition: .5s;
+    position:fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    box-shadow: 0 0 20rpx rgba(0,0,0,.1);
+    .tabItem{
+      color: #424242;
+      font-size: 30rpx;
+      font-weight: 500;
+      text-align: center;
+      flex: 1;
+    }
+    .activeItem{
+      color: #FC7D72;
+    }
+    .moveItem{
+      position: absolute;
+      bottom: 0rpx;
+      left: 0;
+      width: 250rpx;
+      height: 2px;
+      background-color: #FB897F;
+      transition: .3s;
+    }
+    .nextItem{
+      transform: translateX(170rpx);
+    }
+    .designerIcon2{
+      width: 55rpx;
+      height: 55rpx;
+      border-radius: 100%;
+      position: absolute;
+      right: 30rpx;
+      top: 50rpx;
+      opacity: 0;
+      transform: translateX(100rpx);
+      transition: .7s;
+    }
+    .showdesignerIcon2{
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  .oerderList{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20rpx;
+    margin-top: 90rpx;
+    .orderItem{
+      width: 710rpx;
+      border-radius: 10rpx;
+      box-shadow: 0 0 20rpx rgba(79,170,255,.15);
+      margin-bottom: 20rpx;
+      background-color: #fff;
+      box-sizing: border-box;
+      padding:  30rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(-20rpx);
+      .orderNumber{
+        color: #393939;
+        width: 100%;
+        font-size: 28rpx;
+        margin-bottom: 30rpx;
+      }
+      .yongTxt{
+        font-size: 32rpx;
+        color: #888;
+        margin-bottom: 15rpx;
+      }
+      .priceBox{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-bottom: 45rpx;
+        .priceTxt{
+          font-size: 40rpx;
+          font-weight: 600;
+          margin-top: 10rpx;
+        }
+        .priceNumber{
+          font-size: 70rpx;
+          font-weight: 600;
+          margin-left: 6rpx;
+        }
+      }
+      .infoItem{
+        width: 100%;
+        display: flex;
+        margin-bottom: 25rpx;
+        .infoTxt{
+          font-size: 30rpx;
+          color: #8A8A8A;
+          flex: 0 0 185rpx;
+        }
+        .infoDesc{
+          font-size: 30rpx;
+          color: #000;
+          width: 100%;
+        }
+      }
+    }
+    .showorderItem{
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .noneOrder{
+    width: 100%;
+    height: 200rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30rpx;
+    color: #999;
+    background-color: #fff;
+  }
+</style>
+

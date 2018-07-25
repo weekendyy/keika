@@ -33,6 +33,7 @@ class Vip extends Base {
         callback && callback(data)
       }
     }
+    orderInfo.disId && (param.data.dis_id = orderInfo.disId)
     this.request(param)
   }
   /**

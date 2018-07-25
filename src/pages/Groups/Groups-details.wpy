@@ -389,6 +389,9 @@
             group_goods_id: this.goodsId,
             pay_type: type,
           }
+          if(this.disId){
+            _param.dis_id = this.disId
+          }
           Groups.createGroupsPlace(_param, ResData=>{
               if(ResData.code === 1){
                 this.$navigate('/pages/Groups/Groups-Confirm-order',{orderId: ResData
@@ -476,6 +479,9 @@
       }
     }
     onLoad(options){
+      if(options.dis_id){
+        this.disId = options.dis_id
+      }
       this.goodsId = options.id
       this.$apply()
       let query = {}

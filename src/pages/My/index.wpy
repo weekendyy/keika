@@ -2,122 +2,86 @@
   <import src="/pages/tpls/loading/loading.wxml" />
   <view class="My-container">
     <form report-submit="magic-formID" bindsubmit="gotoOpenVipFormId">
-    <view class="open-vip {{loadingHidden?'show-open-vip':''}}" @touchstart="debugStart" @touchend="debugEnd">
-      <view class="open-wrapper" style="background-image: url({{vipInfo.background_img}});">
-        <view class="vipCard-Info">
-          <view class="vipInfo-left">
-            <text class="nameTxt">姓名</text>
-            <view class="userName ellip-1">
-              <open-data type="userNickName" class="ellip-1"></open-data>
+      <view class="open-vip {{loadingHidden?'show-open-vip':''}}" @touchstart="debugStart" @touchend="debugEnd">
+        <view class="open-wrapper" style="background-image: url({{vipInfo.background_img}});">
+          <view class="vipCard-Info">
+            <view class="vipInfo-left">
+              <view class="userPic">
+                <open-data type="userAvatarUrl"></open-data>
+              </view>
+              <view class="userName ellip-1">
+                <open-data type="userNickName" class="ellip-1"></open-data>
+              </view>
+            </view>
+            <view class="vipCard-right">
+              <block wx:if="{{vipInfo.open_status == 1}}">
+                <view class="end-time-txtBox">
+                  <text class="end-time-txt">到期时间</text>
+                  <text class="end-time-txt1">(续费)</text>
+                </view>
+                <text class="end-time">{{vipInfo.end_time}}</text>
+              </block>
+              <block wx:if="{{vipInfo.open_status == 2}}">
+                <view class="openVip">立即开通</view>
+              </block>
             </view>
           </view>
-          <view class="vipCard-right">
-            <block wx:if="{{vipInfo.open_status == 1}}">
-              <view class="end-time-txtBox">
-                <text class="end-time-txt">到期时间</text>
-                <text class="end-time-txt1">(续费)</text>
-              </view>
-              <text class="end-time">{{vipInfo.end_time}}</text>
-            </block>
-            <block wx:if="{{vipInfo.open_status == 2}}">
-              <view class="openVip">立即开通</view>
-            </block>
-          </view>
+          <button style="background-color: transparent;" class="formIdBtn" form-type="submit"></button>
         </view>
-        <button style="background-color: transparent;" class="formIdBtn" form-type="submit"></button>
       </view>
-    </view>
     </form>
-    <view class="nav-wrapper {{loadingHidden?'show-nav-wrapper':''}}">
-      <!-- <view class="nav">
-        <form report-submit='magic_form_id'>
-          <button open-type="contact">
-            <image src="./images/icon-kefu.png"></image>
-            <text>{{center_index_str[0]}}</text>
-          </button>
-        </form>
-      </view> -->
-      <form style="height:100%; flex: 0 0 167rpx;" report-submit='magic_form_id' bindsubmit="gotowelfare">
-        <button class="nav" form-type="submit">
-          <text class="num" wx:if="{{welfareNum}}">{{welfareNum}}</text>
-          <image src="./images/icon-fuli.png"></image>
-          <text>{{center_index_str[1]}}</text>
-        </button>
-      </form>
-      <form style="height:100%; flex: 0 0 167rpx;" report-submit='magic_form_id' bindsubmit="gotoOrder">
-        <button class="nav" form-type="submit">
-          <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text>
-          <image src="./images/icon-all.png"></image>
-          <text>{{center_index_str[2]}}</text>
-        </button>
-      </form>
-      <form style="height:100%; flex: 0 0 167rpx;" report-submit bindsubmit="gotoLottery">
-        <button class="nav" form-type="submit">
-          <!-- <text class="num" wx:if="{{orderNum}}">{{orderNum}}</text> -->
-          <image src="./images/lottery.png"></image>
-          <text>{{center_index_str[3]}}</text>
-        </button>
-      </form>
-      <form style="height:100%; flex: 0 0 167rpx;" report-submit bindsubmit="gotoCoupon" wx:if="{{vipInfo.is_preferential == 2}}">
-        <button class="nav" form-type="submit">
-          <text class="num" wx:if="{{vipInfo.preferential_get_num}}">{{vipInfo.preferential_get_num}}</text>
-          <image src="./images/couponIcon.png"></image>
-          <text>优惠券</text>
-        </button>
-      </form>
-      <view class="nav">
-        <button @tap="toCouponData">
-          <image src="./images/dataIcon.png"></image>
-          <text>查数据</text>
-        </button>
-      </view>
-    </view>
-    <view class="desc-wrapper {{loadingHidden?'show-desc-wrapper':''}}" @longpress="showVersion" @touchend="hideVersion">
-      <view class="title-wrapper">
-        <view class="h11"></view>
-        <view class="h16 left"></view>
-        <text>{{vipInfo.privilege.title}}</text>
-        <view class="h16 right"></view>
-        <view class="h11"></view>
-      </view>
-      <view class="privilege-wrapper">
-        <repeat for="{{vipInfo.privilege.content}}" wx:for-item="item" key:index="index">
-          <text>{{item}}</text>
-        </repeat>
-      </view>
-      <view class="title-wrapper">
-        <view class="h11"></view>
-        <view class="h16 left"></view>
-        <text>{{vipInfo.business}}</text>
-        <view class="h16 right"></view>
-        <view class="h11"></view>
-      </view>
-      <view class="Business-wrapper">
-        <text>{{vipInfo.supplier_data.wechat_num}}</text>
-      </view>
-      <view class="title-wrapper">
-        <view class="h11"></view>
-        <view class="h16 left"></view>
-        <text>{{vipInfo.supplier_person}}</text>
-        <view class="h16 right"></view>
-        <view class="h11"></view>
-      </view>
-      <view class="provider-wrapper">
-        <view class="provider-left">
-          <view class="about">
-            <image class="logo" src="{{vipInfo.supplier_data.wechat_portrait}}"></image>
-            <text class="name">{{vipInfo.supplier_data.wechat_name}}</text>
+    <!-- 中间导航 -->
+    <view class="mainNav">
+      <block wx:for="{{navInfo}}" wx:key="{{index}}">
+        <form report-submit='magic_form_id' bindsubmit="gotoOrder">
+          <view class="navItem {{loadingHidden?'shownavItem':''}}" style="transition: .4s {{index*0.1}}s">
+            <image src="{{item.icon}}" mode="aspectFill" class="navPic"></image>
+            <text class="navTxt">{{item.name}}</text>
+            <button form-type="submit" class="formIdBtn" data-idx="{{item.idx}}"></button>
           </view>
-          <view class="desc">{{vipInfo.supplier_data.wechat_detail}}</view>
+        </form>
+      </block>
+    </view>
+    <!-- 列表导航 -->
+    <view class="listbox">
+      <form report-submit='magic_form_id' bindsubmit="gotowelfare">
+        <view class="listItem {{loadingHidden?'showlistItem':''}}" style="transition: .4s .1s">
+          <text>我的福利</text>
+          <image src="./img/rightIcon.png" mode="widthFix" class="rightIcon"></image>
+          <view class="line"></view>
+          <button form-type="submit" class="formIdBtn"></button>
         </view>
-        <view class="provider-right">
-          <image src="{{vipInfo.supplier_data.provide_qr_code}}"></image>
+      </form>
+      <form report-submit='magic_form_id' bindsubmit="gotoLottery">
+        <view class="listItem {{loadingHidden?'showlistItem':''}}" style="transition: .4s .2s">
+          <text>抽奖订单</text>
+          <image src="./img/rightIcon.png" mode="widthFix" class="rightIcon"></image>
+          <view class="line"></view>
+          <button form-type="submit" class="formIdBtn"></button>
         </view>
+      </form>
+      <form report-submit='magic_form_id' bindsubmit="gotoCoupon">
+        <view class="listItem {{loadingHidden?'showlistItem':''}}" style="transition: .4s .3s">
+          <text>裂变券</text>
+          <image src="./img/rightIcon.png" mode="widthFix" class="rightIcon"></image>
+          <view class="line"></view>
+          <button form-type="submit" class="formIdBtn"></button>
+        </view>
+      </form>
+      <view class="listItem {{loadingHidden?'showlistItem':''}}" @tap="toCouponData" style="transition: .4s .4s">
+        <text>商家数据</text>
+        <image src="./img/rightIcon.png" mode="widthFix" class="rightIcon"></image>
+        <view class="line"></view>
       </view>
-      <view class="version {{isVersionShow?'show-version':''}}">
-        <text>V 1.14.7</text>
+      <view class="listItem {{loadingHidden?'showlistItem':''}}" @tap="todistribution" style="transition: .4s .5s">
+        <text>分享达人</text>
+        <image src="./img/rightIcon.png" mode="widthFix" class="rightIcon"></image>
+        <!-- <view class="line"></view> -->
       </view>
     </view>
+  </view>
+  <view class="version">
+    <text>版本号 V1.14.8</text>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -132,20 +96,37 @@
       navigationBarBackgroundColor: "#fff",
       navigationBarTitleText: '会员中心',
       enablePullDownRefresh: true,
-      backgroundTextStyle: 'dark'
+      backgroundTextStyle: 'dark',
+      backgroundColorTop: '#EEEEEE',
+      backgroundColorBottom: '#EEEEEE'
     }
     data = {
-      orderNum: null,
-      welfareNum:null,
       vipInfo: null,
-      userInfo: null,
       loadingHidden: false,
-      center_index_str: null,
       magic_auth_str: null,
       formId:'',
-      isVersionShow: false,
       debug: false,
-      showMoveBox: false
+      navInfo: [{
+        icon: './img/topay.png',
+        name: '待付款',
+        idx: 2
+      },{
+        icon: './img/grouping.png',
+        name: '拼团中',
+        idx: 1
+      },{
+        icon: './img/using.png',
+        name: '待使用',
+        idx: 3
+      },{
+        icon: './img/comment.png',
+        name: '待评价',
+        idx: 4
+      },{
+        icon: './img/allorder.png',
+        name: '全部订单',
+        idx: 0
+      }]
     }
     methods = {
       gotowelfare(e){
@@ -154,37 +135,17 @@
       },
       gotoOrder(e){
         this.formId = e.detail.formId
-        this.$navigate('./order/order',{id:0,formId:this.formId})
+        let id = e.detail.target.dataset.idx
+        console.log(id)
+        this.$navigate('./order/order',{id:id,formId:this.formId})
       },
       gotoCoupon(e){
         this.formId = e.detail.formId
         this.$navigate('../../coupon/couponShopList')
       },
-      gotoDetail(index){
-        this.$navigate('./articleDetails',{id:index})
-      },
-      _loadData:function (successcallback) {
-        MyModel.getUserInfo((data)=> {
-          successcallback && successcallback(data)
-        }, (res)=>{
-          MyModel._setUserinfo((data)=>{
-            this.loadingHidden = true
-            this.$apply()
-            res && res(data)
-          })
-        });
-      }.bind(this),
       gotoOpenVipFormId(e){
         this.formId = e.detail.formId
         this.$navigate('../Vip/Index?formId='+this.formId)
-      },
-      showVersion(){
-        this.isVersionShow = true
-        this.$apply()
-      },
-      hideVersion(){
-        this.isVersionShow = false
-        this.$apply()
       },
       gotoLottery(){
         this.$navigate('../../lotteryDraw/lotteryOrderList',{})
@@ -202,16 +163,42 @@
           })
         }
       },
-      taggleCouponBtn(){
-        this.showMoveBox = !this.showMoveBox
-        this.$apply()
-      },
       toCouponData(){
         let couponInfo = wx.getStorageSync('couponInfo')
         if(couponInfo){
           cheaderModel.navTo('../../coupon/businessCouponData')
         } else {
           cheaderModel.navTo('../../coupon/couponLogin')
+        }
+      },
+      todistribution(){
+        let distributionInfo = wx.getStorageSync('distributionInfo')
+        if(distributionInfo){
+          wx.showLoading({
+            title: '账号验证中...'
+          })
+          let query = {
+            phone: distributionInfo.phone,
+            password: distributionInfo.password
+          }
+          MyModel.login(query,(res)=>{
+            wx.hideLoading()
+            if(res.error == 0){
+              wx.hideLoading()
+              cheaderModel.showTips("验证成功")
+              setTimeout(()=>{
+                cheaderModel.navTo('../../distribution/index')
+              },500)
+            }  else {
+              cheaderModel.showTips("账号或密码错误,请重新登录")
+              setTimeout(()=>{
+                cheaderModel.navTo('../../distribution/login')
+              },1000)
+              
+            }
+          })
+        } else {
+          cheaderModel.navTo('../../distribution/login')
         }
       }
     }
@@ -224,23 +211,6 @@
       this._loadData()
     }
     _loadData(){
-      cheaderModel.getBannerInfo({banner_type:1},(ResData)=>{
-        wx.stopPullDownRefresh()
-        if(ResData.code == 1){
-          this.userInfo = ResData.data
-          this.$apply()
-        }
-      })
-      MyModel.getUserSpecialData(ResData=>{
-        wx.stopPullDownRefresh()
-        if(Number(ResData.code) === 1) {
-          this.center_index_str = ResData.data.center_index_str
-          this.orderNum = ResData.data.no_pay_num
-          this.welfareNum = ResData.data.no_use_num
-          this.loadingHidden = true
-          this.$apply()
-        }
-      })
       MyModel.IS_VIP((ResData)=>{
         wx.stopPullDownRefresh()
         if(ResData.code == 1){
@@ -254,12 +224,15 @@
         }
       })
     }
+    onPageScroll(e){
+      console.log(e)
+    }
   }
 </script>
 <style lang="less">
   @import '../tpls/loading/loading.wxss';
   page{
-    background-color: #faf9f9;
+    background-color: #EEEEEE;
   }
   button{
     margin: 0;
@@ -288,12 +261,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #faf9f9;
     opacity: 0;
     margin-bottom: 30rpx;
+    transform: translateX(80rpx) translateY(80rpx) rotate(10deg);
     .open-wrapper{
       position: relative;
-      margin-top: 25rpx;
+      margin-top: 45rpx;
       width: 570rpx;
       height: 320rpx;
       border-radius: 20rpx;
@@ -311,7 +284,7 @@
         position: relative;
         width: 100%;
         box-sizing: border-box;
-        padding: 0 50rpx;
+        padding: 0 50rpx 0 30rpx;
         color: #fff;
         display: flex;
         justify-content: space-between;
@@ -319,14 +292,18 @@
         margin-bottom: 35rpx;
         .vipInfo-left{
           display: flex;
-          flex-direction: column;
-          .nameTxt{
-            font-size: 25rpx;
+          align-items: center;
+          .userPic{
+            width: 70rpx;
+            height: 70rpx;
+            border-radius: 100%;
+            overflow: hidden;
+            border: 2px solid #F2CB6C;
           }
           .userName{
             font-size: 29rpx;
-            margin-top: 10rpx;
-            max-width:300rpx;
+            margin-left: 20rpx;
+            max-width:220rpx;
           }
         }
         .vipCard-right{
@@ -372,202 +349,88 @@
   }
   .show-open-vip{
     opacity: 1;
-    transition: .5s;
+    transform: translateX(0) translateY(0) rotate(0);
+    transition: 1s .5s;
   }
-  .nav-wrapper{
+  .mainNav{
     width: 100%;
-    box-sizing:border-box;
-    padding:0 40rpx;
-    height: 126rpx;
+    height: 160rpx;
     background-color: #fff;
-    position: relative;
-    z-index: 2;
     display: flex;
-    justify-content: space-between;
-    opacity: 0;
-    overflow: scroll;
-    -webkit-overflow-scrolling: touch;
-    .nav{
-      margin: 0;
-      padding: 0;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 10;
+    position: relative;
+    margin-top: -50rpx;
+    .navItem{
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
       position: relative;
-      height: 100%;
-      flex: 0 0 167rpx;
-      &::after{
-        content:none;
-      }
-      button{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      image{
-        width: 48rpx;
-        height: 48rpx;
-      }
-      text{
-        padding-top: 20rpx;
-        font-size:22rpx;
-        color: #101010;
-      }
-      .num {
-        position: absolute;
-        width: 34rpx;
-        height: 34rpx;
-        line-height: 34rpx;
-        text-align: center;
-        border: 1px solid #ff6a3b;
-        border-radius: 50%;
-        font-size: 24rpx;
-        color: #ff6a3b;
-        top:4rpx;
-        left:54%;
-        background:#fff;
-        padding-top: 0;
-      }
-    }
-  }
-  .show-nav-wrapper{
-    opacity: 1;
-    transition: .5s .1s;
-  }
-  .desc-wrapper{
-    width: 670rpx;
-    margin: 45rpx auto;
-    padding-bottom: 52rpx;
-    background-color: #ffffff;
-    box-shadow: 0rpx 0rpx 16rpx 0rpx rgba(0, 0, 0, 0.15);
-    border-radius: 15rpx;
-    position: relative;
-    opacity: 0;
-    .title-wrapper{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin:0 auto;
-      padding-top: 36rpx;
-      padding-bottom: 36rpx;
-      .h11{
-        width: 4rpx;
-        height: 11rpx;
-        background-color: #eac27c;
-      }
-      .h16{
-        width: 4rpx;
-        height: 16rpx;
-        background-color: #eac27c;
-        &.left{
-          margin-left: 3rpx;
-        }
-        &.right{
-          margin-right: 3rpx;
-        }
-      }
-      text{
-        font-family: PingFangSC;
-        font-size: 31rpx;
-        letter-spacing: 1px;
-        color: #eac27c;
-        margin-left:8rpx;
-        margin-right:8rpx;
-      }
-    }
-    .privilege-wrapper{
-      width:  600rpx;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      text{
-        font-size: 25rpx;
-        line-height: 45rpx;
-        letter-spacing: 1rpx;
-        color: #424242;
-      }
-    }
-    .Business-wrapper{
-      width:  600rpx;
-      margin: 0 auto;
-      text{
-        font-size: 25rpx;
-        line-height: 45rpx;
-        letter-spacing: 1rpx;
-        color: #424242;
-      }
-    }
-    .provider-wrapper{
-      width:  600rpx;
-      margin: 0 auto;
-      display: flex;
-      .provider-left{
-        flex:1;
-        margin-right: 20rpx;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        .about{
-          .logo{
-            width: 59rpx;
-            height: 59rpx;
-            margin-right:14rpx;
-          }
-          .name{
-            font-size: 30rpx;
-            color: #000000;
-          }
-        }
-        .desc{
-          margin-top: 20rpx;
-          font-size: 25rpx;
-          line-height: 36rpx;
-          color: #cccccc;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          overflow: hidden;
-        }
-      }
-      .provider-right{
-        image{
-          width:166rpx;
-          height:166rpx;
-        }
-      }
-    }
-    .version{
-      width: 100%;
-      height: 35rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      bottom: -35rpx;
-      left: 0;
-      transition: .3s;
-      transform: translateY(-40rpx);
       opacity: 0;
-      text{
-        font-size: 27rpx;
-        line-height: 35rpx;
-        color: #EDC291;
-        display: block;
-        height: 35rpx;
-        padding: 0 20rpx;
-        box-shadow: 0 0 20rpx rgba(234,194,124,.1);
-        border:1px solid #EDC291;
+      transform: translateX(20rpx);
+      .navPic{
+        width: 45rpx;
+        height: 45rpx;
+      }
+      .navTxt{
+        font-size: 23rpx;
+        margin-top: 20rpx;
       }
     }
-    .show-version{
-      transform: translateY(3rpx);
+    .shownavItem{
       opacity: 1;
+      transform: translateX(0);
     }
   }
-  .show-desc-wrapper{
-    opacity: 1;
-    transition: .5s .2s;
+  .listbox{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 20rpx;
+    .listItem{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 40rpx;
+      position: relative;
+      height: 100rpx;
+      background-color: #fff;
+      opacity: 0;
+      transform: translateY(-20rpx);
+      .rightIcon{
+        width: 35rpx;
+        height: 35rpx;
+      }
+      text{
+        font-size: 30rpx;
+        color: #4E4E4E;
+      }
+      .line{
+        position: absolute;
+        bottom: 0;
+        left: 40rpx;
+        width: 710rpx;
+        height: 1px;
+        background-color: #EFEFEF;
+      }
+    }
+    .showlistItem{
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .version{
+    font-size: 21rpx;
+    color: #D1D1D1;
+    position: fixed;
+    bottom: 10rpx;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    text{
+    }
   }
 </style>

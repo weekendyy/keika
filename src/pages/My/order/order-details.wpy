@@ -171,8 +171,6 @@
     }
     onLoad(options){
       this.orderID = options.id
-    }
-    onShow(){
       OrderModel.getMyOrderInfoById(this.orderID, ReaData=> {
         if(ReaData.code ==1) {
           this.DetailsData = ReaData.data
@@ -189,6 +187,8 @@
           this.$apply()
         }
       })
+    }
+    onShow(){
     }
   }
 </script>

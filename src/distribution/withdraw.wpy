@@ -1,0 +1,160 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="indexBox">
+    <view class="headBox">
+      <text class="headtxt beforShow {{showContent?'showDone':''}}" style="transition: .4s;">提现金额</text>
+      <view class="inpBox beforShow {{showContent?'showDone':''}}" style="transition: .4s">
+        <text>¥</text>
+        <input type="number" value="{{value}}" focus="true" class="cashInp" placeholder="" @input="cashInp" />
+      </view>
+      <view class="cashBottom">
+        <text class="cashDesc beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;">可提现金额{{canCashNumber}}元</text>
+        <text class="cashAll" @tap="allCash">全部提现</text>
+      </view>
+    </view>
+    <view class="cashBtn beforShow {{showContent?'showDone':''}}" @tap="witchDraw" style="transition: .4s .3s;">申请提现</view>
+  </view>
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import disModel from './distributionModel.js'
+  export default class extends wepy.page {
+    config = {
+      backgroundColorTop: '#FEA377',
+      navigationBarBackgroundColor: "#FEA377",
+      navigationBarTextStyle: 'white',
+      navigationBarTitleText: '提现',
+    }
+    data = {
+      showContent: false,
+      canCashNumber: '',
+      value: ''
+    }
+    computed = {
+        
+    }
+    methods = {
+      cashInp(e){
+        let value = e.detail.value
+        this.value = value
+        if(Number(value)>Number(this.canCashNumber)){
+          disModel.showTips("超过可提现金额")
+          this.value = ''
+        }
+      },
+      allCash(){
+        this.value = this.canCashNumber
+        this.$apply()
+      },
+      witchDraw(){
+        // if(Number(this.value)<100){
+        //   disModel.showTips("最低提现金额100元")
+        //   this.value = ''
+        //   return false
+        // }
+        let query = {
+          money: this.value
+        }
+        disModel.withDraw(query,(res)=>{
+          if(res.code == 1){
+            disModel.showTips('申请提现成功')
+            wx.setStorageSync('cashNum',this.canCashNumber-this.value)
+            disModel.setPrePageState('cashNum',this.canCashNumber-this.value)
+            this.canCashNumber = this.canCashNumber-this.value
+            setTimeout(()=>{
+              wx.navigateBack({
+                delta: 1
+              })
+            },500)
+          }else{
+            disModel.showTips(res.message)
+          }
+        })
+      }
+    }
+    onLoad(e){
+      this.canCashNumber = wx.getStorageSync('cashNum')
+      setTimeout(()=>{
+        this.showContent = true
+        this.$apply()
+      },500)
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  Page{
+    background-color: #F8F8F8;
+  }
+  .beforShow{
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .showDone{
+    opacity: 1;
+    transform: scale(1);
+  }
+  .indexBox{
+    width: 100%;
+    .headBox{
+      margin-top: 40rpx;
+      background-color: #fff;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 30rpx;
+      .headtxt{
+        font-size: 28rpx;
+        color: #5D5D5D;
+        line-height: 80rpx;
+      }
+      .inpBox{
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #F7F7F7;
+        color: #353535;
+        text{
+          margin-right: 15rpx;
+          margin-top: 10rpx;
+        }
+        .cashInp{
+          font-size: 42rpx;
+          height: 80rpx;
+        }
+      }
+      .cashBottom{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-content: center;
+        .cashDesc{
+          font-size: 29rpx;
+          color: #383838;
+          line-height: 70rpx;
+        }
+        .cashAll{
+          font-size: 27rpx;
+          color: #FB5C6E;
+          line-height: 70rpx;
+        }
+      }
+    }
+    .cashBtn{
+      width: 570rpx;
+      height: 80rpx;
+      background: linear-gradient(to left,#FB596E,#FEA377);
+      color: #fff;
+      font-size: 31rpx;
+      text-align: center;
+      line-height: 80rpx;
+      margin-top: 90rpx;
+      margin-left: 90rpx;
+      border-radius: 10rpx;
+    }
+  }
+</style>
+

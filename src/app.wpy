@@ -55,6 +55,7 @@
     margin: 0;
     background: transparent;
     z-index: 500;
+    opacity: 0;
     &::after{
       content:none;
     }
@@ -149,7 +150,20 @@ export default class extends wepy.app {
           "employeeData",
           "indexCouponList"
         ]
+      }, {
+        "root": "distribution",  //分销
+        "pages": [
+          "index",  //主页
+          "myTeam",  //我的团队
+          "orderList", // 分销订单
+          "toCash",  //分销订单
+          "withdraw", // 提现
+          "goods", // 分销商品
+          "ranking", // 排行版
+          "login" // 登录
+        ]
       }
+
     ],
     window: {
       backgroundTextStyle: 'light',

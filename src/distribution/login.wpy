@@ -1,0 +1,233 @@
+<template>
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="outBox">
+    <view class="indexBox {{isLogin?'':'hideLogin'}}" wx:if="{{showContent}}">
+      <input type="number" placeholder="请输入账号(手机号)" value="{{loginAccount}}" @input="logAcountInp" class="inpBox" />
+      <input type="" password="true" placeholder="请输入密码" class="inpBox" value="{{loginPassword}}" @input="logPsdInp" />
+      <view class="loginBtn" @tap="login">登录</view>
+      <text class="register" @tap="toregister">还没有账号，去注册</text>
+    </view>
+    <view class="indexBox registerBox {{isLogin?'':'showregisterBox'}}" wx:if="{{showContent}}">
+      <input type="" placeholder="请输入姓名" class="inpBox" value="{{regName}}" @input="regNameInp" />
+      <input type="number" placeholder="请输入账号(手机号)" value="{{regAccount}}" class="inpBox" @input="regAcountInp" />
+      <input type="" placeholder="请输入密码" value="{{regPassword}}" class="inpBox" @input="regpadInp" />
+      <view class="loginBtn" @tap="register">注册</view>
+      <text class="register" @tap="tologin">已有账号，去登录</text>
+    </view>
+  </view>
+  <login></login>
+  <view wx:if="{{!showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import disModel from './distributionModel.js'
+  import login from '../components/login'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '达人登录',
+    }
+    components = {
+      login: login
+    }
+    data = {
+      showContent: false,
+      isLogin: true,
+      loginAccount: '',
+      loginPassword: '',
+      regName: '',
+      regAccount: '',
+      regPassword: '',
+      leaderId: 0
+    }
+    computed = {
+        
+    }
+    methods = {
+      toregister(){
+        this.isLogin = false
+        wx.setNavigationBarTitle({
+          title: '达人注册'
+        })
+        this.$apply()
+      },
+      tologin(){
+        this.isLogin = true
+        wx.setNavigationBarTitle({
+          title: '达人登录'
+        })
+        this.$apply()
+      },
+      logAcountInp(e){
+        this.loginAccount = e.detail.value
+      },
+      logPsdInp(e){
+        this.loginPassword = e.detail.value
+      },
+      regNameInp(e){
+        this.regName = e.detail.value
+      },
+      regAcountInp(e){
+        this.regAccount = e.detail.value
+      },
+      regpadInp(e){
+        this.regPassword = e.detail.value
+      },
+      login(){
+        if(!disModel.verifyPhoneNumber(this.loginAccount)){
+          return false
+        }
+        if(!this.loginPassword){
+          disModel.showTips("请输入您的密码")
+          return false
+        }
+        let query = {
+          phone: this.loginAccount,
+          password: this.loginPassword
+        }
+        wx.showLoading({
+          title: '登录中，请稍后...'
+        })
+        disModel.login(query,(res)=>{
+          wx.hideLoading()
+          if(res.error == 0){
+            disModel.showTips('登录成功')
+            wx.setStorageSync('distributionInfo', {
+              id: res.data.user_id,
+              phone: this.loginAccount,
+              password: this.loginPassword
+            })
+            setTimeout(()=>{
+              wx.redirectTo({
+                url: './index'
+              })
+            },500)
+          }  else {
+            disModel.showTips(res.message)
+          }
+        })
+      },
+      register(){
+        if(!this.regName){
+          disModel.showTips("请输入您的姓名")
+          return false
+        }
+        if(!disModel.verifyPhoneNumber(this.regAccount)){
+          return false
+        }
+        if(!this.regPassword){
+          disModel.showTips("请输入密码")
+          return false
+        }
+        let query = {
+          phone: this.regAccount,
+          password: this.regPassword,
+          name: this.regName,
+          leadId: this.leaderId
+        }
+        wx.showLoading({
+          title: '注册中，请稍后...'
+        })
+        disModel.registe(query,(res)=>{
+          wx.hideLoading()
+          if(res.error == 0){
+            disModel.showTips("恭喜您，注册成功！")
+            this.isLogin = true
+            this.$apply()
+          }else {
+            disModel.showTips(res.message)
+          }
+        })
+      }
+    }
+    onLoad(e){
+      if(e.dis_id){
+        this.leaderId = e.dis_id
+        this.isLogin = false
+        wx.setNavigationBarTitle({
+          title: '达人注册'
+        })
+      }
+      this.showContent = true
+      this.$apply()
+    }
+    onShow(){
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/loading/loading.wxss';
+  .outBox{
+    width: 750rpx;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1000rpx;
+    overflow: hidden;
+  }
+  Page{
+    background-color: #fff;
+  }
+  .beforShow{
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .showDone{
+    opacity: 1;
+    transform: scale(1);
+  }
+  .indexBox{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 100rpx 0;
+    transition: .4s;
+    backface-visibility:hidden;
+    overflow: hidden;
+    .inpBox{
+      width: 660rpx;
+      height: 100rpx;
+      line-height: 100rpx;
+      border-bottom: 1px solid #ECECEC;
+      box-sizing: border-box;
+      line-height: 100rpx;
+      font-size: 28rpx;
+      margin-top: 20rpx;
+      z-index: 100;
+    }
+    .loginBtn{
+      width: 660rpx;
+      height: 90rpx;
+      border-radius: 50rpx;
+      background: linear-gradient(to left, #FB596E,#FEA377);
+      line-height: 90rpx;
+      color: #fff;
+      text-align: center;
+      font-size: 35rpx;
+      margin-top: 65rpx;
+    }
+    .register{
+      font-size: 28rpx;
+      color: #C9C9C9;
+      margin-top: 27rpx;
+    }
+  }
+  .hideLogin{
+    transform: translateX(-750rpx);
+    opacity: 0;
+  }
+  .registerBox{
+    position: absolute;
+    top: 0;
+    left: 750rpx;
+    opacity: 0;
+  }
+  .showregisterBox{
+    transform: translateX(-750rpx);
+    opacity: 1;
+  }
+</style>
+

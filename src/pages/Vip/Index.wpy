@@ -57,7 +57,8 @@
       card_id: '',
       formID:'',
       phoneNumber:'',
-      phoneNumberPassWord: ''
+      phoneNumberPassWord: '',
+      disId: ''
     }
     methods = {
       onTabsItemTap(index){
@@ -158,6 +159,9 @@
             card_id: this.card_id,
             link_tel: this.phoneNumber
           }
+          if(this.disId){
+            param.disId = this.disId
+          }
           VipModel.VipExecPay(param, (ResData)=>{
             if(ResData.code == 1) {
               VipModel.wxPay(ResData.data, ResData=>{
@@ -186,6 +190,9 @@
       }
     }
     onLoad(e){
+      if(e.dis_id){
+        this.disId = e.dis_id
+      }
       this.formID = e.formId
     }
     onShow(e){

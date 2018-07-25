@@ -212,19 +212,19 @@
     onLoad(options){
       this.orderID = options.id
       this.goods_order_type = options.type
+      let queryData = {
+        orderID: this.orderID,
+        pay_type: this.goods_order_type,
+      }
+      Groups.getGropusOrderDetail(queryData,ResData=>{
+        if(ResData.code == 1){
+          this.groupsData = ResData.data
+          this.loadingHidden = true
+          this.$apply()
+        }
+      })
     }
     onShow(){
-        let queryData = {
-          orderID: this.orderID,
-          pay_type: this.goods_order_type,
-        }
-        Groups.getGropusOrderDetail(queryData,ResData=>{
-          if(ResData.code == 1){
-            this.groupsData = ResData.data
-            this.loadingHidden = true
-            this.$apply()
-          }
-        })
     }
   }
 </script>
