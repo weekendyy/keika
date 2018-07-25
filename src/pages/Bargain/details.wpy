@@ -176,7 +176,7 @@
         </view>
       </view>
       <!-- 进客广告 -->
-      <block wx:if="{{true}}">
+      <block wx:if="{{adData.title}}">
         <view class="ADBox beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .4s">
           <button class="adBtn" @tap="showadWindowTap"></button>
           <image src="{{adData.img_src}}" mode="aspectFill" class="adPic"></image>
