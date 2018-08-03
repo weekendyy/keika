@@ -81,7 +81,6 @@
 
 <script>
   import wepy from 'wepy'
-  import AddressModel from '../../utils/address'
   import Groups from './Api/Groups.Api'
   export default class Index extends wepy.page {
     config = {

@@ -234,7 +234,7 @@
     left: -750rpx;
     opacity: 0;
     background-color: #fff;
-    z-index: 20;
+    z-index: 120;
     transition: .3s linear;
     box-sizing: border-box;
     padding-top: 120rpx;
@@ -300,7 +300,7 @@
     position: fixed;
     right: 10rpx;
     top: 120rpx;
-    z-index: 30;
+    z-index: 130;
     opacity: 0;
     pointer-events: none;
     transition: .4s;

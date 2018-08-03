@@ -86,7 +86,7 @@
           <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
         </view>
         <view class="main-details" hidden="{{ currentTabsIndex != 1 }}">
-          <block wx:if="{{EvaluateData.length != 0}}" wx:for="{{EvaluateData}}" wx:for-item="item" wx:for-index="idx" key="index">
+          <block wx:if="{{EvaluateData.length != 0}}" wx:for="{{EvaluateData}}" wx:for-item="item" wx:for-index="idx" wx:key="index">
             <view class="Evaluate-item">
               <view class="Evaluate-head">
                 <image class="Avatar" src="{{item.portrait_img}}"></image>
@@ -97,7 +97,7 @@
                 <text>{{item.content}}</text>
               </view>
               <view class="pic-list" wx:if="{{item.image.length > 0}}">
-                <block wx:for="{{item.image}}" wx:for-item="item" key="index">
+                <block wx:for="{{item.image}}" wx:for-item="item" wx:key="index">
                   <image src="{{item}}" @tap="bigPic({{idx}},{{index}})"></image>
                 </block>
               </view>
