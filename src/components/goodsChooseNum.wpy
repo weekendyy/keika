@@ -73,7 +73,7 @@
       },
       confirmTap(){
         if(model.verifyPhoneNumber(this.phoneNumber)){
-          if(this.maxNum == 0){
+          if(this.maxNum <= 0){
             this.$emit('buyGoods',0,this.phoneNumber)
           } else{
             this.$emit('buyGoods',this.countValue,this.phoneNumber)

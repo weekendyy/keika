@@ -3,6 +3,7 @@
   <import src="../../wxParse/wxParse.wxml"/>
   <!-- <view class="undercarriage" wx:if="{{undercarriage}}"><text>商品已下架</text></view> -->
   <block>
+    <image class="indexbgp" src="http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_002.jpg" mode="aspectFill"></image>
     <view class="container {{showPosterBox?'noScroll':''}}">
       <image src="{{DetailData.img}}" class="bannerpic {{loadingHidden?'showBannerpic':''}}" mode="aspectFill"/>
       <view wx:if="{{loadingHidden}}">
@@ -187,9 +188,10 @@
           <image src="../Goods/img/joinUs.png" mode="aspectFill" class="joinPic"></image>
         </view>
       </block>
+      <Admodel></Admodel>
       <!-- 进客广告弹窗 -->
       <view class="cover-ad {{showAdWindow?'showcoverAd':''}}" @tap="closeAdWindow"></view>
-      <view class="adwindow {{showAdWindow?'showadwindow':''}}">
+      <view class="adwindow {{showAdWindow?'showadwindow':''}}"> 
         <text class="adwindow-title">加入群聊</text>
         <text class="adwindow-tips">请在客服窗口输入 '{{adData.keyword}}'</text>
         <button bindcontact="contactBack" session-from="{{shopId}}" open-type="contact" class="adBtnwindow">知道了</button>
@@ -362,12 +364,14 @@
   import wxParse from '../../wxParse/wxParse'
   import BackHome from '../../components/backHome'
   import Address from '../../utils/address.js'
+  import Admodel from '../../components/ad'
   export default class jika extends wepy.page {
     config = {
       navigationBarTitleText: '活动详情'
     }
     components = {
-      BackHome: BackHome
+      BackHome: BackHome,
+      Admodel: Admodel
     }
     data = {
       param: {},
@@ -560,7 +564,6 @@
       }
     }
     onLoad(options){
-      console.log(options)
       if(options.dis_id){
         this.disId = options.dis_id
       }
@@ -1150,6 +1153,7 @@
       transition: .5s .4s;
     }
     .jpdescbox{
+      margin-top: 20rpx;
       width:710rpx;
       padding-bottom:80rpx;
       background-color:#ffffff;
@@ -1663,7 +1667,13 @@
     pointer-events: auto;
     transform: translateY(0);
   }
-  Page{
+  .indexbgp{
     background:url('http://applet.czsjcrm.cn/images/templete_image/bargain_leaves_002.jpg');
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
   }
 </style>

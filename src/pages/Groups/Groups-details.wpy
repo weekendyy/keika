@@ -47,6 +47,7 @@
         <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
       </view>
     </view>
+    <Admodel></Admodel>
     <view class="join-wrapper">
       <view class="rule-header">
         <text class="rule-text">支付开团邀请{{DetailData.group_person}}人参团,人数不足自动退款</text>
@@ -249,13 +250,15 @@
   import wepy from 'wepy'
   import BackHome from '../../components/backHome'
   import Address from '../../utils/address.js'
+  import Admodel from '../../components/ad'
   let animationShowHeight = 0;
   export default class index extends wepy.page {
     config = {
       navigationBarTitleText: '活动详情'
     }
     components = {
-      BackHome: BackHome
+      BackHome: BackHome,
+      Admodel: Admodel
     }
     data = {
       currentTabsIndex: 0,

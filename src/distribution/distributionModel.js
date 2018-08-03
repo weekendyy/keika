@@ -141,7 +141,7 @@ class distributionModel extends Base {
     this.request(param)
   }
   // 生成海报
-  buildPoster(res,Th,isReg){
+  buildPoster(res,Th,isReg,name){
     let that = Th
     wx.downloadFile({
       url: res.data.data,
@@ -149,11 +149,15 @@ class distributionModel extends Base {
         let qrcode = res1.tempFilePath
         const ctx = wx.createCanvasContext('posterId')
         if(isReg){
-          ctx.drawImage('./images/regposter.jpg', 0, 0, 200, 345)
+          ctx.drawImage('./images/shareposter.jpg', 0, 0, 200, 345)
         }else{
           ctx.drawImage('./images/shareposter.jpg', 0, 0, 200, 345)
         }
-        ctx.drawImage(qrcode, 60, 175, 80, 80)
+        ctx.setTextAlign('right')
+        ctx.setFontSize(10)
+        ctx.fillText(name+'招募', 85, 150)
+        ctx.fillText('啦', 177, 150)
+        ctx.drawImage(qrcode, 127, 208, 65, 65)
         ctx.draw(true)
         setTimeout(()=>{
           wx.canvasToTempFilePath({

@@ -27,6 +27,20 @@ class TimeLimitActivityDetail extends Base{
     }
     this.request(param)
   }
+  // 获取商品专题活动数据
+  getGoodsActivityData(queryData, callback){
+    let param = {
+      url: 'v5/magic_subject/get_subject_goods',
+      data: {
+        subject_id: queryData.subject_id,
+        page: queryData.pageNum
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
 }
 const TimeLimitActivityDetailModel = new TimeLimitActivityDetail()
 export default TimeLimitActivityDetailModel

@@ -310,12 +310,12 @@
         img = this.goodsData[this.shareCurrIndex].main_img
       }
       if(this.activeItemIndex == 1){
-        title = this.barginData[this.shareCurrIndex].name
+        title = this.barginData[this.shareCurrIndex].title
         path = '/pages/Bargain/details?id=' + this.barginData[this.shareCurrIndex].id + '&dis_id=' + disId.id
         img = this.barginData[this.shareCurrIndex].main_img
       }
       if(this.activeItemIndex == 2){
-        title = this.groupData[this.shareCurrIndex].name
+        title = this.groupData[this.shareCurrIndex].goods_name
         path = '/pages/Groups/Groups-details?id=' + this.groupData[this.shareCurrIndex].id + '&dis_id=' + disId.id
         img = this.groupData[this.shareCurrIndex].main_img
       }

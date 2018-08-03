@@ -41,22 +41,16 @@ class Index extends Base {
     }
     this.request(param)
   }
-  // for(let i=0; i<this.goodsListOld.length;i++){
-  //   this.goodsList.push({})
-  //   for(let k=0; k<this.goodsListOld[i].goods_data.length; k++){
-  //     let isTrue = true
-  //     for(let j=0; j<this.goodsList[i].length; j++){
-  //       if(this.goodsList[i].type === this.goodsListOld[i].goods_data[k].style_type){
-  //         this.goodsList[i].content.push(this.goodsListOld[i].goods_data[k])
-  //         isTrue = false
-  //       }
-  //     }
-  //     if(isTrue){
-  //       this.goodsList[i].type=this.goodsListOld[i].goods_data[k].style_type,
-  //       this.goodsList[i].content=[]
-  //     }
-  //   }
-  // }
+  // 是否有抽奖
+  isLottery(callback){
+    let param = {
+      url: 'v8/reward_goods/has_reward',
+      sCallback: function(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
 }
 const indexModel = new Index()
 export default indexModel

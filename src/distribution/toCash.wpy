@@ -98,7 +98,6 @@
       }
     }
     onLoad(e){
-      this.cashNum = e.cashNum
       this.hasCashed = e.cashed
       this.allNum = e.allNum
     }
@@ -129,6 +128,7 @@
       disModel.myMoneyDetail({pageNum:1},(res)=>{
         if(res.code == 1){
           this.incomeData = res.data
+          this.cashNum = res.cash_money_can
           this.exchangeTime(this.incomeData)
           res.applying_money && (this.cashing = res.applying_money)
           this.$apply()

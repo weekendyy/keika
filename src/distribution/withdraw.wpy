@@ -31,7 +31,8 @@
     data = {
       showContent: false,
       canCashNumber: '',
-      value: ''
+      value: '',
+      isCashing: false
     }
     computed = {
         
@@ -46,7 +47,7 @@
         }
       },
       allCash(){
-        this.value = this.canCashNumber
+        this.value = Math.floor(this.canCashNumber)
         this.$apply()
       },
       witchDraw(){
@@ -55,24 +56,27 @@
         //   this.value = ''
         //   return false
         // }
-        let query = {
-          money: this.value
-        }
-        disModel.withDraw(query,(res)=>{
-          if(res.code == 1){
-            disModel.showTips('申请提现成功')
-            wx.setStorageSync('cashNum',this.canCashNumber-this.value)
-            disModel.setPrePageState('cashNum',this.canCashNumber-this.value)
-            this.canCashNumber = this.canCashNumber-this.value
-            setTimeout(()=>{
-              wx.navigateBack({
-                delta: 1
-              })
-            },500)
-          }else{
-            disModel.showTips(res.message)
+        if(!this.isCashing){
+          this.isCashing = true
+          let query = {
+            money: this.value
           }
-        })
+          disModel.withDraw(query,(res)=>{
+            if(res.code == 1){
+              disModel.showTips('申请提现成功')
+              wx.setStorageSync('cashNum',this.canCashNumber-this.value)
+              disModel.setPrePageState('cashNum',this.canCashNumber-this.value)
+              this.canCashNumber = this.canCashNumber-this.value
+              setTimeout(()=>{
+                wx.navigateBack({
+                  delta: 1
+                })
+              },500)
+            }else{
+              disModel.showTips(res.message)
+            }
+          })
+        }
       }
     }
     onLoad(e){

@@ -75,7 +75,8 @@
       }],
       showContent: false,
       posterImg: '',
-      indexData: {}
+      indexData: {},
+      name: ''
     }
     computed = {
         
@@ -97,7 +98,7 @@
           }
           disModel.creatPoster(query,(res)=>{
             if(res.code == 1){
-              disModel.buildPoster(res,this,true)
+              disModel.buildPoster(res,this,true,this.name)
             }else{
               disModel.showTips(res.message)
             }
@@ -105,7 +106,7 @@
           return false
         }
         if(index == 3){
-          disModel.navTo(url,{cashNum:this.indexData.dis_user.cash_money_can,cashed: this.indexData.dis_user.cash_money_total,allNum: this.indexData.dis_user.commission})
+          disModel.navTo(url,{cashed: this.indexData.dis_user.cash_money_total,allNum: this.indexData.dis_user.commission})
           return false
         }
         disModel.navTo(url)
@@ -124,6 +125,7 @@
         if(res.code == 1){
           this.indexData = res.data
           this.showContent = true
+          this.name = res.data.cxc_name
           this.$apply()
         }else{
           disModel.showTips(res.message)

@@ -70,6 +70,7 @@
       disModel.getRankData({pageNum: 1},(res)=>{
         if(res.code == 1){
           this.rankData = res.data
+          this.$apply()
           this.showContent = true
           this.$apply()
         }else{

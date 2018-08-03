@@ -240,7 +240,10 @@
       }
     }
     .mainBox{
-      width: 710rpx;
+      width: 750rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       .itemtab{
         width: 100%;
         height: 80rpx;
@@ -248,14 +251,16 @@
         display:flex;
         align-items: center;
         justify-content: space-around;
+        border-bottom: 2rpx solid #EFEFEF;
         .tabitem{
           width: 166rpx;
-          text-align: center;
           color: #9B9B9B;
           font-size: 30rpx;
           line-height: 80rpx;
-          border-bottom:4rpx solid transparent;
           height:80rpx;
+          border-bottom:4rpx solid #fff;
+          box-sizing: border-box;
+          text-align: center;
         }
         .activeitem{
           color:#FF7022;

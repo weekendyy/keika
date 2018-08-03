@@ -9,6 +9,9 @@
   image{
     vertical-align: top;
   }
+  .hoverClass{
+    opacity: .5;
+  }
   .beforeShow{
     opacity: 0;
     transform: scale(0.9);
@@ -113,7 +116,8 @@ export default class extends wepy.app {
       {
         "root": "TimeLimitActivity",  //专题活动
         "pages": [
-          "TimeLimitActivityDetail"
+          "TimeLimitActivityDetail",
+          "TimeLimitActivityGoods"
         ]
       }, {
         "root": "lotteryDraw",  //抽奖
@@ -212,7 +216,8 @@ export default class extends wepy.app {
     viptitle: null,
     phoneWidth:'',
     phoneHeight:'',
-    pxRadio:''
+    pxRadio:'',
+    ad: 'adunit-7e8a16f74e859198'
   }
   onLaunch (e) {
     /*

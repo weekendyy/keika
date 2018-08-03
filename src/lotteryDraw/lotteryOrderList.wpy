@@ -2,13 +2,13 @@
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <view class="lotteryOrderList">
     <view class="tabItems">
-      <view class="tabItem {{index == tabIndex?'activeItem':''}}" wx:for="{{tabItems}}" @tap="itemTab({{index}})">
+      <view class="tabItem {{index == tabIndex?'activeItem':''}}" wx:for="{{tabItems}}" wx:key="{{index}}" @tap="itemTab({{index}})">
         <text>{{item}}</text>
       </view>
     </view>
     <!-- 列表 -->
     <view class="orderList">
-      <view class="orderItem" wx:for="{{tabIndex == 0 ? allOrder : lotteryOrder}}" @tap="tolotteryDetail({{index}})">
+      <view class="orderItem" wx:for="{{tabIndex == 0 ? allOrder : lotteryOrder}}" wx:key="{{index}}" @tap="tolotteryDetail({{index}})">
         <text class="orderTitle">奖品：{{item.rewardgoods.goods_name}} X{{item.rewardgoods.goods_num}}</text>
         <view class="orderItem-right">
           <text>{{item.create_time}}</text>
@@ -35,7 +35,7 @@
     data = {
       tabItems: ['全部抽奖', '中奖纪录'],
       tabIndex: 0,
-      allOrder: [ ],
+      allOrder: [],
       lotteryOrder: [],
       isEmpty: {
         allOrderEmpty: false,
@@ -56,7 +56,7 @@
               if(res.data.length == 0){
                 this.isEmpty.lotteryOrderEmpty = true
               }
-              this.lotteryOrder = res.data
+              this.lotteryOrder = res.data.reverse()
               this.$apply()
             }
           })
@@ -77,7 +77,7 @@
           if(res.data.length == 0){
             this.isEmpty.allOrderEmpty = true
           }
-          this.allOrder = res.data
+          this.allOrder = res.data.reverse()
           this.$apply()
         }
       })

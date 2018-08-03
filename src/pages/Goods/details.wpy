@@ -72,7 +72,7 @@
     </view>
     <!-- 剩余份数 -->
     <view class="goodsNumBox beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .2s">
-      <text>共{{DetailsData.num}}份/剩{{DetailsData.residue-DetailsData.shopping_num}}份</text>
+      <text>共{{DetailsData.num}}份/剩{{surplus}}份</text>
       <text wx:if="{{DetailsData.shopping_num!= 0}}">/{{DetailsData.shopping_num}}{{DetailsData.shopping_txt}}</text>
       <view class="goods-header-title_right">
         <image src="./img/see.png" mode="widthFix" class="lookIcon"></image>
@@ -97,6 +97,7 @@
         <image src="./img/joinUs.png" mode="aspectFill" class="joinPic"></image>
       </view>
     </block>
+    <Admodel></Admodel>
     <!-- 进客广告弹窗 -->
     <view class="cover-ad {{showAdWindow?'showcoverAd':''}}" @tap="closeAdWindow"></view>
     <view class="adwindow {{showAdWindow?'showadwindow':''}}">
@@ -286,6 +287,7 @@
   import Address from '../../utils/address.js'
   import BackHome from '../../components/backHome'
   import Poster from '../../components/poster'
+  import Admodel from '../../components/ad'
   export default class Index extends wepy.page {
     config = {
       navigationBarTitleText: '套餐详情'
@@ -293,7 +295,8 @@
     components = {
       goodsChooseNum: goodsChooseNum,
       BackHome: BackHome,
-      Poster: Poster
+      Poster: Poster,
+      Admodel: Admodel
     }
     data = {
       DetailsData: '',
@@ -315,6 +318,15 @@
       showAdWindow: false,
       shopId: '',
       disId: ''
+    }
+    computed = {
+      surplus(){
+        if(this.DetailsData.residue<0){
+          return 0
+        }else{
+          return this.DetailsData.residue
+        }
+      }
     }
     events = {
       /* 下单 */

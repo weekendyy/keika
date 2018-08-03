@@ -5,7 +5,7 @@
       <view @touchstart="moveStart" @touchmove="moveCoupon" @touchend="moveEnd" class="couponItem" style="transform: translateX({{ ((index-changeNum)%subjectList.length) == 0 ? couponMoveX+'px' : ((index-changeNum)%subjectList.length)*27+'px'}}) scale({{(1-(index-changeNum)%subjectList.length*0.1)}});wxcs_style_transform: translateX({{ ((index-changeNum)%subjectList.length) == 0 ? couponMoveX+'px' : ((index-changeNum)%subjectList.length)*50+'rpx'}}) scale({{(1-(index-changeNum)%subjectList.length*0.1)}}); z-index:{{10-(index-changeNum)%subjectList.length}}; opacity:{{(index-changeNum)%subjectList.length == 0 ? 1 : 0.8}}; transition: {{(index-changeNum)%subjectList.length == 0 ? '0.3':'0.5'}}s">
         <image src="./images/subjecticon.png" class="subjectTxt {{(index-changeNum)%subjectList.length == 0 ? 'showSubjectTxt' : ''}}" mode="widthFix"></image>
         <image src="{{item.img_url}}" mode="aspectFill" class="subjectImg"></image>
-        <button form-type="submit" class="formIdBtn" data-id="{{item.id}}"></button>
+        <button form-type="submit" class="formIdBtn" data-type="{{item.show_type}}" data-id="{{item.id}}"></button>
       </view>
     </block>
   </view>
@@ -62,10 +62,18 @@
       nextCoupon(e){
         let formId = e.detail.formId
         let id = e.detail.target.dataset.id
+        let type = e.detail.target.dataset.type
         console.log(formId)
-        wx.navigateTo({
-          url: '../../TimeLimitActivity/TimeLimitActivityDetail?id='+ id + "&formId=" + formId
-        })
+        if(type == 1){
+          wx.navigateTo({
+            url: '../../TimeLimitActivity/TimeLimitActivityDetail?id='+ id + "&formId=" + formId
+          })
+        }else{
+          wx.navigateTo({
+            url: '../../TimeLimitActivity/TimeLimitActivityGoods?id='+ id + "&formId=" + formId
+          })
+        }
+
       }
     }
     onLoad(){

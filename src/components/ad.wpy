@@ -1,0 +1,35 @@
+<template>
+  <block wx:if="{{showAd}}">
+    <ad unit-id='{{adKeyword}}'></ad>
+  </block>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import adModel from './seach.js'
+  export default class extends wepy.component{
+      props = {
+      }
+      data = {
+        adKeyword: '',
+        showAd: false
+      }
+      methods = {
+        
+      }
+      onLoad(){
+        adModel.getAdData({},(res)=>{
+          if(res.code == 1){
+            this.adKeyword = res.adunit
+            setTimeout(()=>{
+              this.showAd = true
+              this.$apply()
+            },200)
+          }
+        })
+      }
+  }
+</script>
+<style lang="less">
+  
+</style>

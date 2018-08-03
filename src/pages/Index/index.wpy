@@ -1,141 +1,49 @@
 <template>
   <import src="../tpls/loading/loading.wxml" />
-  <!-- 轮播图 -->
-  <block wx:if="{{bannerImgs.length != 0}}">
-    <Banner :bannerImgs.sync="bannerImgs" :isShow.sync="showContent" :bannerIndex.sync="bannerIndex"></Banner>
-  </block>
-  <!-- 导航 -->
-  <form report-submit="true" bindsubmit="toNavDetail">
-    <view class="navBox" wx:if="{{navData.length != 0}}">
-      <view class="navItem {{showContent?'showNavItem':''}}" wx:for="{{navData}}" wx:key="{{index}}">
-        <image src="{{item.classify_img}}" mode="aspectFill" class="navIcon"></image>
-        <text class="navTxt">{{item.classify_name}}</text>
-        <button class="formIdBtn" form-type="submit" data-type="{{item.choose_link}}" data-url="{{item.http_url}}"></button>
-      </view>
-    </view>
-  </form>
-  <!-- 专题 -->
-  <block wx:if="{{subjectList.length != 0}}">
-    <slidSwitch :subjectList.sync="subjectList" :isShow.sync="showSubject"></slidSwitch>
-  </block>
-  <!-- 产品列表 -->
-  <view class="goodsLisBox {{showContent?'showGoodsLisBox':''}}">
-    <block wx:for="{{goodsList}}" wx:key="{{index}}">
-      <!-- 头部标题 -->
-      <view class="goodsListHead">
-        <view class="headTitle">
-          <text class="headTitle_txt">{{item.area_name}}</text>
-          <text class="headTitle_desc ellip-2">{{item.area_title}}</text>
+  <search :showSearch.sync="showSearch" type="1"></search>
+  <view class="indexBox">
+    <!-- 轮播图 -->
+    <block wx:if="{{bannerImgs.length != 0}}">
+      <Banner :bannerImgs.sync="bannerImgs" :isShow.sync="showContent" :bannerIndex.sync="bannerIndex"></Banner>
+    </block>
+    <!-- 导航 -->
+    <form report-submit="true" bindsubmit="toNavDetail">
+      <view class="navBox" wx:if="{{navData.length != 0}}">
+        <view class="navItem {{showContent?'showNavItem':''}}" wx:for="{{navData}}" wx:key="{{index}}">
+          <image src="{{item.classify_img}}" mode="aspectFill" class="navIcon"></image>
+          <text class="navTxt">{{item.classify_name}}</text>
+          <button class="formIdBtn" form-type="submit" data-type="{{item.choose_link}}" data-url="{{item.http_url}}"></button>
         </view>
-        <!-- <view class="pageNum" wx:if="{{item.headStyle == 2}}"><text class="pageNumTxt">{{currentIndex}}</text>/3</view> -->
-        <view class="seeMore" @tap="seeMoreGoods({{item.id}},{{item.area_name}},{{item.type}})">查看更多</view>
       </view>
-      <!-- 商品部分 -->
-      <block wx:if="{{item.type == 1}}">
-        <block wx:for="{{item.goods_data}}" wx:key="{{index}}" wx:item="item">
-          <!-- 类型一 -->
-          <view wx:if="{{index == 3}}">
-            <form report-submit="true" bindsubmit="toGoodsDetail">
-              <block wx:for="{{item}}" wx:key="{{index}}">
-                <view class="listStyle-one">
-                  <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
-                  <!-- <image src="./images/activelogo.png" mode="widthFix" class="goodsLogo"></image> -->
-                  <view class="bottom-info">
-                    <text class="goods-title ellip-1">{{item.goods_name}}</text>
-                    <view class="goods-time-amount">
-                      <text>活动时间：{{item.from_time}}-{{item.to_time}}</text>
-                      <text>已售：{{item.get_num}}份</text>
-                    </view>
-                    <view class="goods-priceAnd">
-                      <view class="goods-price">
-                        <text class="price-now" wx:if="{{item.goods_type != 2}}">¥{{item.original_price?item.discount_price:0}}</text>
-                        <text class="price-now" wx:if="{{item.goods_type == 2}}">¥{{item.original_price?item.group_price:0}}</text>
-                        <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
-                        <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
-                      </view>
-                      <view class="buyBtn">立即抢购</view>
-                    </view>
-                  </view>
-                  <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
-                </view>
-              </block>
-            </form>
+    </form>
+    <!-- 专题 -->
+    <block wx:if="{{subjectList.length != 0}}">
+      <slidSwitch :subjectList.sync="subjectList" :isShow.sync="showSubject"></slidSwitch>
+    </block>
+    <!-- 产品列表 -->
+    <view class="goodsLisBox {{showContent?'showGoodsLisBox':''}}">
+      <block wx:for="{{goodsList}}" wx:key="{{index}}">
+        <!-- 头部标题 -->
+        <view class="goodsListHead">
+          <view class="headTitle">
+            <text class="headTitle_txt">{{item.area_name}}</text>
+            <text class="headTitle_desc ellip-2">{{item.area_title}}</text>
           </view>
-          <!-- 类型二 -->
-          <form report-submit="true" bindsubmit="toGoodsDetail">
-          <view class="goodsType2" wx:if="{{index == 1}}">
-            <block wx:for="{{item}}" wx:key="{{index}}">
-              <view class="listStyle-two">
-                <image src="{{item.banner}}" class="goodsPic-styleTwo" mode="aspectFill"></image>
-                <text class="goodsTitle-styleTwo ellip-2">{{item.goods_name}}</text>
-                <view class="goods-price">
-                  <text class="price-now" wx:if="{{item.goods_type != 2}}">¥{{item.original_price?item.discount_price:0}}</text>
-                  <text class="price-now" wx:if="{{item.goods_type == 2}}">¥{{item.original_price?item.group_price:0}}</text>
-                  <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
-                  <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
-                </view>
-                <view class="cut2" wx:if="{{index%2 == 0}}"></view>
-                <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
-              </view>
-            </block>
-          </view>
-          </form>
-          <!-- 类型三 -->
-          <view class="goodsType2" wx:if="{{index == 2}}">
-            <form report-submit="true" bindsubmit="toGoodsDetail">
-            <block wx:for="{{item}}" wx:key="{{index}}">
-              <view class="listStyle-three">
-                <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleThree"></image>
-                <view class="goodsContent-styleThree">
-                  <text class="goodsTitle-styleThree ellip-2">{{item.goods_name}}</text>
-                  <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
-                  <view class="priceBox-styleThree">
-                    <view class="goods-price">
-                      <text class="price-now" wx:if="{{item.goods_type != 2 }}">¥{{item.original_price?item.discount_price:0}}</text>
-                      <text class="price-now" wx:if="{{item.goods_type  == 2 }}">¥{{item.original_price?item.group_price:0}}</text>
-                      <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
-                      <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
-                    </view>
-                    <view class="barginbtn">立即抢购</view>
-                  </view>
-                </view>
-                <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
-              </view>
-            </block>
-            </form>
-          </view>
-          <!-- 类型四 -->
-          <form report-submit="true" bindsubmit="toGoodsDetail">
-          <view class="goodsType4" wx:if="{{index == 4}}">
-            <block wx:for="{{item}}" wx:key="{{index}}">
-              <view class="listStyle-four">
-                <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleFour"></image>
-                <!-- <view class="groupTip-styleFour">2人拼团</view> -->
-                <text class="goodsTitle-styleFour ellip-2">{{item.goods_name}}</text>
-                <view class="goods-price">
-                  <text class="price-now" wx:if="{{item.goods_type != 2}}">¥{{item.original_price?item.discount_price:0}}</text>
-                  <text class="price-now" wx:if="{{item.goods_type == 2}}">¥{{item.original_price?item.group_price:0}}</text>
-                  <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
-                  <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
-                </view>
-                <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
-              </view>
-            </block>
-            <view style="flex: 0 0 1rpx;"></view>
-          </view>
-          </form>
-          <!-- 类型五 -->
-          <form report-submit="true" bindsubmit="toGoodsDetail">
-          <view class="goodsType5" wx:if="{{index == 5}}">
-            <swiper indicator-dots="{{false}}" class="listStyle-five" current="{{bannerIndexGoods}}" bindchange="bannerChange" circular="true"
-              autoplay="{{false}}" interval="{{5000}}" duration="{{500}}">
-              <block wx:for="{{item}}" wx:key="{{index}}">
-                <swiper-item>
-                  <view class="itemBox" style="transform: scale({{bannerIndexGoods == index ? '1' : '0.9'}});">
+          <!-- <view class="pageNum" wx:if="{{item.headStyle == 2}}"><text class="pageNumTxt">{{currentIndex}}</text>/3</view> -->
+          <view class="seeMore" @tap="seeMoreGoods({{item.id}},{{item.area_name}},{{item.type}})">查看更多</view>
+        </view>
+        <!-- 商品部分 -->
+        <block wx:if="{{item.type == 1}}">
+          <block wx:for="{{item.goods_data}}" wx:key="{{index}}" wx:item="item">
+            <!-- 类型一 -->
+            <view wx:if="{{index == 3}}">
+              <form report-submit="true" bindsubmit="toGoodsDetail">
+                <block wx:for="{{item}}" wx:key="{{index}}">
+                  <view class="listStyle-one">
                     <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
                     <!-- <image src="./images/activelogo.png" mode="widthFix" class="goodsLogo"></image> -->
                     <view class="bottom-info">
-                      <text class="goods-title ellip-1">{{item.goods_name}}</text>
+                      <text class="goods-title ellip-2">{{item.goods_name}}</text>
                       <view class="goods-time-amount">
                         <text>活动时间：{{item.from_time}}-{{item.to_time}}</text>
                         <text>已售：{{item.get_num}}份</text>
@@ -152,33 +60,128 @@
                     </view>
                     <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
                   </view>
-                </swiper-item>
+                </block>
+              </form>
+            </view>
+            <!-- 类型二 -->
+            <form report-submit="true" bindsubmit="toGoodsDetail">
+            <view class="goodsType2" wx:if="{{index == 1}}">
+              <block wx:for="{{item}}" wx:key="{{index}}">
+                <view class="listStyle-two">
+                  <image src="{{item.banner}}" class="goodsPic-styleTwo" mode="aspectFill"></image>
+                  <text class="goodsTitle-styleTwo ellip-2">{{item.goods_name}}</text>
+                  <view class="goods-price">
+                    <text class="price-now" wx:if="{{item.goods_type != 2}}">¥{{item.original_price?item.discount_price:0}}</text>
+                    <text class="price-now" wx:if="{{item.goods_type == 2}}">¥{{item.original_price?item.group_price:0}}</text>
+                    <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
+                    <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
+                  </view>
+                  <view class="cut2" wx:if="{{index%2 == 0}}"></view>
+                  <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+                </view>
               </block>
-            </swiper>
-            <view class="swiperNumber"><text class="currentIndex">{{currentIndex}}</text>/{{item.length}}</view>
+            </view>
+            </form>
+            <!-- 类型三 -->
+            <view class="goodsType2" wx:if="{{index == 2}}">
+              <form report-submit="true" bindsubmit="toGoodsDetail">
+              <block wx:for="{{item}}" wx:key="{{index}}">
+                <view class="listStyle-three">
+                  <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleThree"></image>
+                  <view class="goodsContent-styleThree">
+                    <text class="goodsTitle-styleThree ellip-2">{{item.goods_name}}</text>
+                    <text class="goodsDesc-styleThree">活动时间：{{item.from_time}}-{{item.to_time}}</text>
+                    <view class="priceBox-styleThree">
+                      <view class="goods-price">
+                        <text class="price-now" wx:if="{{item.goods_type != 2 }}">¥{{item.original_price?item.discount_price:0}}</text>
+                        <text class="price-now" wx:if="{{item.goods_type  == 2 }}">¥{{item.original_price?item.group_price:0}}</text>
+                        <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
+                        <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
+                      </view>
+                      <view class="barginbtn">立即抢购</view>
+                    </view>
+                  </view>
+                  <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+                </view>
+              </block>
+              </form>
+            </view>
+            <!-- 类型四 -->
+            <form report-submit="true" bindsubmit="toGoodsDetail">
+            <view class="goodsType4" wx:if="{{index == 4}}">
+              <block wx:for="{{item}}" wx:key="{{index}}">
+                <view class="listStyle-four">
+                  <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleFour"></image>
+                  <!-- <view class="groupTip-styleFour">2人拼团</view> -->
+                  <text class="goodsTitle-styleFour ellip-2">{{item.goods_name}}</text>
+                  <view class="goods-price">
+                    <text class="price-now" wx:if="{{item.goods_type != 2}}">¥{{item.original_price?item.discount_price:0}}</text>
+                    <text class="price-now" wx:if="{{item.goods_type == 2}}">¥{{item.original_price?item.group_price:0}}</text>
+                    <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
+                    <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
+                  </view>
+                  <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+                </view>
+              </block>
+              <view style="flex: 0 0 1rpx;"></view>
+            </view>
+            </form>
+            <!-- 类型五 -->
+            <form report-submit="true" bindsubmit="toGoodsDetail">
+            <view class="goodsType5" wx:if="{{index == 5}}">
+              <swiper indicator-dots="{{false}}" class="listStyle-five" current="{{bannerIndexGoods}}" bindchange="bannerChange" circular="true"
+                autoplay="{{false}}" interval="{{5000}}" duration="{{500}}">
+                <block wx:for="{{item}}" wx:key="{{index}}">
+                  <swiper-item>
+                    <view class="itemBox" style="transform: scale({{bannerIndexGoods == index ? '1' : '0.9'}});">
+                      <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
+                      <!-- <image src="./images/activelogo.png" mode="widthFix" class="goodsLogo"></image> -->
+                      <view class="bottom-info">
+                        <text class="goods-title ellip-2">{{item.goods_name}}</text>
+                        <view class="goods-time-amount">
+                          <text>活动时间：{{item.from_time}}-{{item.to_time}}</text>
+                          <text>已售：{{item.get_num}}份</text>
+                        </view>
+                        <view class="goods-priceAnd">
+                          <view class="goods-price">
+                            <text class="price-now" wx:if="{{item.goods_type != 2}}">¥{{item.original_price?item.discount_price:0}}</text>
+                            <text class="price-now" wx:if="{{item.goods_type == 2}}">¥{{item.original_price?item.group_price:0}}</text>
+                            <text class="price-pre" wx:if="{{item.goods_type!=5}}">¥{{item.original_price?item.original_price:0}}</text>
+                            <text class="price-pre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
+                          </view>
+                          <view class="buyBtn">立即抢购</view>
+                        </view>
+                      </view>
+                      <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+                    </view>
+                  </swiper-item>
+                </block>
+              </swiper>
+              <view class="swiperNumber"><text class="currentIndex">{{currentIndex}}</text>/{{item.length}}</view>
+            </view>
+            </form>
+          </block>
+        </block>
+        <view style="height: 1px;"></view>
+        <!-- 裂变券 -->
+        <block wx:if="{{item.type == 3}}">
+          <view class="couponContent" wx:if="{{couponColumnNum.length != 0}}">
+            <block wx:for="{{couponColumnNum}}" wx:key="{{index}}" wx:item="item">
+                <view class="couponColumnItem">
+                  <repeat for="{{item}}" key="index" index="index" item="item">
+                    <couponList :item.sync='item'></couponList>
+                  </repeat>
+                </view>
+            </block>
           </view>
-          </form>
         </block>
       </block>
-      <view style="height: 1px;"></view>
-      <!-- 裂变券 -->
-      <block wx:if="{{item.type == 3}}">
-        <view class="couponContent" wx:if="{{couponColumnNum.length != 0}}">
-          <block wx:for="{{couponColumnNum}}" wx:key="{{index}}" wx:item="item">
-              <view class="couponColumnItem">
-                <repeat for="{{item}}" key="index" index="index" item="item">
-                  <couponList :item.sync='item'></couponList>
-                </repeat>
-              </view>
-          </block>
-        </view>
-      </block>
-    </block>
-  </view>
-  <!-- 抽奖按钮 -->
-  <image @tap="toPrizeList" class="toPrize {{showContent?'showtoPrizeList':''}}" src="http://applet.czsjcrm.cn/images/templete_image/reward_3.gif" mode="widthFix"></image>
-  <view wx:if="{{!showContent}}">
-    <template is="loading" data="{{loadingTxt:''}}"></template>
+    </view>
+    <!-- 抽奖按钮 -->
+    <image @tap="toPrizeList" class="toPrize {{isShowLottery?'showtoPrizeList':''}}" src="http://applet.czsjcrm.cn/images/templete_image/reward_3.gif" mode="widthFix"></image>
+    <view wx:if="{{!showContent}}">
+      <template is="loading" data="{{loadingTxt:''}}"></template>
+    </view>
   </view>
 </template>
 
@@ -188,6 +191,7 @@
   import slidSwitch from '../../components/slidSwitch'
   import IndexModel from './index-model.js'
   import couponList from '../../components/couponList'
+  import search from '../../components/search'
   export default class Index extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -198,7 +202,8 @@
     components = {
       Banner: Banner,
       slidSwitch: slidSwitch,
-      couponList: couponList
+      couponList: couponList,
+      search: search
     }
 
     data = {
@@ -212,9 +217,13 @@
       currentIndex: 1,
       goodsList: [],
       bannerIndexGoods: 0,
-      couponColumnNum: []
+      couponColumnNum: [],
+      isShowLottery: false,
+      showSearch: false
     }
-
+    events = {
+      
+    }
     computed = {
       
     }
@@ -285,9 +294,6 @@
         IndexModel.navTo('../../coupon/indexCouponList')
       }
     }
-
-    events = {
-    }
     onLoad() {
       this._loadData()
     }
@@ -357,6 +363,26 @@
           IndexModel.showTips(res.message)
         }
       })
+      IndexModel.isLottery((res)=>{
+        if(res.code == 1){
+          if(res.count != 0){
+            this.isShowLottery = true
+            this.$apply()
+          }else{
+            this.isShowLottery = false
+            this.$apply()
+          }
+        }
+      })
+    }
+    onPageScroll(e){
+      if(e.scrollTop>350 && e.scrollTop<450){
+        this.showSearch = true
+        this.$apply()
+      }else if(e.scrollTop<350 && e.scrollTop>250){
+        this.showSearch = false
+        this.$apply()
+      }
     }
     onShow(){
     }
@@ -373,16 +399,19 @@
 </script>
 <style lang="less">
   @import '../tpls/loading/loading.wxss';
+  .indexBox{
+    height: 100%;
+  }
   .navBox{
     width: 100%;
     box-sizing: border-box;
-    padding: 0 40rpx;
+    padding: 40rpx 40rpx 0;
     display: flex;
-    height: 130rpx;
+    flex-wrap: wrap;
     margin: 10rpx 0 0;
     .navItem{
       flex: 0 0 167.5rpx;
-      height: 100%;
+      height: 110rpx;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -390,6 +419,7 @@
       transform: scale(0.8);
       opacity: 0;
       transition: .6s .1s;
+      margin-bottom: 40rpx;
       .navIcon{
         width: 60rpx;
         height: 60rpx;
@@ -490,12 +520,13 @@
         width: 100%;
         box-sizing: border-box;
         padding: 20rpx 0 40rpx;
+        overflow: hidden;
         .goods-title{
           color: #000;
           font-size: 34rpx;
           font-weight: 600;
           width: 100%;
-          display: block;
+          line-height: 44rpx;
         }
         .goods-time-amount{
           width: 100%;
@@ -713,8 +744,8 @@
               color: #000;
               font-size: 34rpx;
               font-weight: 600;
-              display: block;
               width: 100%;
+              line-height: 44rpx;
             }
             .goods-time-amount{
               width: 100%;
@@ -815,11 +846,13 @@
     transition: .5s;
     opacity: 0;
     transform: scale(0);
+    pointer-events: none;
   }
   .showtoPrizeList{
     opacity: 1;
     transition: .5s 1s;
     transform: scale(1);
+    pointer-events: auto;
   }
   .formIdBtn{
     width: 100%;

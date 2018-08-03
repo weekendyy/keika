@@ -1,0 +1,316 @@
+<template>
+  <view class="searcgBox">
+    <image src="./images/search.png" mode="widthFix" class="searchIcon {{showSecrchIcon?'':'hideIcon'}}"></image>
+    <input class="searcgInp" adjust-position="{{false}}" value="{{searchValue}}" focus="{{focusInp}}" placeholder="{{type == 1?'搜索商品':'搜索店铺'}}" @focus="inpFocus" @blur="inpBlur" @input="searchInp" bindconfirm="searchTap" />
+  </view>
+  <view style="height: 90rpx;"></view>
+  <scroll-view scroll-y class="searchResultBox {{showsearchResultBox?'showsearchResultBox':''}}" bindscrolltolower="reachBottom">
+    <view wx:if="{{false}}" class="keywordBox">
+      <view class="searchHis" wx:for="{{searchkeywordHis}}" wx:for="{{index}}" @tap="keywordTap({{item}})">{{item}}</view>
+    </view>
+    <block wx:for="{{searchList}}" wx:key="{{index}}">
+      <view class="searchItem" @tap="toGoodsDetail({{item.id}},{{item.goods_type}})" hover-stay-time="400" hover-start-time="0" hover-class="hoverClass">
+        <image src="{{item.main_img}}" mode="aspectFill" class="searchPic"></image>
+        <text class="searchTitle ellip-2" wx:if="{{type == 1}}">{{item.name}}</text>
+        <text class="searchTitle ellip-2" wx:if="{{type == 2}}">{{item.magic_shop_name}}</text>
+      </view>
+    </block>
+    <text class="noneSearchTips" wx:if="{{!searchResult}}">未找到您搜索的商品</text>
+  </scroll-view>
+  <image src="./images/close.png" mode="aspectFill" class="closeIcon {{showsearchResultBox?'showcloseIcon':''}}" @tap="closeSearch"></image>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import searchModel from './seach.js'
+  export default class extends wepy.component{
+      props = {
+        showSearch: Boolean,
+        type: String    //  1商品  2店铺
+      }
+      computed = {
+        showSecrchIcon(){
+          if(!this.searchValue){
+            return true
+          }else{
+            return false
+          }
+        }
+      }
+      data = {
+        searchValue: '',
+        showsearchResultBox: false,
+        focusInp: false,
+        searchList: [],
+        searchResult: true,
+        isLoadAll: false,
+        pageNum: 1,
+        searchkeywordHis: []
+      }
+      searchKeyword(pageNum,scallBack){
+        if(this.searchValue.replace(/\s+/g, "").length == 0){
+          searchModel.showTips('请输入搜索关键字')
+          return false
+        }
+        wx.showLoading({
+          title: '加载中...'
+        })
+        this.searchResult = true
+        let query = {
+          keyword: this.searchValue,
+          pageNum: pageNum
+        }
+        if(this.type == '1'){
+          searchModel.getMoreGoodsList(query,(res)=>{
+            wx.hideLoading()
+            if(res.code == 1){
+              scallBack && scallBack(res)
+            }else{
+              searchModel.showTips(res.message)
+            }
+          })
+        }
+        if(this.type == '2'){
+          searchModel.getMoreShopList(query,(res)=>{
+            wx.hideLoading()
+            if(res.code == 1){
+              scallBack && scallBack(res)
+            }else{
+              searchModel.showTips(res.message)
+            }
+          })
+        }
+      }
+      methods = {
+        toGoodsDetail(id,type){
+          if(this.type == '1'){
+            if(type == 1){ //抢购
+              searchModel.navTo('/pages/Goods/details',{id:id})
+            }
+            if(type == 2){  //拼团
+              searchModel.navTo('/pages/Groups/Groups-details',{id:id})
+            }
+            if(type == 4){ //砍价
+              searchModel.navTo('/pages/Bargain/details',{id:id})
+            }
+            if(type == 5){ //集卡
+              searchModel.navTo('/pages/Card/details',{id:id})
+            }
+          }else if(this.type == '2'){
+            searchModel.navTo('/niceShop/niceShopIndex',{id:id})
+          }
+        },
+        keywordTap(value){
+          this.searchValue = value
+          this.searchKeyword(1,(res)=>{
+            if(res.data.search_data.length == 0){
+              this.searchResult = false
+            }
+            this.searchList = res.data.search_data
+            this.$apply()
+          })
+        },
+        reachBottom(){
+          if(!this.isLoadAll && this.searchList.length!=0){
+            this.pageNum++
+            this.searchKeyword(this.pageNum,(res)=>{
+              if(res.data.search_data.length == 0){
+                this.isLoadAll = true
+                searchModel.showTips('已经到底了')
+              }else{
+                this.searchList = [...this.searchList,...res.data.search_data]
+                this.$apply()
+              }
+            })
+          }
+        },
+        searchInp(e){
+          this.searchValue = e.detail.value
+        },
+        inpFocus(){
+          this.showsearchResultBox = true
+          if(this.type == '1'){
+            this.searchkeywordHis = wx.getStorageSync('goodsSearchKeyword')
+          }else{
+            this.searchkeywordHis = wx.getStorageSync('shopSearchKeyword')
+          }
+          this.$apply()
+        },
+        inpBlur(){
+        },
+        closeSearch(){
+          this.showsearchResultBox = false
+          this.searchValue = ''
+          this.searchList = []
+          this.searchResult = true
+          this.pageNum = 1
+          this.isLoadAll = false
+          this.$apply()
+          wx.hideLoading()
+        },
+        searchTap(){
+          this.searchKeyword(1,(res)=>{
+            let searchword = ''
+            if(this.type == '1'){
+              searchword = wx.getStorageSync('goodsSearchKeyword')
+            }else if(this.type == '2'){
+              searchword = wx.getStorageSync('shopSearchKeyword')
+            }
+            if(!searchword){
+              searchword = []
+            }
+            let isAdd = true
+            for(let i = 0;i<searchword.length;i++){
+              if(searchword[i] == this.searchValue){
+                isAdd = false
+              }
+            }
+            if(isAdd){
+              searchword.unshift(this.searchValue)
+            }
+            if(searchword.length>10){
+              searchword.pop()
+            }
+            if(this.type == '1'){
+              wx.setStorageSync('goodsSearchKeyword', searchword)
+            }else if(this.type == '2'){
+              wx.setStorageSync('shopSearchKeyword', searchword)
+            }
+            if(res.data.search_data.length == 0){
+              this.searchResult = false
+            }
+            this.searchList = res.data.search_data
+            this.$apply()
+          })
+        }
+      }
+  }
+</script>
+<style lang="less">
+  .searcgBox{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    transition: .4s;
+    background-color: #fff;
+    z-index: 200;
+    padding-bottom: 20rpx;
+    position: fixed;
+    top: 0;
+    left: 0;
+    .searchIcon{
+      width: 30rpx;
+      height: 30rpx;
+      position: absolute;
+      top: 20rpx;
+      left: 280rpx;
+      z-index: 10;
+      transition: .4s;
+    }
+    .hideIcon{
+      opacity: 0;
+      transform: scale(0);
+    }
+    .searcgInp{
+      width: 690rpx;
+      height: 70rpx;
+      border-radius: 40rpx;
+      background-color: #F8F8F8;
+      text-align: center;
+      font-size: 27rpx;
+    }
+  }
+  .showSearchBox{
+    transform: translateY(70rpx);
+    opacity: 1;
+  }
+  .searchResultBox{
+    -webkit-overflow-scrolling : touch;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    box-sizing: border-box;
+    top: 0;
+    left: -750rpx;
+    opacity: 0;
+    background-color: #fff;
+    z-index: 20;
+    transition: .3s linear;
+    box-sizing: border-box;
+    padding-top: 120rpx;
+    padding-left: 20rpx;
+    padding: 90rpx 0rpx 30rpx 30rpx;
+    overflow: scroll;
+    display: flex;
+    flex-wrap: wrap;
+    .keywordBox{
+      width: 100%;
+      box-sizing: border-box;
+      padding-right: 30rpx;
+      margin-top: 30rpx;
+      .searchHis{
+        font-size: 27rpx;
+        color: #808080;
+        padding: 9rpx 20rpx;
+        height: 35rpx;
+        line-height: 35rpx;
+        border-radius: 30rpx;
+        background-color: #E5E5E5;
+        margin-right: 20rpx;
+        margin-top: 20rpx;
+        display: inline-block;
+      }
+    }
+    .searchItem{
+      width: 650rpx;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 20rpx;
+      margin: 20rpx 0;
+      background-color: #F8F8F8;
+      border-radius: 8rpx;
+      .searchPic{
+        flex: 0 0 80rpx;
+        height: 80rpx;
+        border-radius: 7rpx;
+        background-color: #999;
+        margin-right: 20rpx;
+      }
+      .searchTitle{
+        flex: 1;
+        font-size: 28rpx;
+        color: #666;
+        line-height: 38rpx; 
+      }
+    }
+    .noneSearchTips{
+      width: 100%;
+      font-size: 27rpx;
+      color: #999;
+      text-align: center;
+      display: block;
+      margin-top: 90rpx;
+    }
+  }
+  .closeIcon{
+    width: 25rpx;
+    height: 25rpx;
+    padding: 20rpx;
+    position: fixed;
+    right: 10rpx;
+    top: 120rpx;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: .4s;
+  }
+  .showcloseIcon{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .showsearchResultBox{
+    transform: translateX(750rpx);
+    opacity: 1;
+  }
+</style>

@@ -1,0 +1,206 @@
+<template>
+  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
+  <import src="/pages/tpls/loading/loading.wxml" />
+  <view class="indexBox">
+    <view class="topImgBox beforeShow {{showContent?'show-detailItem':''}}">
+      <image src="{{bannerInfo.img_url}}" mode="aspectFill" class="topPic"></image>
+      <view class="backBome" @tap="backToHome">
+        <image src="./images/home.png" mode="widthFix" class="homeIcon"></image>
+        <text class="backhometxt">返回首页</text>
+      </view>
+    </view>
+    <block wx:for="{{goodsList}}" wx:key="{{index}}">
+      <view class="goodsItem beforeShow {{showContent?'show-detailItem':''}}" @tap="toGoodsDetail({{item.id}},{{item.goods_type}})" style="transition: .4s {{index*0.1}}s">
+        <image src="{{item.banner}}" mode="aspectFill" class="mainPic"></image>
+        <text class="goodsTitle ellip-2">{{item.goods_name}}</text>
+        <view class="bottomBox">
+          <view class="priceBox">
+            <text class="priceNow" wx:if="{{item.goods_type != 5}}">¥{{item.discount_price}}</text>
+            <text class="priceNow" wx:if="{{item.goods_type == 5}}">¥0</text>
+ 
+            <text class="pricePre" wx:if="{{item.goods_type == 2}}">¥{{item.group_price}}</text>
+            <text class="pricePre" wx:if="{{item.goods_type == 4}}">¥{{item.original_price}}</text>
+            <text class="pricePre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
+            <text class="pricePre" wx:if="{{item.goods_type == 1}}">¥{{item.original_price}}</text>
+          </view>
+          <view class="leftNumber">剩余：{{item.all_num-item.get_num}}份</view>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view hidden="{{showContent}}">
+    <template is="loading" data="{{loadingTxt:''}}"></template>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import TimeLimitActivityDetailModel from './TimeLimitActivityDetail-model'
+  import Address from '../utils/address'
+  export default class extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: "#fff",
+      navigationBarTitleText: '推荐商品'
+    }
+    data = {
+      showContent: false,
+      goodsList: [],
+      bannerInfo: '',
+      pageNum: 1,
+      isLoadAll: false
+    }
+    computed = {
+        
+    }
+    methods = {
+      backToHome(){
+        wx.switchTab({
+          url:'/pages/Index/index'
+        })
+      },
+      toGoodsDetail(id,type){
+        if(type == 1){ //抢购
+          TimeLimitActivityDetailModel.navTo('../pages/Goods/details',{id:id})
+        }
+        if(type == 2){  //拼团
+          TimeLimitActivityDetailModel.navTo('../pages/Groups/Groups-details',{id:id})
+        }
+        if(type == 4){ //砍价
+          TimeLimitActivityDetailModel.navTo('../pages/Bargain/details',{id:id})
+        }
+        if(type == 5){ //集卡
+          TimeLimitActivityDetailModel.navTo('../pages/Card/details',{id:id})
+        }
+      }
+    }
+    onLoad(e){
+      this.id = e.id
+      let query = {
+        subject_id: e.id,
+        pageNum: 1
+      }
+      TimeLimitActivityDetailModel.getGoodsActivityData(query,(res)=>{
+        if(res.code == 1){
+          this.goodsList = res.data.goods_list
+          this.bannerInfo = res.data.subject_data
+          this.$apply()
+          this.showContent = true
+          this.$apply()
+        }
+      })
+    }
+    onShow(){
+      
+    }
+    onReachBottom(){
+      if(!this.isLoadAll){
+        wx.showLoading({
+          title: '加载中...'
+        })
+        this.pageNum++
+        let query = {
+          subject_id: this.id,
+          pageNum: this.pageNum
+        }
+        TimeLimitActivityDetailModel.getGoodsActivityData(query,(res)=>{
+          wx.hideLoading()
+          if(res.code == 1){
+            if(res.data.goods_list.length == 0){
+              this.isLoadAll = true
+              TimeLimitActivityDetailModel.showTips('已经到底了')
+            }
+            this.goodsList = [...this.goodsList, ...res.data.goods_list]
+            this.$apply()
+          }
+        })
+      }
+    }
+  }
+</script>
+<style lang="less">
+  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
+  @import '../pages/tpls/loading/loading.wxss';
+  .indexBox{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .topImgBox{
+      width: 100%;
+      height: 375rpx;
+      position: relative;
+      margin-bottom: 50rpx;
+      .topPic{
+        width: 100%;
+        height: 100%;
+        background-color: #999;
+      }
+      .backBome{
+        position: absolute;
+        top: 30rpx;
+        left: 30rpx;
+        width: 160rpx;
+        height: 55rpx;
+        border-radius: 40rpx;
+        background:rgba(0,0,0,.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .homeIcon{
+          width: 30rpx;
+          height: 30rpx;
+          margin-right: 10rpx;
+        } 
+        .backhometxt{
+          font-size: 23rpx;
+          color: #fff;
+        }
+      }
+    }
+    .goodsItem{
+      width: 690rpx;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30rpx;
+      box-shadow: 0 0 20rpx rgba(0,0,0,.2);
+      .mainPic{
+        width: 100%;
+        height: 400rpx;
+        background-color: #999;
+      }
+      .goodsTitle{
+        font-size: 35rpx;
+        color: #353535;
+        width: 630rpx;
+        margin: 30rpx 0;
+        line-height: 45rpx;
+      }
+      .bottomBox{
+        width: 630rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0rpx 0 30rpx;
+        .priceBox{
+          display: flex;
+          align-items: baseline;
+          .priceNow{
+            font-size: 38rpx;
+            color: #FA3B3E;
+            margin-right: 25rpx;
+            font-family: 'priceFont'
+          } 
+          .pricePre{
+            font-size: 22rpx;
+            color: #B2B1B1;
+            font-family: 'priceFont'
+          }
+        }
+        .leftNumber{
+          color: #B4B4B4;
+          font-size: 28rpx;
+        }
+      }
+    }
+  }
+</style>
+

@@ -1,6 +1,7 @@
 <template>
   <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
   <import src="/pages/tpls/loading/loading.wxml" />
+  <search :showSearch.sync="showSearch" type="2"></search>
   <view class="index-container" style="overflow: {{showLeagueWindow?'hidden':'auto'}}">
     <view class="banner {{loadingHidden?'showbanner':''}}">
       <cheader :headerinfo.sync="headerinfo"></cheader>
@@ -191,7 +192,7 @@
   import cheader from '@/components/cheader'
   import cheaderModel from '@/components/cheader-model'
   import ShopModel from './shop-model'
-  import MyModel from '@/pages/My/index-model'
+  import search from '../../components/search'
   import Address from '../../utils/address'
   export default class extends wepy.page {
     config = {
@@ -226,7 +227,8 @@
       isEmpty: {
         isNowEmpty: false,
         isNearbyEmpty: false
-      }
+      },
+      showSearch: false
     }
     computed = {
         shopClassifyNum () {
@@ -467,8 +469,17 @@
         this.$apply()
       }
     }
+    onPageScroll(e){
+      if(e.scrollTop>350){
+        this.showSearch = true
+      }else if(e.scrollTop<350){
+        this.showSearch = false
+      }
+      this.$apply()
+    }
     components = {
-      cheader: cheader
+      cheader: cheader,
+      search: search
     }
   }
 </script>

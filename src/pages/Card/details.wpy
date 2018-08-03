@@ -82,6 +82,7 @@
           <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
         </view>
       </view>
+      <Admodel></Admodel>
       <!-- <view class="rule-wrapper">
         <view class="rule-title">
           <view class="h10"></view>
@@ -151,6 +152,7 @@
   import BackHome from '../../components/backHome'
   import cheaderModel from '@/components/cheader-model'
   import Address from '../../utils/address.js'
+  import Admodel from '../../components/ad'
   export default class extends wepy.page {
     config = {
       navigationBarBackgroundColor: "#fff",
@@ -159,7 +161,8 @@
       backgroundTextStyle: 'dark'
     }
     components = {
-      BackHome: BackHome
+      BackHome: BackHome,
+      Admodel: Admodel
     }
     data = {
       lucky_goods_id: null,

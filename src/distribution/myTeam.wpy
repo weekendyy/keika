@@ -46,6 +46,7 @@
         if(res.code == 1){
           this.teamData = res.data
           this.exchangeTime(this.teamData)
+          this.$apply()
           this.showContent = true
           this.$apply()
         }else{
