@@ -96,7 +96,8 @@
       priceNow: 200,
       pricePre: 100,
       DetailsData: '',
-      posterType: ''
+      posterType: '',
+      cardName: ''
     }
     computed = {
         
@@ -252,7 +253,12 @@
         }
         disModel.creatPoster(query,(res)=>{
           if(res.code == 1){
-            this.$broadcast('getUserInfo',res.data.data)
+            if(this.posterType != '10'){
+              this.$broadcast('getUserInfo',res.data.data)
+            }else{
+              let cardPrice = this.vipCardData[index].discount_price
+              disModel.buildPosterVip(this,res.data.data,cardPrice,this.cardName)
+            }
           }else{
             disModel.showTips(res.message)
           }
@@ -260,7 +266,7 @@
       }
     }
     onLoad(e){
-      console.log(e)
+      this.cardName = e.cardName
       this._loadData(1,1,(res)=>{
         this.goodsData = res
         this.$apply()
@@ -304,6 +310,7 @@
       let title = ''
       let path = ''
       let img = ''
+      console.log(disId)
       if(this.activeItemIndex == 0){
         title = this.goodsData[this.shareCurrIndex].name
         path = '/pages/Goods/details?id=' + this.goodsData[this.shareCurrIndex].id + '&dis_id=' + disId.id

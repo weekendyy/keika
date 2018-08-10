@@ -56,14 +56,14 @@
           })
           return false
         }
-        if(Number(this.passModel.length) <= 5){
-          wx.showToast({
-            title: '请输入最少6位',
-            icon:'loading',
-            duration: 1000
-          })
-          return false
-        }
+        // if(Number(this.passModel.length) <= 5){
+        //   wx.showToast({
+        //     title: '请输入最少6位',
+        //     icon:'loading',
+        //     duration: 1000
+        //   })
+        //   return false
+        // }
         this.verificating = true
         wx.showLoading({
           title: '核销中...'

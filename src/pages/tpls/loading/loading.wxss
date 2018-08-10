@@ -10,6 +10,7 @@
   top: 0;
   left: 0;
   z-index: 50;
+  opacity: 0;
 }
 .loadingBox .loadingBcenter{
   width: 60rpx;

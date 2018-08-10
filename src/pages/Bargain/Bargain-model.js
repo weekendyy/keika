@@ -349,6 +349,18 @@ class Bargain extends Base {
     }
     this.request(param)
   }
+  // 获取更多推荐商品
+  getMoreRecommend(callback){
+    let param = {
+      url: 'v5/recommend/bargain',
+      data: {
+      },
+      sCallback: function(data) {
+        callback && callback(data)
+      }
+    }
+    this.request(param)
+  }
 }
 const BargainModel = new Bargain()
 export default BargainModel

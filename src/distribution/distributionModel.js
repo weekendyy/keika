@@ -140,7 +140,7 @@ class distributionModel extends Base {
     }
     this.request(param)
   }
-  // 生成海报
+  // 生成海报 分销达人下级
   buildPoster(res,Th,isReg,name){
     let that = Th
     wx.downloadFile({
@@ -184,6 +184,73 @@ class distributionModel extends Base {
             }
           })
         },500)
+      }
+    })
+  }
+  // 生成海报 vip卡
+  buildPosterVip(Th,qrCode,price,cardName){
+    wx.showLoading({
+      title: '海报生成中..'
+    })
+    let userInfo = wx.getStorageSync('userInfo')
+    let that = Th
+    wx.downloadFile({
+      url: qrCode,
+      success: function(res1){
+        let qrcode = res1.tempFilePath
+        wx.downloadFile({
+          url: userInfo.avatarUrl,
+          success: function(res2){
+            let userIcon = res2.tempFilePath
+            const ctx = wx.createCanvasContext('VipCanvas')
+            ctx.drawImage('./images/vipcard.jpg', 0, 0, 200, 345)
+            // 绘制用户昵称
+            ctx.setTextAlign('left')
+            ctx.setFillStyle('white')
+            ctx.setFontSize(9)
+            ctx.fillText(userInfo.nickName+'，邀你加入', 58, 25)
+            // 绘制用户头像
+            ctx.drawImage(userIcon, 17,16,18,18)
+            ctx.drawImage('./images/vipcarduserpic.png', 0,8,55,33)
+            // 绘制价格
+            ctx.setFillStyle('red')
+            ctx.setFontSize(10)
+            ctx.fillText('¥', 4, 329)
+            ctx.setFontSize(17)
+            ctx.fillText(price, 14, 330)
+            // 绘制黑卡名称
+            ctx.setFillStyle('#4C4C4C')
+            ctx.setFontSize(8)
+            ctx.fillText(cardName, 55, 335)
+            ctx.drawImage(qrcode, 135, 290, 50, 50)
+            ctx.draw(true)
+            setTimeout(()=>{
+              wx.canvasToTempFilePath({
+                x: 0,
+                y: 0,
+                width: 195,
+                height: 346,
+                destWidth: 750,
+                destHeight: 1334,
+                canvasId: 'VipCanvas',
+                fileType: 'jpg',
+                quality: 1,
+                success: (res)=> {
+                  that.posterImg = res.tempFilePath
+                  wx.hideLoading()
+                  wx.previewImage({
+                    current: that.posterImg,
+                    urls: [that.posterImg]
+                  })
+                  that.$apply()
+                },
+                fail: (res)=>{
+                  console.log(res)
+                }
+              })
+            },500)
+          }
+        })
       }
     })
   }

@@ -19,7 +19,7 @@
   .show-detailItem{
     opacity: 1;
     transform: scale(1);
-    transition: .5s;
+    transition: .3s;
   }
   @font-face {
     font-family: 'hanyi';

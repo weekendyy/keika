@@ -232,6 +232,30 @@
           <template is="wxParse" data="{{wxParseData:article2.nodes}}"/>
         </view>
       </view>
+      <view class="moreBox">
+        <view class="goodsListHead">
+          <view class="headTitle">
+            <text class="headTitle_txt">更多推荐</text>
+            <text class="headTitle_desc ellip-2">搜罗人气小吃，给大家尝尝鲜</text>
+          </view>
+          <view class="seeMore" @tap="seeMoreGoods">查看更多</view>
+        </view>
+        <view class="goodsType4">
+          <block wx:for="{{moregoods}}" wx:key="{{index}}">
+            <view class="listStyle-four" @tap="toGoodsDetail({{item.id}})">
+              <image src="{{item.banner}}" mode="aspectFill" class="goodsPic-styleFour"></image>
+              <!-- <view class="groupTip-styleFour">2人拼团</view> -->
+              <text class="goodsTitle-styleFour ellip-2">{{item.title}}</text>
+              <view class="goods-price">
+                <text class="price-now" >¥{{item.floor_price}}</text>
+                <text class="price-pre" >¥{{item.price}}</text>
+              </view>
+              <button class="formIdBtn" form-type="submit" data-type="{{item.goods_type}}" data-id="{{item.id}}"></button>
+            </view>
+          </block>
+          <view style="flex: 0 0 20rpx;"></view>
+        </view>
+      </view>
       <view class="giftintroducebox">
         <view class="jpdescbox_title bangkan">
           <view class="cut"></view>
@@ -406,9 +430,16 @@
       showAdWindow: false,
       adData: '',
       shopId: '',
-      disId: ''
+      disId: '',
+      moregoods: ''
     }
     methods = {
+      seeMoreGoods(){
+        Address.navTo('./index')
+      },
+      toGoodsDetail(id){
+        Address.navTo('./details',{id:id})
+      },
       gotoBuy(){
         this.$navigate('./Confirm-order',{launch_id:this.bargain.launch.id})
       },
@@ -581,8 +612,18 @@
       }
       BargainModel.getcommunityData({},(res)=>{
         if(res.code == 0){
-          res.data && (this.adData = res.data)
+          if(res.data){
+            this.adData = res.data
+          }
           this.$apply()
+        }
+      })
+      BargainModel.getMoreRecommend((res)=>{
+        if(res.code == 1){
+          this.moregoods = res.data
+          this.$apply()
+        }else{
+          BargainModel.showTips(res.message)
         }
       })
     }
@@ -602,7 +643,6 @@
         that.DetailData = ResData.activity_attr
         that.bargain = ResData.bargain
         that.floor_data = ResData.floor_data
-        that.likeNum = ResData.activity_attr.see_num
         that.rules = ResData.rule_str
         that.isOne = ResData.bargain.launch.help_count
         that.isTakePartIn = ResData.is_self_help
@@ -1226,6 +1266,119 @@
     }
     .shopDesc{
       margin-top: 20rpx;
+    }
+    .moreBox{
+      background-color: #fff;
+      margin-top: 20rpx;
+      border-radius: 10rpx;
+      .goodsListHead{
+        width: 100%;
+        height: 140rpx;
+        box-sizing: border-box;
+        padding: 0 20rpx;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20rpx;
+        .headTitle{
+          flex: 1;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          .headTitle_txt{
+            font-size: 42rpx;
+            color: #0A0B0A;
+            font-weight: 600;
+          }
+          .headTitle_desc{
+            font-size: 24rpx;
+            color: #999DA2;
+            margin-top: 17rpx;
+            width: 100%;
+            line-height: 30rpx;
+          }
+        }
+        .pageNum{
+          display: flex;
+          align-items: baseline;
+          font-size: 26rpx;
+          color: #ADADAD;
+          .pageNumTxt{
+            color: #0A0B0A;
+            font-size: 47rpx;
+            font-weight: 600;
+          }
+        }
+        .seeMore{
+          font-size: 28rpx;
+          color: #FA3B3E;
+          margin-left: 60rpx;
+        }
+      }
+      .goodsType4{
+        width: 710rpx;
+        display: flex;
+        border-bottom: 1px solid #F2F2F2;
+        white-space: nowrap;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+        .listStyle-four{
+          flex: 0 0 290rpx;
+          height: 345rpx;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          margin-left: 20rpx;
+          .goodsPic-styleFour{
+            width: 100%;
+            height: 190rpx;
+            border-radius: 10rpx;
+            background-color: #999;
+          }
+          .groupTip-styleFour{
+            width: 107rpx;
+            height: 40rpx;
+            background-color: #FFDE09;
+            border-bottom-right-radius: 10rpx;
+            border-top-left-radius: 10rpx;
+            font-size: 22rpx;
+            color: #2C2D2C;
+            line-height: 40rpx;
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
+          .goodsTitle-styleFour{
+            width: 320rpx;
+            font-size: 28rpx;
+            font-weight: 600;
+            line-height: 37rpx;
+            white-space: normal;
+          }
+        }
+        .goods-price{
+          display: flex;
+          align-items: baseline;
+          margin-bottom: 20rpx;
+          .price-now{
+            font-family: 'priceFont';
+            font-size: 38rpx;
+            color: #FA3B3E;
+            font-weight: 600;
+          }
+          .price-pre{
+            font-family: 'priceFont';
+            color: #999;
+            margin-left: 20rpx;
+            font-size: 23rpx;
+            text-decoration: line-through;
+          }
+        }
+      }
     }
     .giftintroducebox{
       margin-top: 20rpx;

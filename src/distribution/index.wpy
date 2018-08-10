@@ -11,6 +11,18 @@
         <text class="dataItemTxt">今日收益</text>
       </view>
       <view class="dataShowItem">
+        <text class="dataItemNumber">{{indexData.dis_user.cash_money_can}}</text>
+        <text class="dataItemTxt">可提现</text>
+      </view>
+      <view class="dataShowItem">
+        <text class="dataItemNumber">{{indexData.wait_cash}}</text>
+        <text class="dataItemTxt">待提现</text>
+      </view>
+      <view class="dataShowItem">
+        <text class="dataItemNumber">{{indexData.applying_money}}</text>
+        <text class="dataItemTxt">提现中</text>
+      </view>
+      <view class="dataShowItem">
         <text class="dataItemNumber">{{indexData.total_num}}</text>
         <text class="dataItemTxt">推广订单</text>
       </view>
@@ -75,11 +87,17 @@
       }],
       showContent: false,
       posterImg: '',
-      indexData: {},
+      indexData: '',
       name: ''
     }
     computed = {
-        
+      // toCashed(){
+      //   let money = ''
+      //   if(this.indexData){
+      //     money = parseInt(this.indexData.dis_user.commission*100)-parseInt(this.indexData.dis_user.cash_money_can*100)-parseInt(this.indexData.dis_user.cash_money_total*100)-parseInt(this.indexData.applying_money*100)
+      //   }
+      //   return parseInt(money/100)
+      // }
     }
     methods = {
       toDetail(index,url){
@@ -107,6 +125,10 @@
         }
         if(index == 3){
           disModel.navTo(url,{cashed: this.indexData.dis_user.cash_money_total,allNum: this.indexData.dis_user.commission})
+          return false
+        }
+        if(index == 4){
+          disModel.navTo(url,{cardName: this.name})
           return false
         }
         disModel.navTo(url)
@@ -149,7 +171,7 @@
   }
   .head{
     width: 100%;
-    height: 270rpx;
+    height: 340rpx;
     background: linear-gradient(to top,#FC7071,#FEA377);
     display: flex;
     flex-direction: column;
@@ -182,25 +204,26 @@
     .headNumber{
       font-size: 70rpx;
       font-weight: 600;
-      margin-bottom: 60rpx;
+      margin-bottom: 130rpx;
     }
     .dataShowBox{
       width: 690rpx;
-      height: 140rpx;
       border-radius: 15rpx;
       background-color: #fff;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-around;
       position: absolute;
-      bottom: -73rpx;
+      bottom: -140rpx;
       left: 30rpx;
       box-shadow: 0 6rpx 40rpx rgba(253,157,117,.2);
       .dataShowItem{
         display: flex;
+        flex: 0 0 230rpx;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100%;
+        height: 140rpx;
         .dataItemNumber{
           color: #FC7D72;
           font-size: 38rpx;
@@ -227,7 +250,7 @@
   .listItemBox{
     width: 100%;
     background-color: #fff;
-    margin-top: 100rpx;
+    margin-top: 180rpx;
     display: flex;
     flex-wrap: wrap;
     .listItem{

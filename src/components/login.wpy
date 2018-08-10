@@ -24,7 +24,7 @@
         address.getUser(res,()=>{
           wx.hideLoading()
           wx.showToast({
-            title: '登录成功',
+            title: '授权成功',
             icon: 'none',
             duration: 2000
           })

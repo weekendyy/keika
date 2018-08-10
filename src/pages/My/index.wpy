@@ -81,7 +81,7 @@
     </view>
   </view>
   <view class="version">
-    <text>版本号 V1.14.82</text>
+    <text>版本号 V1.14.83</text>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
@@ -186,6 +186,11 @@
             if(res.error == 0){
               wx.hideLoading()
               cheaderModel.showTips("验证成功")
+              wx.setStorageSync('distributionInfo', {
+                id: res.data.user_id,
+                phone: distributionInfo.phone,
+                password: distributionInfo.password
+              })
               setTimeout(()=>{
                 cheaderModel.navTo('../../distribution/index')
               },500)

@@ -7,7 +7,7 @@
       <image src="./images/move1.png" mode="widthFix" class="move1"></image>
       <image src="./images/move2.png" mode="widthFix" class="move1 move2"></image>
       <!-- <view class="cashing" wx:if="{{cashing!=0}}">{{cashing}}元提现审核中</view> -->
-      <view class="databackBox beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;"></view>
+      <!-- <view class="databackBox beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;"></view>
       <view class="dataShowBox beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;">
         <view class="dataShowItem">
           <text class="dataItemNumber">{{allNum}}</text>
@@ -21,12 +21,12 @@
           <text class="dataItemNumber">{{cashing}}</text>
           <text class="dataItemTxt">提现中(元)</text>
         </view>
-      </view>
+      </view> -->
     </view>
     <view @tap="toWithdraw" class="toCashItem beforShow {{showContent?'showDone':''}}" style="transition: .4s .2s;">
       <view class="cashItemLeft">
         <image src="./images/cardicon.png" mode="widthFix" class="cardIcon"></image>
-        <text>提现金额</text>
+        <text>提现</text>
       </view>
       <view class="arrow"></view>
     </view>
@@ -258,7 +258,6 @@
     box-sizing: border-box;
     padding: 0 30rpx;
     background-color: #fff;
-    margin-top: 110rpx;
     .cashItemLeft{
       display: flex;
       align-items: center;

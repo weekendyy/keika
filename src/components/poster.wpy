@@ -19,7 +19,7 @@
       <!-- 拼团画板 -->
       <canvas wx:if="{{type == 2}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="groupCanvas"></canvas>
       <!-- 会员卡 -->
-      <canvas wx:if="{{type == 10}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="VipCanvas"></canvas>
+      <canvas wx:if="{{type == 10}}" disable-scroll="true" class="canvas" style="width: 195px; height: 346px;" canvas-id="VipCanvas"></canvas>
       <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
       <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic" style="background-color: {{dis?'#FB4D69':'#FE6420'}}">
         <image src="../images/download.png" mode="widthFix" class="downPic"></image>
