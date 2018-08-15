@@ -12,7 +12,7 @@
         <view class="shop-info-header">
           <text class="shop-title">{{WelfareData.magic_goods_name}}</text>
           <view class="goods-share" @tap="Share">
-            <image src="../Goods/img/icon-share.png" class="icon-share" mode="widthFix"></image>
+            <!-- <image src="../Goods/img/icon-share.png" class="icon-share" mode="widthFix"></image> -->
             <text class="share">分享</text>
           </view>
         </view>
@@ -61,12 +61,12 @@
     <view class="shareBox_cover" wx:if="{{!actionSheetHidden}}" @tap="closeShareBox"></view>
     <view class="shareBox_content {{actionSheetHidden?'':'show_shareBox'}}">
       <button class="shareItem" open-type="share">
-        <image src="http://p55e536k6.bkt.clouddn.com/weixin.png" mode="widthFix" class="shareIcon"></image>
+        <image src="./images/weixin.png" mode="widthFix" class="shareIcon"></image>
         <text>微信好友</text>
       </button>
 
       <button class="shareItem" @tap="getUserInfo">
-        <image src="http://p55e536k6.bkt.clouddn.com/share.png" mode="widthFix" class="shareIcon"></image>
+        <image src="./images/share.png" mode="widthFix" class="shareIcon"></image>
         <text>生成卡片</text>
       </button>
     </view>

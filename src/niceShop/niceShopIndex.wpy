@@ -525,7 +525,7 @@
             justify-content: center;
           }
           .swiperItem{
-            background-image: url('http://oyu2qzx2v.bkt.clouddn.com/couponbg.png');
+            background-image: url('http://applet.czsjcrm.cn/images/xcx/couponbg.png');
             background-repeat: no-repeat;
             background-size: contain;
             background-position: 0 0;

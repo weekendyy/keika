@@ -219,10 +219,10 @@
         if(res.code === 1){
           this.fixedData = res.data.content_str
           this.vipRight = [
-                 {url:'http://p55e536k6.bkt.clouddn.com/right1.png',name: this.fixedData.str_1},
-                 {url:'http://p55e536k6.bkt.clouddn.com/right2.png',name: this.fixedData.str_2},
-                 {url:'http://p55e536k6.bkt.clouddn.com/right4.png',name: this.fixedData.str_3},
-                 {url:'http://p55e536k6.bkt.clouddn.com/right3.png',name: this.fixedData.str_4}]
+                 {url:'http://applet.czsjcrm.cn/images/xcx/right1.png',name: this.fixedData.str_1},
+                 {url:'http://applet.czsjcrm.cn/images/xcx/right2.png',name: this.fixedData.str_2},
+                 {url:'http://applet.czsjcrm.cn/images/xcx/right4.png',name: this.fixedData.str_3},
+                 {url:'http://applet.czsjcrm.cn/images/xcx/right3.png',name: this.fixedData.str_4}]
           this.countTabs = [this.fixedData.str_8,this.fixedData.str_7]
           this.vipInfo = res.data.card_info
           if(res.data.goods_data){
@@ -260,7 +260,7 @@
       display: flex;
       justify-content: center;
       background-color: #fff;
-      background-image: url('http://p55e536k6.bkt.clouddn.com/vipbgpp.jpg');
+      background-image: url('http://applet.czsjcrm.cn/images/xcx/vipbgpp.jpg');
       background-repeat: no-repeat;
       background-position: 0 0;
       -webkit-background-size: contain;

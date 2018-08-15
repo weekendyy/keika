@@ -218,7 +218,7 @@
         width: 100%;
         height: 350rpx;
         background-color: rgba(0,183,255,.9);
-        background-image: url('http://p24lfn08v.bkt.clouddn.com/couponbgm.png');
+        background-image: url('http://applet.czsjcrm.cn/images/xcx/couponbgm.png');
         background-position: 0 0;
         -webkit-background-size: cover;
         background-size: cover;

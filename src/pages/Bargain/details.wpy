@@ -294,10 +294,6 @@
       </view>
     </view>
   </block>
-  <view class="gameOver" wx:if="{{false}}">
-    <image src="http://p55e536k6.bkt.clouddn.com/empty.png" mode="widthFix" class="gameoverPic"></image>
-    <text>商品已下架</text>
-  </view>
   <view class="bargain_success" >
     <view class="bargain_success_cover" wx:if="{{showBarginSuccess}}"></view>
     <view class="bargain_success_content {{showBarginSuccess?'show_bargain_success_content':''}}">
@@ -1390,7 +1386,7 @@
       align-items: center;
       overflow: hidden;
       background-color: #fff;
-      background-image: url("http://p55e536k6.bkt.clouddn.com/bg11.png"),url("http://p55e536k6.bkt.clouddn.com/bg12.png");
+      background-image: url("http://applet.czsjcrm.cn/images/xcx/bg11.png"),url("http://applet.czsjcrm.cn/images/xcx/bg12.png");
       background-repeat: no-repeat,no-repeat;
       background-size: 40rpx 55rpx,26rpx 50rpx;
       background-position: 20rpx 20rpx,bottom 20rpx right 20rpx;

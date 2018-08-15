@@ -24,14 +24,14 @@
   @font-face {
     font-family: 'hanyi';
     src: url('https://api.czsjcrm.cn/font_style/HYYanKai.ttf') format('truetype'),
-    url('http://p55e536k6.bkt.clouddn.com/HYYanKai.woff') format('woff');
+    url('http://applet.czsjcrm.cn/images/xcx/HYYanKai.woff') format('woff');
     font-weight: normal;
     font-style: normal;
   }
   @font-face {
     font-family: 'priceFont';
     src: url('https://api.czsjcrm.cn/font/terminaldosismedium.ttf') format('truetype'),
-    url('http://p55e536k6.bkt.clouddn.com/terminaldosismedium.woff') format('woff');
+    url('http://applet.czsjcrm.cn/images/xcx/terminaldosismedium.woff') format('woff');
     font-weight: normal;
     font-style: normal;
   }

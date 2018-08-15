@@ -5,7 +5,6 @@
     <view class="header {{showContent?'showHeader':''}}">
       <view class="lotteryDrawItem">
         <!-- 轮播图 -->
-        <!-- <image src="http://p55e536k6.bkt.clouddn.com/tuceng.png" mode="scaleToFill" class="lotteryPic"></image> -->
         <swiper indicator-dots="true" autoplay="true" interval="3000" circular='true' class="lotteryPic">
           <block wx:for="{{detailData.banner_url}}" wx:key="{{index}}">
             <swiper-item>
