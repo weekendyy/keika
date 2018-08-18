@@ -30,7 +30,7 @@
       <image src="http://applet.czsjcrm.cn/images/templete_image/bg2.png" mode="widthFix" class="backgroundPic2"></image>
     </view>
   </view>
-  <block wx:if="{{likeArr.length != 0}}">
+ <!--  <block wx:if="{{likeArr.length != 0}}">
     <view class="gussYouLike {{loadingHidden?'show-likeItem':''}}">
       <view class="titleBox" wx:if="{{likeArr.length !== 0}}">
         <text class="titleTxt">{{fixedData.guess_like}}</text>
@@ -50,8 +50,8 @@
         </view>
       </view>
     </view>
-  </block>
-  <block wx:if="{{likeArr.length === 0}}">
+  </block> -->
+  <block>
     <view class="coupon-header-bottom {{loadingHidden?'showCouponBottom':''}}">
       <view class="info-item">
         <form class="formBox" report-submit="true" bindsubmit="toShopDetail({{indexData.shop.id}})">
@@ -70,6 +70,26 @@
       </view>
     </view>
   </block>
+  <view class="recommend {{loadingHidden?'showrecommend':''}}">
+    <view class="recommendTitle">
+      <image src="./images/heart.png" mode="aspectFill" class="heartIcon"></image>
+      <text class="recommendTxt">推荐商家</text>
+    </view>
+    <text class="recommendDesc">更多优惠 即刻领取</text>
+    <view class="recommendList">
+      <view class="recommendItem" wx:for="{{recommendList}}" wx:key="{{index}}" @tap="toRecommend({{item.path}},{{item.id}})">
+        <image src="{{item.img_src}}" mode="widthFix" class="recommendPic"></image>
+        <text class="recommendShopName ellip-1">{{item.title}}</text>
+        <view class="seeBox">
+          <image src="../pages/Goods/img/see.png" mode="widthFix" class="seeIcon" ></image>
+          <text>{{item.see_num}}人查看</text>
+        </view>
+      </view>
+      <view class="noneGoods" wx:if="{{recommendList.length == 0}}">
+        暂未添加店铺
+      </view>
+    </view>
+  </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>
   </view>
@@ -92,7 +112,8 @@
       youLikeData: [],
       likeIndex: 0,
       goodsId: '',
-      activeId: ''
+      activeId: '',
+      recommendList: []
     }
     computed = {
       likeArr () {
@@ -104,6 +125,10 @@
       }
     }
     methods = {
+      toRecommend(path,id){
+        CouponModel.navTo(path)
+        CouponModel.addSeeNum({id:id})
+      },
       toSendCoupon(res){
         let formId = res.detail.formId
         let type = res.currentTarget.dataset.type
@@ -157,8 +182,17 @@
           title: e.activityName
         })
       }
-    }
-    onShow(){
+      let query = {
+        id: this.activeId
+      }
+      CouponModel.getRecommendData(query,(res)=>{
+        if(res.code == 1){
+          this.recommendList = res.data
+          this.$apply()
+        }else{
+          CouponModel.showTips(res.message)
+        }
+      })
       wx.showNavigationBarLoading()
       CouponModel.getCouponData({magic_shop_id: this.shopId, goods_id: this.goodsId, activeId: this.activeId}, (res)=>{
         if(res.code == 1){
@@ -170,6 +204,8 @@
           wx.hideNavigationBarLoading()
         }
       })
+    }
+    onShow(){
     }
   }
 </script>
@@ -242,6 +278,95 @@
       opacity: 1;
       transform: scale(1) translateX(0);
     }
+  }
+  .recommend{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    margin-top: 20rpx;
+    padding-bottom: 40rpx;
+    box-sizing: border-box;
+    padding: 0 30rpx 50rpx;
+    transition: .4s .4s;
+    opacity: 0;
+    transform: scale(0.9);
+    .recommendTitle{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 40rpx;
+      .heartIcon{
+        width: 35rpx;
+        height: 35rpx;
+        margin-right: 10rpx;
+      }
+      .recommendTxt{
+        font-size: 30rpx;
+        color: #353535;
+      }
+    }
+    .recommendDesc{
+      color: #8C8C8C;
+      font-size: 21rpx;
+      margin-top: 15rpx;
+    }
+    .recommendList{
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 40rpx;
+      .recommendItem{
+        flex: 0 0 230rpx;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 30rpx;
+        box-sizing: border-box;
+        padding: 0 15rpx;
+        overflow: hidden;
+        align-items: center;
+        .recommendPic{
+          width: 100%;
+          height: 160rpx;
+          background-color: #999;
+        }
+        .recommendShopName{
+          color: #5D5D5D;
+          font-size: 25rpx;
+          margin: 15rpx 0;
+          width: 100%;
+          text-align: center;
+        }
+        .seeBox{
+          display: flex;
+          align-items: center;
+          .seeIcon{
+            width: 26rpx;
+            height: 26rpx;
+            margin-right: 5rpx;
+          }
+          text{
+            color: #8D8D8D;
+            font-size: 22rpx;
+          }
+        }
+      }
+      .noneGoods{
+        color: #999;
+        width: 100%;
+        height: 100rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25rpx;
+      }
+    }
+  }
+  .showrecommend{
+    opacity: 1;
+    transform: scale(1);
   }
   .gussYouLike{
     background-color: #fff;

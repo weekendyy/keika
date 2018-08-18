@@ -320,6 +320,32 @@ class takeCoupon extends Base {
     }
     this.request(param)
   }
+  // 推荐商家
+  getRecommendData(queryData, callback){
+    let param = {
+      url: 'v9/preferential_ad/get_ad',
+      data: {
+        id: queryData.id
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 增加浏览次数
+  addSeeNum(queryData, callback){
+    let param = {
+      url: 'v9/preferential_ad/add_see_num',
+      data: {
+        id: queryData.id
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
 }
 const couponModel = new takeCoupon()
 export default couponModel
