@@ -271,15 +271,15 @@
           return false
         }
         if(type == 2){  //拼团
-          IndexModel.navTo('../Groups/Groups-details', {id: id})
+          IndexModel.navTo('../Groups/Groups-details', {id: id, formID: formId})
           return false
         }
         if(type == 5){  //集卡
-          IndexModel.navTo('../Card/details', {id: id})
+          IndexModel.navTo('../Card/details', {id: id, formID: formId})
           return false
         }
         if(type == 4){  //砍价
-          IndexModel.navTo('../Bargain/details', {id: id})
+          IndexModel.navTo('../Bargain/details', {id: id, formID: formId})
           return false
         }
       },
@@ -296,6 +296,7 @@
     }
     onLoad() {
       this._loadData()
+      console.log(new Date().getTime())
     }
     _loadData(){
       IndexModel.getMainData((res)=>{

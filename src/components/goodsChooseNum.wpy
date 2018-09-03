@@ -43,11 +43,11 @@
         if(this.goodsInfo){
           if(this.goodsInfo.magic_vip_status == 1){
             sumPrice = Math.floor(parseFloat(this.goodsInfo.magic_vip_price*100 * this.countValue))/100;
-            sumPrice = sumPrice.toFixed(1)
+            sumPrice = sumPrice.toFixed(2)
           }
           if(this.goodsInfo.magic_vip_status == 2){
-            sumPrice = this.goodsInfo.discount_price*100*this.countValue
-            sumPrice = sumPrice.toFixed(1)
+            sumPrice = Math.floor(parseFloat(this.goodsInfo.discount_price*100 * this.countValue))/100;
+            sumPrice = sumPrice.toFixed(2)
           }
         }
         return sumPrice

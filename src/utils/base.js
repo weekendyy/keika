@@ -356,7 +356,7 @@ class Base {
 
   //验证手机号格式
   verifyPhoneNumber(phoneNumber){
-    if(Number(phoneNumber.length) === 0){
+    if(!phoneNumber || Number(phoneNumber.length) === 0){
       wx.showToast({
         title: '请输入手机号码',
         icon:'none',
