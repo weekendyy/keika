@@ -20,12 +20,12 @@
           <text class="banner-info-itemNum">{{DetailData.join_num}}</text><text>人报名</text>
         </view>
       </view>
-      <view class="posterText {{loadingHidden?'showposterText':''}}" @tap="getUserInfo">
+      <button class="posterText {{loadingHidden?'showposterText':''}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
         <view class="posterT">
           <text>生成</text>
           <text>海报</text>
         </view>
-      </view>
+      </button>
       <view class="mainBoxB">
         <view class="mainBoxB-top {{loadingHidden?'show-mainBoxB-top':''}}">
           <text class="title">{{DetailData.title}}</text>
@@ -284,7 +284,7 @@
       <view class="posterBox">
         <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
         <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-          <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="bargainCanvas"></canvas>
+          <canvas disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="bargainCanvas"></canvas>
           <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
           <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
             <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
@@ -456,25 +456,28 @@
         this.$apply()
       },
       getUserInfo(res){
-        wx.showLoading({
-          title: '生成卡片中',
-        })
-        let posterPic = wx.getStorageSync('posterPic_'+'bargainCanvas'+'_'+this.DetailData.id)
-        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.DetailData.floor_price && posterPic[2] == this.DetailData.price){
-          this.posterImg = posterPic[0]
-          this.showPosterBox = true
-          wx.hideLoading()
-          this.$apply()
-          return false
-        }
-        let param = {}
-        param.id = this.DetailData.id
-        param.type = 3
-        this.actionSheetHidden =  true
-        BargainModel.getPostData(param,ResData=>{
-          if(ResData.code == 1){
-            BargainModel.creatPoster(this, 'bargainCanvas', ResData.data, this.DetailData.title, this.DetailData.floor_price, this.DetailData.price,'砍价','../../images/posterTy.png','',this.DetailData.id)
-          }
+        Address.getUser(res,()=>{
+          wx.showLoading({
+            title: '生成卡片中',
+          })
+          // let posterPic = wx.getStorageSync('posterPic_'+'bargainCanvas'+'_'+this.DetailData.id)
+          // if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.DetailData.floor_price && posterPic[2] == this.DetailData.price){
+          //   this.posterImg = posterPic[0]
+          //   this.showPosterBox = true
+          //   wx.hideLoading()
+          //   this.$apply()
+          //   return false
+          // }
+          let param = {}
+          param.id = this.DetailData.id
+          param.type = 3
+          this.actionSheetHidden =  true
+          BargainModel.getPostData1(param,ResData=>{
+            if(ResData.code == 1){
+              let userPic = wx.getStorageSync('userInfo').avatarUrl
+              BargainModel.creatPoster1(this, 'bargainCanvas', ResData.data, this.DetailData.title,this.DetailData.id,userPic)
+            }
+          })
         })
       },
       closePosterBox(){

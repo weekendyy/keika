@@ -12,7 +12,7 @@ class Base {
     if(params.type === 'get') {
       url += '?shopID='+ this.shopConfig.shopID
     }
-    if (!params.type) {
+    if (!params.type || params.type=="post") {
       params.type = 'post'
       if(params.data) {
         Object.assign(params.data, this.shopConfig)
@@ -181,7 +181,119 @@ class Base {
         fcallback && fcallback(resData)
       }
     }
+    if(query.employer_user_id){
+      param.data.employer_user_id = query.employer_user_id
+    }
     this.request(param)
+  }
+  //生成海报接口1
+  getPostData1(query,callback,fcallback){
+    let param = {
+      url: 'v5/wxdata/poster',
+      data: {
+        type: query.type,
+        goods_id: query.id
+      },
+      sCallback: function(data) {
+        callback && callback(data)
+      },
+      fCallback(resData) {
+        fcallback && fcallback(resData)
+      }
+    }
+    if(query.employer_user_id){
+      param.data.employer_user_id = query.employer_user_id
+    }
+    this.request(param)
+  }
+  // 生成海报接口1
+  creatPoster1(that,canvasId,resData,title,postPicId,userPic,disQrcode){
+    const posterWdith = 390
+    const poserHeight = 694
+    const ctx = wx.createCanvasContext(canvasId)
+    let p1 = new Promise((resolve,reject)=>{
+      wx.downloadFile({
+        url: disQrcode?disQrcode:resData.qr_code_url,
+        success: (res)=>{
+          resolve(res.tempFilePath)
+        }
+      })
+    })
+    let p2 = new Promise((resolve,reject)=>{
+      wx.downloadFile({
+        url: resData.poster_img,
+        success: (res)=>{
+          resolve(res.tempFilePath)
+        }
+      })
+    })
+    let p3 = new Promise((resolve,reject)=>{
+      wx.downloadFile({
+        url: userPic,
+        success: (res)=>{
+          resolve(res.tempFilePath)
+        }
+      })
+    })
+    Promise.all([p1,p2,p3]).then((result)=>{
+      let qrCodePic = result[0]
+      let goodsPic = result[1]
+      let userIcon = result[2]
+      //绘制背景图
+      ctx.drawImage('/images/posterbgp.png', 0, 0, posterWdith, poserHeight)
+      ctx.drawImage(goodsPic, 0, 0, posterWdith, 1.22*posterWdith)
+      ctx.drawImage(qrCodePic, 260, 565, 105, 105)
+      ctx.drawImage(userIcon, 12, 562, 55, 55)
+      ctx.drawImage('/images/userpiccover.png', 12, 562, 55, 55)
+      if(disQrcode){
+        ctx.drawImage('/images/buybtndis.png', 15, 631, 190, 35)
+      }else{
+        ctx.drawImage('/images/buybtb.png', 15, 631, 190, 35)
+      }
+      // 绘制标题
+      ctx.setFillStyle('black')
+      ctx.setFontSize(parseInt(posterWdith*0.04))
+      ctx.setTextAlign('center')
+      let metrics = title.length
+      if(metrics>16){
+        ctx.fillText(title.slice(0,16), 0.5*posterWdith, 1.31*posterWdith,0.8*posterWdith)
+        if(metrics>36){
+          ctx.fillText(title.slice(16,32)+'...', 0.5*posterWdith, 1.37*posterWdith,0.8*posterWdith)
+        } else{
+          ctx.fillText(title.slice(16), 0.5*posterWdith, 1.37*posterWdith,0.8*posterWdith)
+        }
+      }else{
+        ctx.fillText(title, 0.5*posterWdith, 1.34*posterWdith,0.8*posterWdith)
+      }
+      ctx.fillText('长按立即购买', 110, 1.68*posterWdith,0.8*posterWdith)
+      if(resData.poster_img == 'https://api.czsjcrm.cn'){
+        ctx.fillText('请往后台添加图片', 0.5*posterWdith, 0.8*posterWdith,0.8*posterWdith)
+      }
+      ctx.draw(true)
+      wx.hideLoading()
+      setTimeout(()=>{
+        wx.canvasToTempFilePath({
+          x: 0,
+          y: 0,
+          destWidth: 1080,
+          destHeight: 1920,
+          canvasId: canvasId,
+          fileType: 'jpg',
+          quality: 1,
+          success: (res)=> {
+            wx.previewImage({
+              urls: [res.tempFilePath], // 需要预览的图片http链接列表
+              complete: (res)=>{
+                console.log(res)
+              }
+            })
+          },
+          fail: (res)=>{
+            console.log(res)
+          }
+        })
+      },100)
+    })
   }
   //保存海报
   savePoste(that,canvasId,postPicId){
@@ -213,144 +325,154 @@ class Base {
   creatPoster(that,canvasId,resData,title,priceNow,pricePre,type,typeIcon,address,postPicId,disQRCode){
     const posterWdith = 195
     const poserHeight = 300
-    console.log(disQRCode)
     const ctx = wx.createCanvasContext(canvasId)
-    wx.downloadFile({
-      url: disQRCode?disQRCode:resData.qr_code_img,
-      success: function (res) {
-        let qrCodePic = res.tempFilePath
-        wx.downloadFile({
-          url: resData.blur_img,
-          success: function(res2){
-            let blurPic = res2.tempFilePath
-            wx.downloadFile({
-              url: resData.banner,
-              success: function(res3){
-                let mainPic = res3.tempFilePath
-                // 绘制背景色
-                ctx.setFillStyle('white')
-                ctx.fillRect(0, 0, posterWdith, poserHeight)
-                //绘制背景图
-                ctx.drawImage(blurPic, 0, 0, posterWdith, 200)
-                ctx.beginPath()
-                ctx.moveTo(0,poserHeight)
-                ctx.lineTo(poserHeight,poserHeight)
-                ctx.arc(0.5*posterWdith, -0.35*poserHeight, 1*posterWdith, 0, 1 * Math.PI)
-                ctx.setFillStyle('white')
-                ctx.fill()
-                //原价删除线
-                // ctx.setStrokeStyle('#A79E9F')
-                // const metPrice = pricePre.length*posterWdith*0.03
-                // ctx.moveTo((0.5*posterWdith)-(metPrice/2), 1*posterWdith)
-                // ctx.lineTo((0.5*posterWdith)+(metPrice/2), 1*posterWdith)
-                // ctx.stroke()
-                // 绘制图片
-                ctx.drawImage(mainPic, 0.05*posterWdith, 0.1*posterWdith, 0.9*posterWdith, 0.55*posterWdith)
-                // 绘制中间内容，矩形
-                ctx.setShadow(0, 5, 10, '#E5E5E5')
-                ctx.setFillStyle('white')
-                ctx.fillRect(0.05*posterWdith, 0.65*posterWdith, 0.9*posterWdith, 0.4*posterWdith)
-                //绘制标题
-                ctx.setFillStyle('black')
-                ctx.setShadow(0, 0, 0, 'white')
-                ctx.setFontSize(parseInt(posterWdith*0.05))
+    let p1 = new Promise((resolve,reject)=>{
+      wx.downloadFile({
+        url: disQRCode?disQRCode:resData.qr_code_img,
+        success: (res)=>{
+          resolve(res.tempFilePath)
+        }
+      })
+    })
+    let p2 = new Promise((resolve,reject)=>{
+      wx.downloadFile({
+        url: resData.blur_img,
+        success: (res)=>{
+          resolve(res.tempFilePath)
+        }
+      })
+    })
+    let p3 = new Promise((resolve,reject)=>{
+      wx.downloadFile({
+        url: resData.banner,
+        success: (res)=>{
+          resolve(res.tempFilePath)
+        }
+      })
+    })
+    Promise.all([p1,p2,p3]).then((result)=>{
+      let qrCodePic = result[0]
+      let blurPic = result[1]
+      let mainPic = result[2]
+      // 绘制背景色
+      ctx.setFillStyle('white')
+      ctx.fillRect(0, 0, posterWdith, poserHeight)
+      //绘制背景图
+      ctx.drawImage(blurPic, 0, 0, posterWdith, 200)
+      ctx.beginPath()
+      ctx.moveTo(0,poserHeight)
+      ctx.lineTo(poserHeight,poserHeight)
+      ctx.arc(0.5*posterWdith, -0.35*poserHeight, 1*posterWdith, 0, 1 * Math.PI)
+      ctx.setFillStyle('white')
+      ctx.fill()
+      //原价删除线
+      // ctx.setStrokeStyle('#A79E9F')
+      // const metPrice = pricePre.length*posterWdith*0.03
+      // ctx.moveTo((0.5*posterWdith)-(metPrice/2), 1*posterWdith)
+      // ctx.lineTo((0.5*posterWdith)+(metPrice/2), 1*posterWdith)
+      // ctx.stroke()
+      // 绘制图片
+      ctx.drawImage(mainPic, 0.05*posterWdith, 0.1*posterWdith, 0.9*posterWdith, 0.55*posterWdith)
+      // 绘制中间内容，矩形
+      ctx.setShadow(0, 5, 10, '#E5E5E5')
+      ctx.setFillStyle('white')
+      ctx.fillRect(0.05*posterWdith, 0.65*posterWdith, 0.9*posterWdith, 0.4*posterWdith)
+      //绘制标题
+      ctx.setFillStyle('black')
+      ctx.setShadow(0, 0, 0, 'white')
+      ctx.setFontSize(parseInt(posterWdith*0.05))
 
-                ctx.setTextAlign('center')
-                let shopName =  resData.shop_name?('【'+resData.shop_name+'】'):''
-                let posterTitle = shopName + title
-                let metrics = posterTitle.length
-                if(metrics>16){
-                  ctx.fillText(posterTitle.slice(0,16), 0.5*posterWdith, 0.75*posterWdith,0.8*posterWdith)
-                  if(metrics>36){
-                    ctx.fillText(posterTitle.slice(16,32)+'...', 0.5*posterWdith, 0.82*posterWdith,0.8*posterWdith)
-                  } else{
-                    ctx.fillText(posterTitle.slice(16), 0.5*posterWdith, 0.82*posterWdith,0.8*posterWdith)
-                  }
-                }else{
-                  ctx.fillText(posterTitle, 0.5*posterWdith, 0.79*posterWdith,0.8*posterWdith)
-                }
-                //绘制价格--现价
-                if(priceNow){
-                  ctx.setFillStyle('#FF373E')
-                  ctx.setFontSize(parseInt(posterWdith*0.06))
-                  ctx.fillText('¥'+priceNow, 0.5*posterWdith, 0.93*posterWdith)
-                }
-                //绘制专题的超值优惠
-                if(type == '专题'){
-                  ctx.setFillStyle('#FF363D')
-                  ctx.setFontSize(parseInt(posterWdith*0.07))
-                  ctx.fillText('超值优惠', 0.5*posterWdith, 0.93*posterWdith)
-                }
-                //绘制价格--原价
-                ctx.setFillStyle('#A79E9F')
-                ctx.setFontSize(parseInt(posterWdith*0.045))
-                ctx.setTextBaseline('middle')
-                if(pricePre){
-                  ctx.fillText('¥'+pricePre, 0.5*posterWdith, 0.98*posterWdith)
-                }
-                //抢购图标
-                if(type){
-                  ctx.drawImage(typeIcon, 0.7*posterWdith, 0.87*posterWdith, 0.14*posterWdith, 0.06*posterWdith)
-                  ctx.setFillStyle('white')
-                  ctx.setFontSize(parseInt(posterWdith*0.04))
-                  ctx.fillText(type, 0.76*posterWdith, 0.9*posterWdith)
-                }
-                //绘制小程序码
-                ctx.drawImage(qrCodePic, 0.35*posterWdith, 1.11*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
-                //绘制扫码提示
-                ctx.setFillStyle('#757575')
-                ctx.setFontSize(parseInt(posterWdith*0.04))
-                ctx.fillText("长按扫码发现惊喜", 0.5*posterWdith, 1.48*posterWdith)
-                //绘制地址
-                
-                
-                if(address){
-                  let addressL = address.length
-                  if(addressL>16){
-                    ctx.fillText('地址：' + address.slice(0,16), 0.5*posterWdith, 0.9*posterWdith,0.8*posterWdith)
-                    if(addressL>36){
-                      ctx.fillText(address.slice(16,32)+'...', 0.5*posterWdith, 0.95*posterWdith,0.8*posterWdith)
-                    } else{
-                      ctx.fillText(address.slice(16), 0.5*posterWdith, 0.95*posterWdith,0.8*posterWdith)
-                    }
-                  }else{
-                    ctx.fillText('地址：'+address, 0.5*posterWdith, 0.9*posterWdith,0.8*posterWdith)
-                  }
-                  ctx.setFontSize(parseInt(posterWdith*0.05))
-                }
+      ctx.setTextAlign('center')
+      let shopName =  resData.shop_name?('【'+resData.shop_name+'】'):''
+      let posterTitle = shopName + title
+      let metrics = posterTitle.length
+      if(metrics>16){
+        ctx.fillText(posterTitle.slice(0,16), 0.5*posterWdith, 0.75*posterWdith,0.8*posterWdith)
+        if(metrics>36){
+          ctx.fillText(posterTitle.slice(16,32)+'...', 0.5*posterWdith, 0.82*posterWdith,0.8*posterWdith)
+        } else{
+          ctx.fillText(posterTitle.slice(16), 0.5*posterWdith, 0.82*posterWdith,0.8*posterWdith)
+        }
+      }else{
+        ctx.fillText(posterTitle, 0.5*posterWdith, 0.79*posterWdith,0.8*posterWdith)
+      }
+      //绘制价格--现价
+      if(priceNow){
+        ctx.setFillStyle('#FF373E')
+        ctx.setFontSize(parseInt(posterWdith*0.06))
+        ctx.fillText('¥'+priceNow, 0.5*posterWdith, 0.93*posterWdith)
+      }
+      //绘制专题的超值优惠
+      if(type == '专题'){
+        ctx.setFillStyle('#FF363D')
+        ctx.setFontSize(parseInt(posterWdith*0.07))
+        ctx.fillText('超值优惠', 0.5*posterWdith, 0.93*posterWdith)
+      }
+      //绘制价格--原价
+      ctx.setFillStyle('#A79E9F')
+      ctx.setFontSize(parseInt(posterWdith*0.045))
+      ctx.setTextBaseline('middle')
+      if(pricePre){
+        ctx.fillText('¥'+pricePre, 0.5*posterWdith, 0.98*posterWdith)
+      }
+      //抢购图标
+      if(type){
+        ctx.drawImage(typeIcon, 0.7*posterWdith, 0.87*posterWdith, 0.14*posterWdith, 0.06*posterWdith)
+        ctx.setFillStyle('white')
+        ctx.setFontSize(parseInt(posterWdith*0.04))
+        ctx.fillText(type, 0.76*posterWdith, 0.9*posterWdith)
+      }
+      //绘制小程序码
+      ctx.drawImage(qrCodePic, 0.35*posterWdith, 1.11*posterWdith, 0.3*posterWdith, 0.3*posterWdith)
+      //绘制扫码提示
+      ctx.setFillStyle('#757575')
+      ctx.setFontSize(parseInt(posterWdith*0.04))
+      ctx.fillText("长按扫码发现惊喜", 0.5*posterWdith, 1.48*posterWdith)
+      //绘制地址
+      
+      
+      if(address){
+        let addressL = address.length
+        if(addressL>16){
+          ctx.fillText('地址：' + address.slice(0,16), 0.5*posterWdith, 0.9*posterWdith,0.8*posterWdith)
+          if(addressL>36){
+            ctx.fillText(address.slice(16,32)+'...', 0.5*posterWdith, 0.95*posterWdith,0.8*posterWdith)
+          } else{
+            ctx.fillText(address.slice(16), 0.5*posterWdith, 0.95*posterWdith,0.8*posterWdith)
+          }
+        }else{
+          ctx.fillText('地址：'+address, 0.5*posterWdith, 0.9*posterWdith,0.8*posterWdith)
+        }
+        ctx.setFontSize(parseInt(posterWdith*0.05))
+      }
 
-                ctx.draw(true)
-                wx.hideLoading()
-                setTimeout(()=>{
-                  wx.canvasToTempFilePath({
-                    x: 0,
-                    y: 0,
-                    width: 650,
-                    height: 1000,
-                    destWidth: 650,
-                    destHeight: 1000,
-                    canvasId: canvasId,
-                    fileType: 'jpg',
-                    quality: 1,
-                    success: (res)=> {
-                      if(!disQRCode){
-                        wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, [res.tempFilePath,priceNow,pricePre])
-                      }
-                      that.posterImg = res.tempFilePath
-                      that.showPosterBox = true
-                      that.posting = false
-                      that.$apply()
-                    },
-                    fail: (res)=>{
-                      console.log(res)
-                    }
-                  })
-                },500)
-              }
-            })
+      ctx.draw(true)
+      wx.hideLoading()
+      setTimeout(()=>{
+        wx.canvasToTempFilePath({
+          x: 0,
+          y: 0,
+          width: 650,
+          height: 1000,
+          destWidth: 650,
+          destHeight: 1000,
+          canvasId: canvasId,
+          fileType: 'jpg',
+          quality: 1,
+          success: (res)=> {
+            if(!disQRCode){
+              wx.setStorageSync('posterPic_'+canvasId+'_'+postPicId, [res.tempFilePath,priceNow,pricePre])
+            }
+            that.posterImg = res.tempFilePath
+            that.showPosterBox = true
+            that.posting = false
+            that.$apply()
+          },
+          fail: (res)=>{
+            console.log(res)
           }
         })
-      }
+      },500)
     })
   }
 
@@ -485,6 +607,51 @@ class Base {
   // 时间戳转成日期格式
   getLocalTime(nS) { 
     return new Date(parseInt(nS) * 1000).toLocaleString().replace(/:\d{1,2}$/,' ');     
+  }
+  // 验证是否获取过手机号
+  hasPostPhoneNumber(callback){
+    let param = {
+      url: 'v5/wxdata/check_phone',
+      data: {
+      },
+      sCallback(ResData){
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 换取手机号
+  _getPhoneNumber(queryData, callback){
+    let param = {
+      url: 'v5/wxdata/get_phone',
+      data: {
+        iv: queryData.iv,
+        encryptedData: queryData.encryptedData
+      },
+      sCallback(ResData){
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  getPhoneNumber(e,scallBack){
+    if(e.detail.iv){
+      let iv = encodeURIComponent(e.detail.iv)
+      let encryptedData = e.detail.encryptedData
+      let query = {
+        iv: iv,
+        encryptedData: encryptedData
+      }
+      this._getPhoneNumber(query,(res)=>{
+        if(res.code == 1){
+          scallBack && scallBack(res)
+        }else{
+          this.showTips('获取失败，请重试')
+        }
+      })
+    }else{
+      this.showTips('需要您的手机号才能继续使用')
+    }
   }
 }
 

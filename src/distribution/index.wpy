@@ -34,7 +34,7 @@
   </view>
   <view class="listItemBox beforShow {{showContent?'showDone':''}}" style="transition: .4s .3s;">
     <block wx:for="{{listData}}" wx:key="{{index}}">
-      <button @tap="toDetail({{index}},{{item.url}})" class="listItem" open-type="{{index== 5?'contact':''}}" hover-stay-time="300" hover-start-time="0" hover-class="listItemHover">
+      <button data-index="{{index}}" data-url="{{item.url}}" class="listItem" lang="zh_CN" bindgetuserinfo="toDetail" open-type="{{index== 5?'contact':'getUserInfo'}}" hover-stay-time="300" hover-start-time="0" hover-class="listItemHover">
         <image src="{{item.pic}}" mode="widthFix" class="listItemPic"></image>
         <text>{{item.name}}</text>
       </button>
@@ -48,6 +48,7 @@
 <script>
   import wepy from 'wepy'
   import disModel from './distributionModel.js'
+  import address from '../utils/address.js'
   export default class extends wepy.page {
     config = {
       backgroundColorTop: '#FEA377',
@@ -100,38 +101,42 @@
       // }
     }
     methods = {
-      toDetail(index,url){
-        if(index == 5){
-          return false
-        }
-        if(index == 6){
-          wx.showLoading({
-            title: '海报生成中...'
-          })
-          let disId = wx.getStorageSync('distributionInfo')
-          let query = {
-            type: 5,
-            goodsId: 1,
-            disId: disId.id
+      toDetail(res){
+        address.getUser(res,()=>{
+          let index = res.currentTarget.dataset.index
+          let url = res.currentTarget.dataset.url
+          if(index == 5){
+            return false
           }
-          disModel.creatPoster(query,(res)=>{
-            if(res.code == 1){
-              disModel.buildPoster(res,this,true,this.name)
-            }else{
-              disModel.showTips(res.message)
+          if(index == 6){
+            wx.showLoading({
+              title: '海报生成中...'
+            })
+            let disId = wx.getStorageSync('distributionInfo')
+            let query = {
+              type: 5,
+              goodsId: 1,
+              disId: disId.id
             }
-          })
-          return false
-        }
-        if(index == 3){
-          disModel.navTo(url,{cashed: this.indexData.dis_user.cash_money_total,allNum: this.indexData.dis_user.commission})
-          return false
-        }
-        if(index == 4){
-          disModel.navTo(url,{cardName: this.name})
-          return false
-        }
-        disModel.navTo(url)
+            disModel.creatPoster(query,(res)=>{
+              if(res.code == 1){
+                disModel.buildPoster(res,this,true,this.name)
+              }else{
+                disModel.showTips(res.message)
+              }
+            })
+            return false
+          }
+          if(index == 3){
+            disModel.navTo(url,{cashed: this.indexData.dis_user.cash_money_total,allNum: this.indexData.dis_user.commission})
+            return false
+          }
+          if(index == 4){
+            disModel.navTo(url,{cardName: this.name})
+            return false
+          }
+          disModel.navTo(url)
+        })
       },
       logOff(){
         wx.redirectTo({

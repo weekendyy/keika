@@ -52,7 +52,8 @@ class Card extends Base {
     let param = {
       url: 'v6/lucky_goods/exchange_goods',
       data: {
-        lucky_goods_id: queryData.lucky_goods_id
+        lucky_goods_id: queryData.lucky_goods_id,
+        phone_number: queryData.phone_number
       },
       sCallback(ResData) {
         callback && callback(ResData)

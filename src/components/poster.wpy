@@ -1,25 +1,25 @@
 <template>
-  <view class="posterText {{showContent?'showposterText':''}}" @tap="getUserInfo">
+  <button class="posterText {{showContent?'showposterText':''}}" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
     <view class="posterT {{posting?'posterHover':''}}">
       <view class="posterTxtBox {{posting?'postStay':''}}">
         <text>生成</text>
         <text>海报</text>
       </view>
     </view>
-  </view>
+  </button>
   <view class="posterBox">
     <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
     <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
         <!-- 首页画板 -->
-      <canvas wx:if="{{type == 9}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="shopCanvas"></canvas>
+      <canvas wx:if="{{type == 9}}" disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="shopCanvas"></canvas>
       <!-- 砍价画板 -->
-      <canvas wx:if="{{type == 3}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="bargainCanvas"></canvas>
+      <canvas wx:if="{{type == 3}}" disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="bargainCanvas"></canvas>
       <!-- 抢购画板 -->
-      <canvas wx:if="{{type == 1}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="goodsCanvas"></canvas>
+      <canvas wx:if="{{type == 1}}" disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="goodsCanvas"></canvas>
       <!-- 拼团画板 -->
-      <canvas wx:if="{{type == 2}}" disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="groupCanvas"></canvas>
+      <canvas wx:if="{{type == 2}}" disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="groupCanvas"></canvas>
       <!-- 会员卡 -->
-      <canvas wx:if="{{type == 10}}" disable-scroll="true" class="canvas" style="width: 195px; height: 346px;" canvas-id="VipCanvas"></canvas>
+      <canvas wx:if="{{type == 10}}" disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="VipCanvas"></canvas>
       <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
       <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic" style="background-color: {{dis?'#FB4D69':'#FE6420'}}">
         <image src="../images/download.png" mode="widthFix" class="downPic"></image>
@@ -31,13 +31,12 @@
 <script>
   import wepy from 'wepy'
   import HomeModel from '../pages/Index/index-model.js'
+  import Address from '../utils/address.js'
   export default class poster extends wepy.component {
     props = {
       showContent: Boolean,
       posterInfo: Object,
-      type: String,    //9新版好店首页  3砍价海报  1抢购  2拼团  10会员卡
-      priceNow: String,
-      pricePre: String,
+      type: String,    // 1 秒杀 2 拼团 3 砍价 4 集卡 5 好店 6 专题 7 福利 8 抽奖 9 独立版好店
       dis: String
     }
     data = {
@@ -53,151 +52,73 @@
       
     }
     events = {
-      getUserInfo(disQRCode){
-        if(this.type == '9'){
-            this.canvasName = 'shopCanvas'
-        }
-        if(this.type == '3'){
-            this.canvasName = 'bargainCanvas'
-        }
-        if(this.type == '1'){
-            this.canvasName = 'goodsCanvas'
-        }
-        if(this.type == '2'){
-            this.canvasName = 'groupCanvas'
-        }
-        if(this.type == '10'){
-            this.canvasName = 'VipCanvas'
-        }
-        wx.showLoading({
-          title: '生成卡片中',
-        })
-        this.posting = true
-        let posterPic = wx.getStorageSync('posterPic_'+ this.canvasName +'_'+ this.posterInfo.id)
-        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.priceNow && posterPic[2] == this.pricePre){
-          this.posterImg = posterPic[0]
-          this.showPosterBox = true
-          this.posting = false
-          wx.hideLoading()
-          this.$apply()
-          return false
-        }
-        let param = {}
-        param.id = this.posterInfo.id
-        param.type = this.type
-        HomeModel.getPostData(param,ResData=>{
-          if(ResData.code == 1){
-            let posterTag = ''  
-            if(disQRCode){
-              posterTag = '/images/disposter.png'
-            }else{
-              posterTag = '/images/posterTy.png'
-            }
-            if(this.type == '9'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id,disQRCode)
-            }
-            if(this.type == '3'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.floor_price, this.posterInfo.price,'砍价',posterTag, '', this.posterInfo.id,disQRCode)
-            }
-            if(this.type == '1'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, this.posterInfo.original_price,'抢购',posterTag, '', this.posterInfo.id,disQRCode)
-            }
-            if(this.type == '2'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.group_price, this.posterInfo.original_price,'拼团',posterTag, '', this.posterInfo.id,disQRCode)
-            }
-            if(this.type == '10'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, '','会员',posterTag, '', this.posterInfo.id,disQRCode)
-            }
-          }
-        })
+      getUserInfo(res,disQrcode){
+        this.buildPoster(res,disQrcode)
       }
     }
     methods = {
       getUserInfo(res){
-        if(this.type == '9'){
-            this.canvasName = 'shopCanvas'
-        }
-        if(this.type == '3'){
-            this.canvasName = 'bargainCanvas'
-        }
-        if(this.type == '1'){
-            this.canvasName = 'goodsCanvas'
-        }
-        if(this.type == '2'){
-            this.canvasName = 'groupCanvas'
-        }
-        wx.showLoading({
-          title: '生成卡片中',
-        })
-        this.posting = true
-        let posterPic = wx.getStorageSync('posterPic_'+ this.canvasName +'_'+ this.posterInfo.id)
-        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.priceNow && posterPic[2] == this.pricePre){
-          this.posterImg = posterPic[0]
-          this.showPosterBox = true
-          this.posting = false
-          wx.hideLoading()
-          this.$apply()
-          return false
-        }
-        let param = {}
-        param.id = this.posterInfo.id
-        param.type = this.type
-        HomeModel.getPostData(param,ResData=>{
-          if(ResData.code == 1){
-            if(this.type == '9'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id)
-            }
-            if(this.type == '3'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.floor_price, this.posterInfo.price,'砍价','/images/posterTy.png', '', this.posterInfo.id)
-            }
-            if(this.type == '1'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, this.posterInfo.original_price,'抢购','/images/posterTy.png', '', this.posterInfo.id)
-            }
-            if(this.type == '2'){
-                HomeModel.creatPoster(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.group_price, this.posterInfo.original_price,'拼团','/images/posterTy.png', '', this.posterInfo.id)
-            }
-          }
-        })
-      },
-      closePosterBox(){
-        this.showPosterBox = false
-        this.$apply()
-      },
-      savePostePic(){
-        let that = this
-        if(this.dis){
-          wx.showLoading({title:'保存中...'})
-          wx.saveImageToPhotosAlbum({
-            filePath: this.posterImg,
-            success:()=>{
-              wx.showToast({
-                title: '保存成功！',
-                icon: 'success',
-                duration: 1000
-              })
-              that.showPosterBox = false
-              that.$apply()
-            },
-            fail:(e)=>{
-              that.showPosterBox = false
-              that.$apply()
-              wx.showToast({
-                title: '保存失败！',
-                icon: 'success',
-                duration: 1000
-              })
-            }
-          })
-        }else{
-          HomeModel.savePoste(this,this.canvasName,this.posterInfo.id)
-        }
+        this.buildPoster(res)
       }
+    }
+    buildPoster(res,disQrcode){
+      if(this.type == '9'){
+          this.canvasName = 'shopCanvas'
+      }
+      if(this.type == '3'){
+          this.canvasName = 'bargainCanvas'
+      }
+      if(this.type == '1'){
+          this.canvasName = 'goodsCanvas'
+      }
+      if(this.type == '2'){
+          this.canvasName = 'groupCanvas'
+      }
+      if(this.type == '10'){
+          this.canvasName = 'VipCanvas'
+      }
+      let userInfo = wx.getStorageSync('userInfo')
+      if(userInfo){
+        this._buildPoster(this.canvasName,disQrcode)
+      }else{
+        Address.getUser(res,(res)=>{
+          this._buildPoster(this.canvasName,disQrcode)
+        })
+      }
+    }
+    _buildPoster(canvasName,disQrcode){
+      wx.showLoading({
+        title: '生成卡片中',
+      })
+      let param = {}
+      param.id = this.posterInfo.id
+      param.type = this.type
+      HomeModel.getPostData1(param,ResData=>{
+        if(ResData.code == 1){
+          let userPic = wx.getStorageSync('userInfo').avatarUrl
+          if(this.type == '9'){
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id)
+          }
+          if(this.type == '3'){
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.id,userPic,disQrcode?disQrcode:'')
+          }
+          if(this.type == '1'){
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.id,userPic,disQrcode?disQrcode:'')
+          }
+          if(this.type == '2'){
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.id,userPic,disQrcode?disQrcode:'')
+          }
+          if(this.type == '10'){
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, '','会员',posterTag, '', this.posterInfo.id)
+          }
+        }
+      })
     }
     onLoad(){
     }
   }
 </script>
-<style type="less">
+<style lang="less">
   .posterText{
     padding: 0;
     margin: 0;

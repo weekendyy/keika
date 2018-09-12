@@ -67,14 +67,15 @@
         <text>{{groupsData.create_time}}</text>
       </view>
     </view>
-    <view class="tel-wrapper" wx:if="{{groupsData.status == 1 }}">
+    <button class="tel-wrapper" wx:if="{{groupsData.status == 1 }}">
       <text>手机号(必填)</text>
+      <button bindgetphonenumber="getPhoneNumBtn" class="getPhoneNumBtn" open-type="getPhoneNumber">绑定手机号</button>
       <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
-    </view>
+    </button>
     <view class="footer">
       <text class="pay-text">实付:</text>
       <text class="pay-money">￥{{groupsData.pay_price}}</text>
-      <text wx:if="{{groupsData.status == 1}}" class="pay-btn {{payState == true ? '' : 'disabled'}}" @tap="buy">立即付款</text>
+      <button wx:if="{{groupsData.status == 1}}" @tap="buy" class="pay-btn {{payState == true ? '' : 'disabled'}}">立即付款</button>
     </view>
   </view>
 </template>
@@ -106,6 +107,16 @@
       real_tel:''
     }
     methods = {
+      getPhoneNumBtn(e){
+        Groups.getPhoneNumber(e,(res)=>{
+          let phone = res.data.phoneNumber
+          this.real_tel = phone
+          this.$apply()
+        })
+      },
+      phoneInput(e){
+        this.real_tel = e.detail.value.trim()
+      },
       getAddress(){
         if(this.groupsData.status != 1){
           return false
@@ -127,49 +138,24 @@
           }
         })
       },
-      phoneInput($event){
-         this.requirePhone = $event.detail.value.trim()
+      buy(e){
+        this.buyFn()
       },
-      buy(){
-        if(Number(this.requirePhone.length) === 0){
-          wx.showToast({
-            title: '请输入手机号码',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(Number(this.requirePhone.length) <= 10){
-          wx.showToast({
-            title: '手机长度不足',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(!(/^1[23456789]\d{9}$/.test(this.requirePhone))){
-          wx.showToast({
-            title: '手机格式错误',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false;
-        }
-        let param = {
-          orderID: this.orderId,
-          shipping_phone: this.requirePhone
-        }
-        if(this.groupsData.address_options == 1 && JSON.stringify(this.AddressInfo) == '{}'){
-          wx.showToast({
-            title: '请填写收货地址',
-            icon: 'success',
-            duration: 1200
-          })
-          return false
-        }
+    }
+    buyFn(){
+      let param = {
+        orderID: this.orderId,
+        shipping_phone: this.requirePhone
+      }
+      if(this.groupsData.address_options == 1 && JSON.stringify(this.AddressInfo) == '{}'){
+        wx.showToast({
+          title: '请填写收货地址',
+          icon: 'success',
+          duration: 1200
+        })
+        return false
+      }
+      if(Groups.verifyPhoneNumber(this.real_tel)){
         if(this.AddressInfo) {
           Object.assign(param,this.AddressInfo)
         }
@@ -208,9 +194,15 @@
             this.$apply()
           }
         })
-      },
+      }
     }
     onLoad(options){
+      Groups.hasPostPhoneNumber((res)=>{
+        if(res.data.phone){
+          this.requirePhone = res.data.phone
+          this.$apply()
+        }
+      })
       this.orderId = options.orderId
       this.groupsPay_type = options.pay_type
       let _param = {
@@ -227,7 +219,7 @@
           this.groupsData.shipping_street && (this.AddressInfo.shipping_street = this.groupsData.shipping_street)
           this.groupsData.shipping_phone && (this.AddressInfo.shipping_tel = this.groupsData.shipping_phone)
           this.groupsData.real_tel && (this.real_tel = this.groupsData.real_tel)
-          this.groupsData.real_tel && (this.requirePhone = this.groupsData.real_tel)
+          // this.groupsData.real_tel && (this.requirePhone = this.groupsData.real_tel)
           this.$apply()
         }
       })
@@ -331,10 +323,18 @@
   }
 }
 .tel-wrapper{
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
   height: 124rpx;
   align-items: center;
   justify-content: space-between;
   font-size: 30rpx;
+  background-color: #fff;
+  &::after{
+    content: none;
+  }
   text {
     color: #e7573d;
     position: relative;
@@ -346,13 +346,26 @@
     }
   }
   input {
-    width: 400rpx;
+    width: 300rpx;
     text-align: right;
     padding-top: 30rpx;
     padding-bottom: 30rpx;
   }
   .telPlaceholder{
     color: #e7573d;
+  }
+  .getPhoneNumBtn{
+    padding: 0 10rpx;
+    margin: 0;
+    border-radius: 6rpx;
+    border: 1px solid #999;
+    color: #999;
+    font-size: 20rpx;
+    background-color: #F8F8F8;
+    margin-left: 15rpx;
+    &::after{
+      content: none;
+    }
   }
 }
 .Confirm_main{
@@ -483,6 +496,11 @@
     color: #ff683a;
   }
   .pay-btn{
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
     display: inline-block;
     margin-left:auto;
     width: 240rpx;
@@ -492,6 +510,9 @@
     line-height:100rpx;
     font-size: 34rpx;
     color: #fff;
+    &::after{
+      content: none;
+    }
     &.disabled{
       background: rgba(171,149,109,0.6);
       pointer-events: none;

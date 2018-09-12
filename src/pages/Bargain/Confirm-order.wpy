@@ -65,12 +65,13 @@
     </view>
     <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
       <text>手机号(必填)</text>
+      <button bindgetphonenumber="getPhoneNumber" class="getPhoneNumBtn" open-type="getPhoneNumber">绑定手机号</button>
       <input type="number" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
     </view>
     <view class="footer">
       <text class="pay-text">实付:</text>
       <text class="pay-money">￥{{goods_info.now_price}}</text>
-      <text wx:if="{{goods_info.status == 1}}" class="pay-btn {{payState == true ? '' : 'disabled'}}" @tap="buy">立即付款</text>
+      <button wx:if="{{goods_info.status == 1}}" @tap="buy" class="pay-btn {{payState == true ? '' : 'disabled'}}">立即付款</button>
     </view>
   </view>
 </template>
@@ -93,6 +94,14 @@
       choose_address:''
     }
     methods = {
+      // 获取电话号码
+      getPhoneNumber(e){
+        BargainModel.getPhoneNumber(e,(res)=>{
+          let phone = res.data.phoneNumber
+          this.real_tel = phone
+          this.$apply()
+        })
+      },
       getAddress(){
         if(this.goods_info.status != 1){
           return false
@@ -115,31 +124,26 @@
         })
       },
       phoneInput($event){
-         this.requirePhone = $event.detail.value.trim()
+         this.real_tel = $event.detail.value.trim()
       },
-      buy(){
-        if(JSON.stringify(this.AddressInfo) == '{}' && this.choose_address == 1) {
-          wx.showToast({
-            title: '请填写收货地址',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false
-        }
-        if(!(/^1[23456789]\d{9}$/.test(this.requirePhone))){
-          wx.showToast({
-            title: '手机格式错误',
-            icon:'loading',
-            duration: 1000,
-            mask: true,
-          })
-          return false;
-        }
-
+      buy(e){
+        this.buyFn()
+      },
+    }
+    buyFn(){
+      if(JSON.stringify(this.AddressInfo) == '{}' && this.choose_address == 1) {
+        wx.showToast({
+          title: '请填写收货地址',
+          icon:'loading',
+          duration: 1000,
+          mask: true,
+        })
+        return false
+      }
+      if(BargainModel.verifyPhoneNumber(this.real_tel)){
         let param = {
           launch_id: this.launch_id,
-          real_tel: this.requirePhone
+          real_tel: this.real_tel
         }
         Object.assign(param,this.AddressInfo)
         this.payState = false
@@ -239,9 +243,15 @@
             duration: 1500
           })
         })
-      },
+      }
     }
     onLoad(options){
+      BargainModel.hasPostPhoneNumber((res)=>{
+        if(res.data.phone){
+          this.real_tel = res.data.phone
+          this.$apply()
+        }
+      })
       this.launch_id = options.launch_id
       BargainModel.orderDetail({launch_id:this.launch_id}, (ResData)=>{
         if(ResData.code == 1){
@@ -253,7 +263,7 @@
           this.goods_info.shipping_street && (this.AddressInfo.shipping_street = this.goods_info.shipping_street)
           this.goods_info.shipping_phone && (this.AddressInfo.shipping_tel = this.goods_info.shipping_phone)
           this.goods_info.choose_address && (this.choose_address = this.goods_info.choose_address)
-          this.goods_info.real_tel && (this.real_tel = this.goods_info.real_tel)
+          // this.goods_info.real_tel && (this.real_tel = this.goods_info.real_tel)
           this.goods_info.real_tel && (this.requirePhone = this.goods_info.real_tel)
         }
         this.$apply()
@@ -362,10 +372,18 @@
   }
 }
 .tel-wrapper{
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  background-color: #fff;
   height: 124rpx;
   align-items: center;
   justify-content: space-between;
   font-size: 30rpx;
+  &::after{
+    content: none;
+  }
   text {
     color: #e7573d;
     position: relative;
@@ -376,8 +394,21 @@
       color: #e7573d;
     }
   }
+  .getPhoneNumBtn{
+    padding: 0 10rpx;
+    margin: 0;
+    border-radius: 6rpx;
+    border: 1px solid #999;
+    color: #999;
+    font-size: 20rpx;
+    background-color: #F8F8F8;
+    margin-left: 15rpx;
+    &::after{
+      content: none;
+    }
+  }
   input {
-    width: 400rpx;
+    width: 300rpx;
     text-align: right;
     padding-top: 30rpx;
     padding-bottom: 30rpx;
@@ -514,6 +545,10 @@
     color: #ff683a;
   }
   .pay-btn{
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
     display: inline-block;
     margin-left:auto;
     width: 240rpx;
@@ -523,6 +558,9 @@
     line-height:100rpx;
     font-size: 34rpx;
     color: #fff;
+    &::after{
+      content: none;
+    }
     &.disabled{
       background: rgba(171,149,109,0.6);
       pointer-events: none;

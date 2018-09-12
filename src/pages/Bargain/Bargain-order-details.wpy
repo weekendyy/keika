@@ -85,7 +85,7 @@
     </view>
     <view class="footer">
         <!--订单成功 或者 订单取消掉的时候 -->
-        <text class="del-order"  wx:if="{{DetailsData.use_status == 1}}" @tap.stop="delOrder()">删除订单</text>
+        <!-- <text class="del-order"  wx:if="{{DetailsData.use_status == 1}}" @tap.stop="delOrder()">删除订单</text> -->
         <!--待付款-->
         <text class="payment" wx:if="{{DetailsData.status == 1 && DetailsData.receive_status == 0 }}" @tap="orderPayment">去支付</text>
         <!--待使用-->

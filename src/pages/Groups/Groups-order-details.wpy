@@ -144,7 +144,7 @@
     </view>
     <view class="footer" wx:if="{{groupsData.monad_id == 0 }}">
       <!--订单成功 或者 订单取消掉的时候 -->
-      <text class="del-order" wx:if="{{groupsData.status == 4 || groupsData.status == 0}}" @tap.stop="delGroupOrder()">删除订单</text>
+      <!-- <text class="del-order" wx:if="{{groupsData.status == 4 || groupsData.status == 0}}" @tap.stop="delGroupOrder()">删除订单</text> -->
       <!--待付款-->
       <navigator url="/pages/Groups/Groups-Confirm-order?orderId={{orderID}}&pay_type=1" class="payment" wx:if="{{groupsData.status == 1 && groupsData.check_pay_type == 1}}">去支付</navigator>
       <navigator url="/pages/Groups/Groups-Confirm-order?orderId={{orderID}}&pay_type=2" class="payment" wx:if="{{groupsData.status == 1 && groupsData.check_pay_type == 2}}">去支付</navigator>
@@ -157,7 +157,7 @@
       <!--待付款-->
       <navigator url="/pages/Groups/Groups-Confirm-order?orderId={{orderID}}&pay_type=2" class="payment" wx:if="{{groupsData.status == 1}}">去支付</navigator>
       <!--订单成功 或者 订单取消掉的时候 -->
-      <text class="del-order" wx:if="{{groupsData.status == 0 || groupsData.status == 4 || groupsData.status == 8}}" @tap.stop="delGroupOrder()">删除订单</text>
+    <!--   <text class="del-order" wx:if="{{groupsData.status == 0 || groupsData.status == 4 || groupsData.status == 8}}" @tap.stop="delGroupOrder()">删除订单</text> -->
       <!--待评价-->
       <navigator url="/pages/Groups/Groups-evaluate-details?orderId={{orderID}}" class="payment" wx:if="{{groupsData.status == 3}}">去评价</navigator>
       <!-- 拼团成功,去使用 -->

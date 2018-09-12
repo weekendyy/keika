@@ -72,10 +72,10 @@
         <text>{{goods_info.order_time}}</text>
       </view>
     </view>
-    <view class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
+    <button class="tel-wrapper" wx:if="{{goods_info.status == 1 }}">
       <text>手机号</text>
       <input type="number" disabled="true" placeholder-class="telPlaceholder" value="{{real_tel}}" @input="phoneInput" maxlength="11" placeholder="请填写手机号,方便商家验证"/>
-    </view>
+    </button>
     <view class="footer">
       <text class="pay-text">实付:</text>
       <text class="pay-money">￥{{goods_info.pay_price}}</text>
@@ -361,10 +361,19 @@
   }
 }
 .tel-wrapper{
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  background-color: transparent;
   height: 124rpx;
   align-items: center;
   justify-content: space-between;
   font-size: 30rpx;
+  background-color: #fff;
+  &::after{
+    content: none;
+  }
   text {
     color: #666;
     position: relative;

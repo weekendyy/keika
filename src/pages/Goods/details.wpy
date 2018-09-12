@@ -131,7 +131,7 @@
         <view class="tabItem {{activeItemIndex == 0 ? 'activeItem': ''}}" @tap="itemTab(0)" style="transition: .5s">商品详情</view>
         <view class="tabItem {{activeItemIndex == 1 ? 'activeItem': ''}}" @tap="itemTab(1)" style="transition: .5s">商品评价</view>
         <view class="moveItem {{activeItemIndex == 1 ? 'nextItem': ''}}" style="transition: .5s;"></view>
-      <view class="cut"></view>
+        <view class="cut"></view>
       </view>
       <!-- 切换内容 -->
       <view class="goodsDetailContent" wx:if="{{ activeItemIndex == 0 }}">
@@ -201,7 +201,7 @@
       <!-- 进行中 -->
       <block wx:if="{{DetailsData.new_time_status == 1}}">
         <!-- 购买 -->
-        <button loading="{{isBuying}}" wx:if="{{buy_log == 1}}" class="buyNow" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="chooseGoods">{{(DetailsData.residue-DetailsData.shopping_num)==0?'已售空':'立即购买'}}</button>
+        <button loading="{{isBuying}}" wx:if="{{buy_log == 1}}" class="buyNow" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="chooseGoods">{{(DetailsData.residue-DetailsData.shopping_num) > 0?'立即购买':'已售空'}}</button>
         <!-- 使用 -->
         <view wx:if="{{buy_log == 2}}" bindtap="gotoUse" class="buyNow">立即使用</view>
         <!-- 已使用 -->
@@ -212,7 +212,7 @@
     </view>
   </view>
   <!-- 海报 -->
-  <Poster :showContent.sync="loadingHidden" :priceNow.sync="priceNow" :pricePre.sync="pricePre" :posterInfo.sync="DetailsData" type="1"></Poster>
+  <Poster :showContent.sync="loadingHidden" :posterInfo.sync="DetailsData" type="1"></Poster>
   <!-- 分享弹窗 -->
   <view class="cover-shareBox {{showShareBox?'showcoverShareBox':''}}" @tap="closeShareBox"></view>
   <view class="shareBox {{showShareBox?'showShareBox':''}}">
@@ -306,7 +306,6 @@
   import wxParse from '../../wxParse/wxParse'
   import wepy from 'wepy'
   import DetailsModel from './details-model'
-  import MyModel from '@/pages/My/index-model'
   import goodsChooseNum from '../../components/goodsChooseNum'
   import Address from '../../utils/address.js'
   import BackHome from '../../components/backHome'

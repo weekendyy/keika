@@ -12,12 +12,12 @@
         <text>{{likeNum}}人喜欢</text>
       </view>
     </swiper>
-    <view class="posterText" @tap="getUserInfo">
+    <button class="posterText" lang="zh_CN" open-type="getUserInfo" bindgetuserinfo="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </view>
+    </button>
     <view class="card-content">
       <view class="card-title">
         <view class="card-title-wrapper">
@@ -61,9 +61,15 @@
           </button>
         </view>
         <view class="card-box success" wx:if="{{goodsInfo.check_collect_status == 1 || goodsInfo.check_exchange_statu == 1  && goodsInfo.first_join == 2 && goodsInfo.status == 1}}">
-          <view class="card" wx:if="{{goodsInfo.check_collect_status == 1 && goodsInfo.check_exchange_statu == 2}}"  @tap="exchange()">
+          <!-- 未获取用户电话号码 -->
+          <button class="card" bindgetphonenumber="exchange" open-type="getPhoneNumber" wx:if="{{goodsInfo.check_collect_status == 1 && goodsInfo.check_exchange_statu == 2 && !hasPhoneNum}}">
             <text>收集成功,点击领取</text>
-          </view>
+          </button>
+          <!-- 已经获取电话号码 -->
+          <button class="card" @tap="exchange" wx:if="{{goodsInfo.check_collect_status == 1 && goodsInfo.check_exchange_statu == 2 && hasPhoneNum}}">
+            <text>收集成功,点击领取</text>
+          </button>
+
           <view class="card" wx:if="{{goodsInfo.check_exchange_statu == 1 && goodsInfo.lucky_order_status == 1}}" @tap="gotomy()">
             <text>领取成功,去使用</text>
           </view>
@@ -131,7 +137,7 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="luckyCanvas"></canvas>
+        <canvas disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="luckyCanvas"></canvas>
         <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
@@ -150,7 +156,6 @@
   import wxParse from '../../wxParse/wxParse'
   import MyModel from '@/pages/My/index-model'
   import BackHome from '../../components/backHome'
-  import cheaderModel from '@/components/cheader-model'
   import Address from '../../utils/address.js'
   import Admodel from '../../components/ad'
   export default class extends wepy.page {
@@ -178,7 +183,8 @@
       showPosterBox: false,
       pricePre:'',
       posterImg: '',
-      isOpen: false
+      isOpen: false,
+      hasPhoneNum: false
     }
     methods = {
       onShareAppMessage(){
@@ -216,25 +222,29 @@
         this.$apply()
       },
       getUserInfo(res){
-        wx.showLoading({
-          title: '生成卡片中',
-        })
-        let posterPic = wx.getStorageSync('posterPic_'+'luckyCanvas'+'_'+this.goodsInfo.id)
-        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == '0.00' && posterPic[2] == this.pricePre){
-          this.posterImg = posterPic[0]
-          this.showPosterBox = true
-          wx.hideLoading()
-          this.$apply()
-          return false
-        }
-        let param = {}
-        param.id = this.goodsInfo.id
-        param.type = 4
-        this.actionSheetHidden =  true
-        CardModel.getPostData(param,ResData=>{
-          if(ResData.code == 1){
-            CardModel.creatPoster(this, 'luckyCanvas', ResData.data, this.goodsInfo.activity_name, '0.00', this.pricePre,'集卡','../../images/posterTy.png','',this.goodsInfo.id)
-          }
+        Address.getUser(res,(res)=>{
+          wx.showLoading({
+            title: '生成卡片中',
+          })
+          // let posterPic = wx.getStorageSync('posterPic_'+'luckyCanvas'+'_'+this.goodsInfo.id)
+          // if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == '0.00' && posterPic[2] == this.pricePre){
+          //   this.posterImg = posterPic[0]
+          //   this.showPosterBox = true
+          //   wx.hideLoading()
+          //   this.$apply()
+          //   return false
+          // }
+          let param = {}
+          param.id = this.goodsInfo.id
+          param.type = 4
+          param.employer_user_id = this.goodsInfo.user_id
+          this.actionSheetHidden =  true
+          CardModel.getPostData1(param,ResData=>{
+            if(ResData.code == 1){
+              let userPic = wx.getStorageSync('userInfo').avatarUrl
+              CardModel.creatPoster1(this, 'luckyCanvas', ResData.data, this.goodsInfo.activity_name, this.goodsInfo.id,userPic)
+            }
+          })
         })
       },
       closePosterBox(){
@@ -280,26 +290,16 @@
       closeLuck(){
         this.LuckStatus = true
       },
-      exchange(){
-        CardModel.exchange_goods({lucky_goods_id: this.queryData.lucky_goods_id},(ResData)=>{
-          if(ResData.code == 1 && ResData.data == 1){
-            wx.showToast({
-              title: '已发送个人中心',
-              icon: 'success',
-              duration: 2000,
-            })
-            this.goodsInfo.check_exchange_statu = 1
-            this.goodsInfo.lucky_order_status = 1
-            this.goodsInfo.lucky_order_id = ResData.lucky_order_id
-          } else {
-            wx.showToast({
-              title: ResData.data.message,
-              icon: 'none',
-              duration: 1500
-            })
-          }
-          this.$apply()
-        })
+      exchange(e){
+        if(e.type == 'getphonenumber'){
+          MyModel.getPhoneNumber(e,(res)=>{
+            this.hasPhoneNum = true
+            this.$apply()
+            this.exchangeFn()
+          })
+        }else{
+          this.exchangeFn()
+        }
       },
       makePhoneCall(){
         MyModel.makePhoneCall(this.goodsInfo.link_tel)
@@ -308,7 +308,34 @@
         MyModel.openMap(this.goodsInfo.longitude,this.goodsInfo.lucky_shop_name,this.goodsInfo.address)
       }
     }
+    exchangeFn(){
+      CardModel.exchange_goods({lucky_goods_id: this.queryData.lucky_goods_id},(ResData)=>{
+        if(ResData.code == 1 && ResData.data == 1){
+          wx.showToast({
+            title: '已发送个人中心',
+            icon: 'success',
+            duration: 2000,
+          })
+          this.goodsInfo.check_exchange_statu = 1
+          this.goodsInfo.lucky_order_status = 1
+          this.goodsInfo.lucky_order_id = ResData.lucky_order_id
+        } else {
+          wx.showToast({
+            title: ResData.data.message,
+            icon: 'none',
+            duration: 1500
+          })
+        }
+        this.$apply()
+      })
+    }
     onLoad(options){
+      CardModel.hasPostPhoneNumber((res)=>{
+        if(res.data.phone){
+          this.hasPhoneNum = true
+          this.$apply()
+        }
+      })
       this.pricePre = options.pricePre
       if(options.employer_user_id){
         this.queryData.employer_user_id = options.employer_user_id
@@ -578,12 +605,19 @@
           justify-content: center;
         }
         .card{
+          padding: 0;
+          margin: 0;
+          background-color: transparent;
+          border: none;
           width: 300rpx;
           height: 70rpx;
           background-color: #ef494d;
           border-radius: 34rpx;
           line-height:0;
           text-align: center;
+          &::after{
+            content: none;
+          }
           &.active {
             pointer-events: none;
           }

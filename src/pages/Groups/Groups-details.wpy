@@ -8,12 +8,12 @@
       </swiper-item>
     </swiper>
     <BackHome top='20'></BackHome>
-    <view class="posterText" @tap="getUserInfo">
+    <button class="posterText" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserInfo">
       <view class="posterT">
         <text>生成</text>
         <text>海报</text>
       </view>
-    </view>
+    </button>
     <view class="details-header">
       <text class="new-Price">¥{{DetailData.group_price}}</text>
       <view class="Price-warpper">
@@ -190,12 +190,12 @@
     <view class="posterBox">
       <view class="poster_cover" wx:if="{{showPosterBox}}" @tap="closePosterBox"></view>
       <view class="poster_content {{showPosterBox?'showPosterBox':''}}">
-        <canvas disable-scroll="true" class="canvas" style="width: 195px; height: 300px;" canvas-id="groupCanvas"></canvas>
-        <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
+        <canvas disable-scroll="true" class="canvas" style="width: 390px; height: 694px;" canvas-id="groupCanvas"></canvas>
+       <!--  <image src="{{posterImg}}" wx:if="{{posterImg}}" mode="aspectFill" class="canvasImg"></image>
         <view class="saveImg {{showPosterBox?'canSave':''}}" @tap="savePostePic">
           <image src="../../images/download.png" mode="widthFix" class="downPic"></image>
           <text>保存图片</text>
-        </view>
+        </view> -->
       </view>
     </view>
   </view>
@@ -321,25 +321,28 @@
         this.actionSheetHidden =  !this.actionSheetHidden
       },
       getUserInfo(res){
-        wx.showLoading({
-          title: '生成卡片中',
-        })
-        let posterPic = wx.getStorageSync('posterPic_'+'groupCanvas'+'_'+this.DetailData.id)
-        if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.DetailData.group_price && posterPic[2] == this.DetailData.original_price){
-          this.posterImg = posterPic[0]
-          this.showPosterBox = true
-          wx.hideLoading()
-          this.$apply()
-          return false
-        }
-        let param = {}
-        param.id = this.goodsId
-        param.type = 2
-        this.actionSheetHidden =  true
-        Groups.getPostData(param,ResData=>{
-          if(ResData.code == 1){
-            Groups.creatPoster(this, 'groupCanvas', ResData.data, this.DetailData.goods_name, this.DetailData.group_price,this.DetailData.original_price,'拼团','../../images/posterTy.png','',this.DetailData.id)
-          }
+        Address.getUser(res,(res)=>{
+          wx.showLoading({
+            title: '生成卡片中',
+          })
+          // let posterPic = wx.getStorageSync('posterPic_'+'groupCanvas'+'_'+this.DetailData.id)
+          // if(posterPic && typeof(posterPic) == 'object' && posterPic[1] == this.DetailData.group_price && posterPic[2] == this.DetailData.original_price){
+          //   this.posterImg = posterPic[0]
+          //   this.showPosterBox = true
+          //   wx.hideLoading()
+          //   this.$apply()
+          //   return false
+          // }
+          let param = {}
+          param.id = this.goodsId
+          param.type = 2
+          this.actionSheetHidden =  true
+          Groups.getPostData1(param,ResData=>{
+            if(ResData.code == 1){
+              let userPic = wx.getStorageSync('userInfo').avatarUrl
+              Groups.creatPoster1(this, 'groupCanvas', ResData.data, this.DetailData.goods_name,this.DetailData.id,userPic)
+            }
+          })
         })
       },
       ShowOpen(){
@@ -498,8 +501,6 @@
           this.$apply()
         }
       })
-    }
-    onShow(){
       let param = {
         goodId: this.goodsId
       }
@@ -515,6 +516,8 @@
           this.$apply()
         }
       })
+    }
+    onShow(){
     }
     onReady(){
       /**

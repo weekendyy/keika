@@ -23,8 +23,9 @@
       <view class="phoneNumber">
         <text>手机号</text>
         <input placeholder="请输入手机号" cursor-spacing="100" value="{{phoneNumber}}" type="number" bindinput="phoneInp" />
+        <button class="getPhoneNum" bindgetphonenumber="updatePhone" open-type="getPhoneNumber">绑定手机号</button>
       </view>
-      <view class="confirmBtn" @tap="confirmTap">确定</view>
+      <button class="confirmBtn" @tap="confirmTap" >确定</button>
     </view>
   </view>
 </template>
@@ -60,7 +61,6 @@
     }
     events = {
       showChooseBox(){
-        this.phoneNumber = this.goodsInfo.shipping_phone
         this.showGoodsChoose = true
         this.$apply()
       }
@@ -69,32 +69,47 @@
       count: count
     }
     methods = {
+      updatePhone(res){
+        model.getPhoneNumber(res,(res)=>{
+          let phone = res.data.phoneNumber
+          this.phoneNumber = phone
+          this.$apply()
+        })
+      },
       closeChooseBox(){
         this.showGoodsChoose = false
         this.$apply()
       },
-      confirmTap(){
-        if(model.verifyPhoneNumber(this.phoneNumber)){
-          if(this.maxNum <= 0){
-            this.$emit('buyGoods',0,this.phoneNumber)
-          } else{
-            this.$emit('buyGoods',this.countValue,this.phoneNumber)
-          }
-          this.showGoodsChoose = false
-          this.$apply()
-        }
+      confirmTap(e){
+        this.buyTab()
       },
       phoneInp(e){
         let value = e.detail.value
         this.phoneNumber = value
       }
     }
+    buyTab(){
+      if(model.verifyPhoneNumber(this.phoneNumber)){
+        if(this.maxNum <= 0){
+          this.$emit('buyGoods',0,this.phoneNumber)
+        } else{
+          this.$emit('buyGoods',this.countValue,this.phoneNumber)
+        }
+        this.showGoodsChoose = false
+        this.$apply()
+      }
+    }
     onLoad(){
-      
+      model.hasPostPhoneNumber((res)=>{
+        if(res.data.phone){
+          this.phoneNumber = res.data.phone
+          this.$apply()
+        }
+      })
     }
   }
 </script>
-<style type="less">
+<style lang="less">
   .goodsNumChooseBox{
     width: 100%;
     height: 100%;
@@ -181,6 +196,21 @@
         align-content: center;
         justify-content: space-between;
         border-bottom: 1px solid #F0EFF5;
+        .getPhoneNum{
+          padding: 0 10rpx;
+          height: 50rpx;
+          margin: 0;
+          font-size: 20rpx;
+          color: #999;
+          background-color: transparent;
+          border-radius: 7rpx;
+          border: 1px solid #999;
+          line-height: 45rpx;
+          margin-top: 20rpx;
+          &::after{
+            content: none;
+          }
+        }
         text{
           color: #242527;
           font-size: 26rpx;
@@ -222,6 +252,11 @@
         }
       }
       .confirmBtn{
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        background-color: transparent;
         width: 100%;
         height: 80rpx;
         background: linear-gradient(to right, #FE667F,#FB4D69);
@@ -230,6 +265,9 @@
         text-align: center;
         line-height: 80rpx;
         font-size: 30rpx;
+        &::after{
+          content: none;
+        }
       }
     }
     .showcontentBox{

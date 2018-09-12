@@ -254,7 +254,7 @@
         disModel.creatPoster(query,(res)=>{
           if(res.code == 1){
             if(this.posterType != '10'){
-              this.$broadcast('getUserInfo',res.data.data)
+              this.$broadcast('getUserInfo','',res.data.data)
             }else{
               let cardPrice = this.vipCardData[index].discount_price
               disModel.buildPosterVip(this,res.data.data,cardPrice,this.cardName)
