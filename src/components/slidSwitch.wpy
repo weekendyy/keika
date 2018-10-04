@@ -80,10 +80,10 @@
     }
   }
 </script>
-<style type="less">
+<style lang="less">
   .slidSwitchBox{
     width: 100%;
-    height: 250rpx;
+    height: 220rpx;
     overflow: hidden;
     position: relative;
     display: flex;
@@ -92,7 +92,7 @@
     opacity: 0;
     transform: scale(0.8);
     transition: .6s .1s;
-    margin-top: 30rpx;
+    margin-top: 0rpx;
     .couponItem{
       width: 630rpx;
       height: 200rpx;

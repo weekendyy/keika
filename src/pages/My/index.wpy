@@ -81,7 +81,7 @@
     </view>
   </view>
   <view class="version">
-    <text>版本号 V1.14.9</text>
+    <text>版本号 V1.14.94</text>
   </view>
   <view wx:if="{{!loadingHidden}}">
     <template is="loading" data="{{loadingTxt:''}}"></template>

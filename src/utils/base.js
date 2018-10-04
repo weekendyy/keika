@@ -207,7 +207,7 @@ class Base {
     this.request(param)
   }
   // 生成海报接口1
-  creatPoster1(that,canvasId,resData,title,postPicId,userPic,disQrcode){
+  creatPoster1(that,canvasId,resData,title,postPicId,userPic,userName,disQrcode){
     const posterWdith = 390
     const poserHeight = 694
     const ctx = wx.createCanvasContext(canvasId)
@@ -244,6 +244,9 @@ class Base {
       ctx.drawImage(goodsPic, 0, 0, posterWdith, 1.22*posterWdith)
       ctx.drawImage(qrCodePic, 260, 565, 105, 105)
       ctx.drawImage(userIcon, 12, 562, 55, 55)
+      ctx.setFontSize(parseInt(posterWdith*0.04))
+      ctx.setTextAlign('left')
+      ctx.fillText(userName, 80, 595)
       ctx.drawImage('/images/userpiccover.png', 12, 562, 55, 55)
       if(disQrcode){
         ctx.drawImage('/images/buybtndis.png', 15, 631, 190, 35)

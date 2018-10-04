@@ -52,7 +52,7 @@
       navigationBarBackgroundColor: "#FEA277",
       backgroundColorTop: '#FEA277',
       navigationBarTextStyle: 'white',
-      navigationBarTitleText: '排行版',
+      navigationBarTitleText: '排行榜',
     }
     data = {
       showContent: false,

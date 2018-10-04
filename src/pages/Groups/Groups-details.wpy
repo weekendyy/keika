@@ -340,7 +340,8 @@
           Groups.getPostData1(param,ResData=>{
             if(ResData.code == 1){
               let userPic = wx.getStorageSync('userInfo').avatarUrl
-              Groups.creatPoster1(this, 'groupCanvas', ResData.data, this.DetailData.goods_name,this.DetailData.id,userPic)
+              let userName = wx.getStorageSync('userInfo').nickName
+              Groups.creatPoster1(this, 'groupCanvas', ResData.data, this.DetailData.goods_name,this.DetailData.id,userPic,userName)
             }
           })
         })

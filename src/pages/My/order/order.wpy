@@ -196,12 +196,13 @@
             <!-- 砍价 -->
             <view class="payment-btn" wx:if="{{item.goods_type == 4}}">
               <!--交易关闭-->
-              <!-- <text class="del" wx:if="{{item.status == 0}}" @tap.stop="delOrder({{index}})">删除订单</text> -->
-              <!--秒杀未付款-->
               <view></view>
               <text wx:if="{{item.status == 1}}" @tap.stop="orderPayment({{index}})">去支付</text>
-              <text wx:if="{{item.status == 2 && item.use_status == 0}}" @tap.stop="orderUse({{index}})">
+              <text wx:if="{{item.status == 2 && item.use_status == 0 && item.deadline>=time}}" @tap.stop="orderUse({{index}})">
                 <block>去使用</block>
+              </text>
+              <text wx:if="{{item.status == 2 && item.use_status == 0 && item.deadline<time}}">
+                <block>已过期</block>
               </text>
               <text wx:if="{{item.status == 2 && item.use_status == 1}}">
                 <block>已使用</block>

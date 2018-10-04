@@ -34,6 +34,9 @@
         </view>
       </view>
     </view>
+    <view class="follow">
+      <official-account></official-account>
+    </view>
     <!-- 店铺详情 -->
     <view class="coupon-detail {{loadingHidden?'show-coupon-detail':''}}">
       <view class="ditail-title">
@@ -354,6 +357,9 @@
         transition: .5s .1s;
         transform: scale(1);
       }
+    }
+    .follow{
+      margin-top: 20rpx;
     }
     .coupon-detail{
       margin-top: 20rpx;

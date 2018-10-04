@@ -33,7 +33,23 @@ class TimeLimitActivityDetail extends Base{
       url: 'v5/magic_subject/get_subject_goods',
       data: {
         subject_id: queryData.subject_id,
-        page: queryData.pageNum
+        page: queryData.pageNum,
+        lng: '24.57591',
+        lat: '118.09728'
+      },
+      sCallback(ResData) {
+        callback && callback(ResData)
+      }
+    }
+    this.request(param)
+  }
+  // 专题预订
+  booking(queryData, callback){
+    let param = {
+      url: 'v5/magic_subject/subscribe',
+      data: {
+        subject_id: queryData.id,
+        magic_form_id: queryData.formId
       },
       sCallback(ResData) {
         callback && callback(ResData)

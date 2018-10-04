@@ -96,17 +96,19 @@
       HomeModel.getPostData1(param,ResData=>{
         if(ResData.code == 1){
           let userPic = wx.getStorageSync('userInfo').avatarUrl
+          let userName = wx.getStorageSync('userInfo').nickName
           if(this.type == '9'){
               HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.magic_shop_name, '', '','','', this.posterInfo.address, this.posterInfo.id)
           }
           if(this.type == '3'){
-              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.id,userPic,disQrcode?disQrcode:'')
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.title, this.posterInfo.id,userPic,userName, disQrcode?disQrcode:'')
           }
           if(this.type == '1'){
-              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.id,userPic,disQrcode?disQrcode:'')
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.id,userPic, userName, disQrcode?disQrcode:'')
           }
           if(this.type == '2'){
-              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.id,userPic,disQrcode?disQrcode:'')
+              HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.goods_name, this.posterInfo.id,userPic,
+                userName, disQrcode?disQrcode:'')
           }
           if(this.type == '10'){
               HomeModel.creatPoster1(this, this.canvasName, ResData.data, this.posterInfo.name, this.posterInfo.discount_price, '','会员',posterTag, '', this.posterInfo.id)

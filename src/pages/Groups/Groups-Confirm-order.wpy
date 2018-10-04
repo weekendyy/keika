@@ -145,7 +145,7 @@
     buyFn(){
       let param = {
         orderID: this.orderId,
-        shipping_phone: this.requirePhone
+        shipping_phone: this.real_tel
       }
       if(this.groupsData.address_options == 1 && JSON.stringify(this.AddressInfo) == '{}'){
         wx.showToast({
@@ -161,7 +161,7 @@
         }
         this.payState = false
         this.$apply()
-        Object.assign(param,{link_tel:this.requirePhone,pay_type:this.groupsPay_type})
+        Object.assign(param,{link_tel:this.real_tel,pay_type:this.groupsPay_type})
         Groups.groupExecPay(param, ResData=>{
           if(ResData.code == 1) {
             Groups.wxPay(ResData.data, ResData=>{

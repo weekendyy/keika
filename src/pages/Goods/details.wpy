@@ -82,7 +82,7 @@
     </view>
     <!-- 有效日期 -->
     <view class="dateBox beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .3s">
-      <text>此商品有效期至</text>
+      <text>此活动有效期至</text>
       <text class="dateTxt">{{DetailsData.end_time}}</text>
     </view>
     <!-- 进客广告 -->
@@ -101,6 +101,7 @@
       </view>
     </block>
     <Admodel></Admodel>
+    <view style="height: 20rpx;"></view>
     <!-- 进客广告弹窗 -->
     <view class="cover-ad {{showAdWindow?'showcoverAd':''}}" @tap="closeAdWindow"></view>
     <view class="adwindow {{showAdWindow?'showadwindow':''}}">
@@ -108,8 +109,42 @@
       <text class="adwindow-tips">请在客服窗口输入 '{{DetailsData.ad.keyword}}'</text>
       <button bindcontact="contactBack" session-from="{{shopId}}" open-type="contact" class="adBtnwindow">知道了</button>
     </view>
+    <!-- 商家详情 -->
+    <view class="shopDetail" wx:if="{{DetailsData.magic_shop_info.magic_shop_name}}">
+      <view class="shopDetail_top">
+        <view class="shopCut"></view>
+        <text>商家详情</text>
+      </view>
+      <view class="shopDItem" @tap="toShopIndex">
+        <text>商家名称：{{DetailsData.magic_shop_info.magic_shop_name}}</text>
+        <view class="rightTab">进店</view>
+      </view>
+      <view class="shopDItem">
+        <text>营业时间：{{DetailsData.magic_shop_info.business_time}}</text>
+      </view>
+      <view class="shopDItem" @tap="makePhone">
+        <text>商家电话： {{DetailsData.magic_shop_info.link_tel}}</text>
+        <view class="rightTab">拨打</view>
+      </view>
+      <view class="shopDItem" @tap="shopAddress">
+        <text>商家地址：{{DetailsData.magic_shop_info.address}}</text>
+        <view class="rightTab">导航</view>
+      </view>
+    </view>
+    <!-- 活动须知 -->
+    <view class="shopDetail">
+      <view class="shopDetail_top">
+        <view class="shopCut"></view>
+        <text>活动须知</text>
+      </view>
+      <!-- 切换内容 -->
+      <view class="goodsDetailContent1" wx:if="{{ activeItemIndex == 0 }}">
+        <template is="wxParse" data="{{wxParseData:article1.nodes}}"/>
+      </view>
+    </view>
+
     <!-- 商家信息 -->
-    <view class="shopInfo beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .5s">
+    <!-- <view class="shopInfo beforeShow {{loadingHidden?'show-detailItem':''}}" style="transition: .5s .5s">
       <text class="shopInfo-txt">商家信息</text>
       <view class="shopInfoContent">
         <view class="shopInfoContent-left">
@@ -123,7 +158,7 @@
           <image @tap="makePhoneCall" mode="aspectFill" class="phoneIcon" src="../../images/phone.png"></image>
         </view>
       </view>
-    </view>
+    </view> -->
     <!-- 商品详情商品评价 -->
     <view class="goodsDetail">
       <!-- 切换按钮 -->
@@ -437,6 +472,16 @@
       }
     }
     methods= {
+      toShopIndex(){
+        console.log("asd")
+        DetailsModel.navTo('../../niceShop/niceShopIndex',{id: this.DetailsData.magic_shop_info.id})
+      },
+      makePhone(){
+        DetailsModel.makePhoneCall(this.DetailsData.magic_shop_info.link_tel)
+      },
+      shopAddress(){
+        DetailsModel.openMap(this.DetailsData.magic_shop_info.longitude,this.DetailsData.magic_shop_info.magic_shop_name,this.DetailsData.magic_shop_info.address)
+      },
       itemTab(index){
         this.activeItemIndex = index
         this.$apply()
@@ -545,8 +590,10 @@
             this.order_id = this.DetailsData.order_id
           }
           let article = this.DetailsData.detail
+          let article1 = this.DetailsData.active_notice
           article = article.replace(/<img>/g, '')
           wxParse.wxParse('article', 'html', article, this, 0)
+          wxParse.wxParse('article1', 'html', article1, this, 0)
           this.buy_log = this.DetailsData.buy_log
           this.end_time = this.DetailsData.residue_time*1000
           this.priceNow = this.DetailsData.discount_price
@@ -598,7 +645,7 @@
 <style lang="less">
   @import '../tpls/loading/loading.wxss';
   Page{
-    background-color: #F3F8FB;
+    background-color: #F7F7F7;
   }
   .indexBox{
     width: 100%;
@@ -608,7 +655,7 @@
     align-items: center;
     .bannerBox{
       width: 100%;
-      height: 750rpx;
+      height: 432rpx;
       background-color: #fff;
       image{
         width: 100%;
@@ -981,6 +1028,51 @@
       pointer-events: auto;
       transform: translateY(0);
     }
+    .shopDetail{
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 30rpx;
+      background-color: #fff;
+      margin-bottom: 20rpx;
+      padding-bottom: 30rpx;
+      .shopDetail_top{
+        height: 70rpx;
+        display: flex;
+        align-items: center;
+        padding-top: 20rpx;
+        .shopCut{
+          width: 2px;
+          height: 32rpx;
+          background-color: #FB4D69;
+        }
+        text{
+          font-size: 33rpx;
+          color: #353535;
+          margin-left: 20rpx;
+          font-weight: 600;
+        }
+      }
+      .goodsDetailContent1{
+        color: #646464;
+        font-size: 28rpx;
+      }
+      .shopDItem{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 28rpx;
+        height: 55rpx;
+        color: #646464;
+        .rightTab{
+          background-color: #FB4D69;
+          color: #fff;
+          font-size: 24rpx;
+          border-radius: 5rpx;
+          padding: 5rpx 13rpx;
+        }
+      }
+    }
     .shopInfo{
       width: 100%;
       height: 207rpx;
@@ -1036,7 +1128,6 @@
       }
     }
     .goodsDetail{
-      margin-top: 20rpx;
       width: 100%;
       .itemTabBox{
         width: 100%;

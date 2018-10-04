@@ -475,7 +475,8 @@
           BargainModel.getPostData1(param,ResData=>{
             if(ResData.code == 1){
               let userPic = wx.getStorageSync('userInfo').avatarUrl
-              BargainModel.creatPoster1(this, 'bargainCanvas', ResData.data, this.DetailData.title,this.DetailData.id,userPic)
+              let userName = wx.getStorageSync('userInfo').nickName
+              BargainModel.creatPoster1(this, 'bargainCanvas', ResData.data, this.DetailData.title,this.DetailData.id,userPic,userName)
             }
           })
         })

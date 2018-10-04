@@ -1,35 +1,64 @@
 <template>
-  <import src="/pages/tpls/emptyGoodsTips/emptyGoodsTips.wxml" />
-  <import src="/pages/tpls/loading/loading.wxml" />
   <view class="indexBox">
-    <view class="topImgBox beforeShow {{showContent?'show-detailItem':''}}">
-      <image src="{{bannerInfo.img_url}}" mode="aspectFill" class="topPic"></image>
-      <view class="backBome" @tap="backToHome">
-        <image src="./images/home.png" mode="widthFix" class="homeIcon"></image>
-        <text class="backhometxt">返回首页</text>
+    <view class="header">
+      <image src="{{bannerInfo.img_url}}" mode="aspectFill" class="bannerPic"></image>
+      <view class="checkBox">
+        <form report-submit="true" bindsubmit="booking">
+          <button class="checkBtn {{bannerInfo.is_subscribe == 1?'hasBook':''}}" form-type="submit" >
+            <image src="./images/check.png" mode="aspectFill" class="checkIcon"></image>
+            <text class="checkTxt">{{bannerInfo.is_subscribe == 1?'已预订提醒':'新品提醒'}}</text>
+          </button>
+        </form>
+        <text class="bookNum">{{bannerInfo.subscribe_num}}人预订</text>
       </view>
     </view>
-    <block wx:for="{{goodsList}}" wx:key="{{index}}">
-      <view class="goodsItem beforeShow {{showContent?'show-detailItem':''}}" @tap="toGoodsDetail({{item.id}},{{item.goods_type}})" style="transition: .4s {{index*0.1}}s">
-        <image src="{{item.banner}}" mode="aspectFill" class="mainPic"></image>
-        <text class="goodsTitle ellip-2">{{item.goods_name}}</text>
-        <view class="bottomBox">
-          <view class="priceBox">
-            <text class="priceNow" wx:if="{{item.goods_type != 5}}">¥{{item.discount_price}}</text>
-            <text class="priceNow" wx:if="{{item.goods_type == 5}}">¥0</text>
- 
-            <text class="pricePre" wx:if="{{item.goods_type == 2}}">¥{{item.group_price}}</text>
-            <text class="pricePre" wx:if="{{item.goods_type == 4}}">¥{{item.original_price}}</text>
-            <text class="pricePre" wx:if="{{item.goods_type == 5}}">¥{{item.discount_price}}</text>
-            <text class="pricePre" wx:if="{{item.goods_type == 1}}">¥{{item.original_price}}</text>
+    <view class="listTitle">
+      <text>折扣专属区</text>
+      <view class="cutTitle"></view>
+      <text>Discount Area</text>
+    </view>
+    <view class="goodsList">
+      <block wx:for="{{goodsList}}" wx:key="{{index}}">
+        <view class="goodsItem" @tap="toGoodsDetail({{item.id}},{{item.goods_type}})">
+          <image src="{{item.banner}}" mode="aspectFill" class="goodsPic"></image>
+          <view class="goodsAddress">
+            <!-- 拼团 -->
+            <block wx:if="{{item.goods_type == 2}}">
+              <text>{{item.group_shop_name}}</text>
+            </block>
+            <!-- 集卡 -->
+            <block wx:if="{{item.goods_type == 5}}">
+              <text>集卡</text>
+            </block>
+            <!-- 砍价 -->
+            <block wx:if="{{item.goods_type == 4}}">
+              <text>{{item.name}}</text>
+            </block>
+            <!-- 抢购 -->
+            <block wx:if="{{item.goods_type == 1}}">
+              <text>{{item.promotion_shop_name}}</text>
+            </block>
+
+            <text>{{item.address}}丨{{item.distance}}</text>
           </view>
-          <view class="leftNumber">剩余：{{item.all_num-item.get_num}}份</view>
+          <view class="goodsTitle">{{item.goods_name}}</view>
+          <view class="goodsPriceBox">
+            <view class="priceNow">
+              <view>
+                {{item.goods_type == 5?'0':item.discount_price}}
+              </view>
+              <text style="font-size: 19rpx;">元</text>
+            </view>
+            <view class="buyBtn">购买</view>
+          </view>
+          <view class="goodsPriceBox">
+            <text class="pricePre">{{item.original_price?item.original_price:item.discount_price}}</text>
+            <view class="buyPeople">{{item.get_num}}人购买</view>
+          </view>
         </view>
-      </view>
-    </block>
-  </view>
-  <view hidden="{{showContent}}">
-    <template is="loading" data="{{loadingTxt:''}}"></template>
+      </block>
+    </view>
+    <view style="height: 50rpx;"></view>
   </view>
 </template>
 <script>
@@ -52,6 +81,22 @@
         
     }
     methods = {
+      booking(e){
+        let formId = e.detail.formId
+        TimeLimitActivityDetailModel.booking({id:this.id, formId: formId},(res)=>{
+          if(res.code == 1){
+            this.bannerInfo.is_subscribe = res.is_subscribe
+            if(res.is_subscribe == 1){
+              this.bannerInfo.subscribe_num++
+            }else{
+              this.bannerInfo.subscribe_num--
+            }
+            this.$apply()
+          }else{
+
+          }
+        })
+      },
       backToHome(){
         wx.switchTab({
           url:'/pages/Index/index'
@@ -74,22 +119,23 @@
     }
     onLoad(e){
       this.id = e.id
-      let query = {
-        subject_id: e.id,
-        pageNum: 1
-      }
-      TimeLimitActivityDetailModel.getGoodsActivityData(query,(res)=>{
-        if(res.code == 1){
-          this.goodsList = res.data.goods_list
-          this.bannerInfo = res.data.subject_data
-          this.$apply()
-          this.showContent = true
-          this.$apply()
-        }
-      })
     }
     onShow(){
-      
+      Address.getGeoAndUserInfo(()=>{
+        let query = {
+          subject_id: this.id,
+          pageNum: 1
+        }
+        TimeLimitActivityDetailModel.getGoodsActivityData(query,(res)=>{
+          if(res.code == 1){
+            this.goodsList = res.data.goods_list
+            this.bannerInfo = res.data.subject_data
+            this.$apply()
+            this.showContent = true
+            this.$apply()
+          }
+        })
+      })
     }
     onReachBottom(){
       if(!this.isLoadAll){
@@ -117,87 +163,141 @@
   }
 </script>
 <style lang="less">
-  @import '../pages/tpls/emptyGoodsTips/emptyGoodsTips.wxss';
-  @import '../pages/tpls/loading/loading.wxss';
   .indexBox{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    .topImgBox{
+    width: 100%;
+    .header{
       width: 100%;
-      height: 375rpx;
+      height: 400rpx;
       position: relative;
-      margin-bottom: 50rpx;
-      .topPic{
+      .bannerPic{
         width: 100%;
         height: 100%;
-        background-color: #999;
+        background-color: #C7CBD1;
       }
-      .backBome{
-        position: absolute;
-        top: 30rpx;
-        left: 30rpx;
-        width: 160rpx;
-        height: 55rpx;
-        border-radius: 40rpx;
-        background:rgba(0,0,0,.4);
+      .checkBox{
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        .homeIcon{
-          width: 30rpx;
-          height: 30rpx;
-          margin-right: 10rpx;
-        } 
-        .backhometxt{
-          font-size: 23rpx;
+        position: absolute;
+        bottom: 30rpx;
+        right: 30rpx;
+        .checkBtn{
+          padding: 0;
+          margin: 0;
+          border: none;
+          width: 180rpx;
+          height: 60rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(to right, #FD4E7C, #FF5865);
+          border-radius: 12rpx;
+          &::after{
+            content: none;
+          }
+          .checkIcon{
+            width: 36rpx;
+            height: 36rpx;
+            margin-right: 10rpx;
+          }
+          .checkTxt{
+            font-size: 25rpx;
+            color: #fff;
+          }
+        }
+        .hasBook{
+          background: rgba(0,0,0,.2);
           color: #fff;
+          border: 1px solid #fff;
+          border-radius: 15rpx;
+          width: 210rpx;
+        }
+        .bookNum{
+          color: #fff;
+          font-size: 24rpx;
+          margin-top: 15rpx;
+          text-shadow: 0 0 10rpx rgba(0,0,0,.9);
         }
       }
     }
-    .goodsItem{
-      width: 690rpx;
+    .listTitle{
+      width: 100%;
+      height: 160rpx;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      margin-bottom: 30rpx;
-      box-shadow: 0 0 20rpx rgba(0,0,0,.2);
-      .mainPic{
-        width: 100%;
-        height: 400rpx;
-        background-color: #999;
+      justify-content: center;
+      color: #353535;
+      font-size: 32rpx;
+      .cutTitle{
+        width: 10rpx;
+        height: 10rpx;
+        background-color: #28E0B7;
+        transform: rotateZ(45deg);
+        margin: 0 15rpx;
       }
-      .goodsTitle{
-        font-size: 35rpx;
-        color: #353535;
-        width: 630rpx;
-        margin: 30rpx 0;
-        line-height: 45rpx;
-      }
-      .bottomBox{
-        width: 630rpx;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0rpx 0 30rpx;
-        .priceBox{
+    }
+    .goodsList{
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 30rpx;
+      .goodsItem{
+        width: 690rpx;
+        margin-bottom: 40rpx;
+        .goodsPic{
+          width: 100%;
+          height: 400rpx;
+          background-color: #C7CBD1;
+        }
+        .goodsAddress{
+          width: 100%;
           display: flex;
-          align-items: baseline;
+          justify-content: space-between;
+          color: #8A8A8A;
+          font-size: 25rpx;
+          height: 60rpx;
+          align-items: center;
+        }
+        .goodsTitle{
+          font-size: 32rpx;
+          line-height: 42rpx;
+          margin: 6rpx 0;
+        }
+        .goodsPriceBox{
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10rpx;
+          padding-left: 0;
           .priceNow{
             font-size: 38rpx;
             color: #FA3B3E;
-            margin-right: 25rpx;
-            font-family: 'priceFont'
-          } 
-          .pricePre{
-            font-size: 22rpx;
-            color: #B2B1B1;
-            font-family: 'priceFont'
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-start;
+            margin-left: -10rpx;
           }
-        }
-        .leftNumber{
-          color: #B4B4B4;
-          font-size: 28rpx;
+          .buyBtn{
+            width: 160rpx;
+            height: 60rpx;
+            background: linear-gradient(to left, #FF5865, #FD4E7B);
+            border-radius: 12rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28rpx;
+            font-weight: 600;
+          }
+          .pricePre{
+            font-size: 20rpx;
+            color: #888888;
+            text-decoration: line-through;
+          }
+          .buyPeople{
+            font-size: 22rpx;
+            color: #888;
+          }
         }
       }
     }
